@@ -1,0 +1,11 @@
+<div class="container">
+    <div class="row">
+        <form action="{% url "publications" %}" method="POST">
+            {% csrf_token %}
+            <div class="form-row">
+                {{ forms.affiliation }}
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+    </div>
+</div>
