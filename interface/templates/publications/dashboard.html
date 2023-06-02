@@ -1,0 +1,30 @@
+<div class="container p-3">
+    <div class="row">
+        <div class="col">
+            {% if user.is_authenticated %}
+                <h4> Welcome {{ user.first_name }} </h4>
+                <hr>
+                <div class="list-group">
+                    <h5 class="text-center"> Publications </h5>
+                    <a href="" class="list-group-item list-group-item-action"> View all Publications </a>
+                    <a href="" class="list-group-item list-group-item-action"> View my Publications </a>
+                    <a href="" data-bs-toggle="modal" data-bs-target="#doiModal" class="list-group-item list-group-item-action"> Add by DOI/TITLE </a>
+                    <a href="" class="list-group-item list-group-item-action"> Add by copy/upload .bib files </a>
+                    <a href="" class="list-group-item list-group-item-action"> Add from searching sources </a>
+                </div>
+                <hr>
+                <div class="list-group">
+                    <h5 class="text-center"> Reviews </h5>
+                    <a href="" class="list-group-item list-group-item-action"> View Reviews </a>
+                    <a href="" class="list-group-item list-group-item-action"> Add a Review </a>
+                    <a href="" class="list-group-item list-group-item-action"> Join a Review by Link </a>
+                </div>
+                {% include "publications/modals/doi.html"%}
+            {% else %}
+                <h5> <a href="{% url 'account_login' %}" > Login </a> to View the Dashboard</h5>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+

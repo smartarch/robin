@@ -1,0 +1,22 @@
+<!-- Modal -->
+<div class="modal fade" id="doiModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">Add Publication by DOI</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+        <form action="{% url 'add_single_publication' %}" method="post">
+            {% csrf_token %}
+            <div class="modal-body">
+                <label for="doi" class="form-label"></label>
+                <input name="doi" id="doi" placeholder="DOI" class="form-control"  required />
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Add Publication</button>
+            </div>
+        </form>
+    </div>
+  </div>
+</div>

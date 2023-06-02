@@ -1,0 +1,151 @@
+<script>
+    let search_terms = {};
+    let source_checks = [];
+    function addTerm (term, parent) {
+        search_terms[term] = 1;
+        var h5 = document.createElement("h5");
+        h5.classList.add("m-1");
+        h5.id = `term_${Object.keys(search_terms).length$}`;
+        var span = document.createElement("span");
+        span.classList.add("badge");
+        span.classList.add("bg-primary");
+        span.innerHTML = term;
+        var button = document.createElement("button");
+        button.type = "button";
+        button.classList.add("btn-close");
+        button.addEventListener("click", function(){
+            h5.classList.add("visually-hidden");
+            search_terms[term] = 0;
+        });
+        span.appendChild(button);
+        h5.appendChild(span);
+        parent.appendChild(h5);
+        
+    }
+</script>
+<form id="submitForm" method="get" action="" class="p-3">
+<div class="row border border-success mb-2 border-opacity-50">
+    <div class="col-2">
+        <div class="row m-1 align-items-center">
+            <h5> Year </h5>
+            <div class="col-12">
+                <label for="yearFrom" class="col-form-label">From:</label>
+                <input type="number" id="yearFrom" class="form-control-sm" max=2023 min=2006 value={{year_from}}>
+            </div>
+            <div class="col-12">
+                <label for="yearTo" class="col-form-label">To:</label>
+                <input type="number" id="yearTo" class="form-control-sm" max=2023 min=2006 value={{year_to}}    >
+            </div>
+        </div>
+    </div>
+
+    <div class="col-3">
+        <div class="row m-1 align-items-center">
+            <h5> Document Source </h5>
+            <div class="container" >
+                {% for source, item in distinct_sources.items %}
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="check_{{source}}"
+                    {% if source in sources%}
+                    checked
+                    {% endif %}
+                    tag={{sources}}
+                    />
+                    <label class="form-check-label" for="check_{{source}}" />
+                    {{source}} ({{item}})
+                    <script>
+                        source_checks.push("{{source}}");
+                    </script>
+                    </label>
+                </div>
+                {% endfor %}
+             </div>
+        </div>
+    </div>
+
+    <div class="col-5 ">
+        <div class="row m-1  align-items-center">
+            <h5> Search For Terms </h5>
+            <div class="row">
+                <div class="col-8">
+                  <input type="text" class="form-control" id="termText" placeholder="Add Term">
+                </div>
+                <div class="col-4">
+                  <button type="button" class="btn btn-primary" id="addTermButton">Add</button>
+                </div>
+            </div>
+            <br>
+            <div class="container" id="searchTerms">
+                <script>
+                    const container = document.getElementById("searchTerms");
+                    const termText = document.getElementById("termText");
+                    document.getElementById("addTermButton").addEventListener("click", function(){
+                        addTerm(termText.value, container);
+                        termText.value = "";
+                    });
+
+                    {% for term in terms %}
+                        addTerm("{{term}}", container);
+                    {% endfor %}
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-2 position-relative">
+        <input type="hidden" name="page" value="1" />
+        <div class="position-absolute top-50 start-50 translate-middle">
+            <div class="btn-group-vertical" role="group" aria-label="Basic outlined example">
+                <button type="submit" class="btn btn-success" id="submitButton">Apply Filter</button>
+                <button type="button" class="btn btn-warning" id="clearButton">Clear Filter</button>
+            </div>
+
+        </div>
+        <script>
+            function createHiddenElement(parent, name, value){
+                var element = document.createElement("input");
+                element.type= "hidden";
+                element.name = name;
+                element.value = value;
+                parent.appendChild(element);
+            }
+            document.getElementById("submitForm").addEventListener("submit", function(){
+                var form = document.getElementById("submitForm");
+                var active_search_terms = [];
+                for (key in search_terms){
+                    if (search_terms[key]==1){
+                        active_search_terms.push(key);
+                    }
+                }
+                if (active_search_terms.length > 0){
+                    var active_text = active_search_terms.join(',');
+                    createHiddenElement(form, "search", active_text);
+                }
+                var yearFrom = document.getElementById("yearFrom").value;
+                var yearTo = document.getElementById("yearTo").value;
+                if (yearFrom <= yearTo){
+                    createHiddenElement(form, "year_from", yearFrom);
+                    createHiddenElement(form, "year_to", yearTo);
+                }
+                var checks = [];
+                for (var i =0; i <source_checks.length ; i++){
+                    var checkBox = document.getElementById(`check_${source_checks[i]}`);
+                    if (checkBox.checked){
+                        checks.push(source_checks[i]);
+                    }
+                }
+                if (checks.length > 0){
+                    createHiddenElement(form, "sources", `\"${checks.join(",")}\"`);
+                }
+
+
+               form.submit();
+
+            });
+        </script>
+    </div>
+</div>
+</form>
+
+
+    
