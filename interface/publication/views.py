@@ -6,28 +6,56 @@ from django.views.generic import TemplateView, View
 from .models import Publication, Keywords
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.mixins import LoginRequiredMixin
+import requests
 
-# Create your views here.
-
+# parsers
+from .parsers import parse_cross_ref_json
+from .factories import PublicationFactory
 
 class HomeView (TemplateView):
     template_name = "publications/index.html"
 
     def get(self, request, *args, **kwargs) -> {}:
         publications = Publication.objects.all()
-        print (request.GET)
+
         context = super().get_context_data(**kwargs)
+
+        paginator = Paginator(publications, 25)  # Show 25 contacts per page.
+        page_number = request.GET.get("page")
+
+        page_obj = paginator.get_page(page_number)
+        prev_pages = [page_obj.number - i
+                      for i in range(5, 0, -1)
+                      if page_obj.number - i > 0]
+        next_pages = [page_obj.number + i
+                      for i in range(1, 6)
+                      if page_obj.number + i <= paginator.num_pages]
+        context = {
+            **context,
+            "page_obj": page_obj,
+            "prev_pages": prev_pages,
+            "next_pages": next_pages,
+            "size": len(publications),
+        }
         return self.render_to_response(context)
 
 
-class AddSinglePublication (LoginRequiredMixin, TemplateView):
+class AddSinglePublication (LoginRequiredMixin, View):
     template_name = "publications/index.html"
 
     def post(self, request, *args, **kwargs) -> {}:
-        user = request.user
-        print (user)
-        context = super().get_context_data(**kwargs)
-        return self.render_to_response(context)
+        doi = request.POST.get("doi")
+
+        request_data = requests.get(f"https://api.crossref.org/works/{doi}")
+        parsed_json = parse_cross_ref_json(request_data.json())
+
+        publication_creator = PublicationFactory()
+        new_publication = publication_creator.create(parsed_json)
+        if new_publication:
+            new_publication.user = request.user
+            new_publication.save()
+        request.method = "GET"
+        return HomeView.as_view()(request)
 
 
 
