@@ -38,7 +38,7 @@ python manage.py shell
 ```
 ```python
 from publication.models import Country      # Country is a class in models.py
-new_country = Country(name="Czechia")          # to create a new country
+new_country = Country(name= "Czechia", other_forms= "Czech Republic;CZ")          # to create a new country
 new_country.save()                          # save the object in the the database
 ```
 If the server is running, the added country can be seen in http://127.0.0.1:8000/admin/publication/country/.
@@ -53,15 +53,13 @@ added_country.delete()
 Now we try to add all the countries from list of countries as a csv file `country_names.csv` from 
 https://github.com/lukes/ISO-3166-Countries-with-Regional-Codes/blob/master/all/all.csv.
 ```python
+from publication.models import Country
 with open("country_names.csv", "r") as country_names:
-    _ = country_names.readline()        # to eliminate the top row
     for line in country_names.readlines():
-        country_name = line.strip("\"").split(",",1)[0]
-        new_country = Country(name= country_name)
-        try:
-            new_country.save()
-        except:
-            print (f"A country with name of {country_name} already exists in the database.")
+    country_name, other_forms = line.strip("\"").strip().split(",",1)
+    new_country = Country (name=country_name, other_forms=other_forms)
+    new_country.save()
+
 ```
 
 Since the list of countries is not often changed (at least at the time of this publication), we can keep the country list to the populated one. Please be aware that some publication affiliation countries use different names such as "USA" instead of "United States". 
