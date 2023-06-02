@@ -1,0 +1,44 @@
+{% load static %}
+<nav class="navbar navbar-expand-md navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/"><img src="{% static 'img/icon/logo.png' %}" height="32" class="d-inline-block align-text-top">
+      Robin: A Tool for Automated Literature Review </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarScroll">
+      <ul class="navbar-nav navbar-nav-scroll">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Publications</a>
+        </li>
+      </ul>
+      {% if user.is_authenticated %}
+        <ul class="navbar-nav ms-auto navbar-nav-scroll dropstart">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle " href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Welcome {{user.username}}
+            </a>
+            <ul class="dropdown-menu " aria-labelledby="navbarScrollingDropdown">
+              <li><a class="dropdown-item" href="{% url 'account_change_password' %}">Change Password</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                  <form action="{% url 'account_logout' %}" method="Post">
+                      {% csrf_token %}
+                    <button type="submit" class="dropdown-item" >Sign out</button>
+                  </form>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        
+      {% else %}
+      <ul class="navbar-nav navbar-nav-scroll ms-auto">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="{% url 'account_login' %}">Login</a>
+        </li>
+      </ul>
+      {% endif %}
+
+    </div>
+  </div>
+</nav>
