@@ -17,8 +17,8 @@ class Country(models.Model):
     """
         Represents the country of authors of the publications.
     """
-    name = models.CharField(max_length=1024)
-    other_forms = models.TextField()
+    name = models.CharField(max_length=1024, unique=True)
+    other_forms = models.TextField(blank=True)
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -58,9 +58,9 @@ class Author(models.Model):
         return f"{self.last_name}"
 
 
-class Venue(models.Model):
+class Event(models.Model):
     """
-        Represents the venue/journal of the publications.
+        Represents the conference/journal of the publications.
     """
     name = models.CharField(max_length=2014)
     type = models.CharField(max_length=2014)
@@ -79,7 +79,7 @@ class Keywords(models.Model):
     """
         Represents the keywords of the publications.
     """
-    name = models.CharField(max_length=512)
+    name = models.CharField(max_length=512, unique=True)
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -92,9 +92,10 @@ class Publication(models.Model):
     title = models.CharField(max_length=1024)
     clean_title = models.CharField(max_length=1024)                     # no space and no symbols, all lower case
     year = models.PositiveSmallIntegerField()
+    date_added = models.DateField(auto_now=True)
 
     # A venue is prevented to be deleted if there are publications in it
-    venue = models.ForeignKey(Venue, on_delete=models.PROTECT)
+    event = models.ForeignKey(Event, on_delete=models.PROTECT)
     authors = models.ManyToManyField(Author)
     author_keywords = models.ManyToManyField(Keywords, related_name="author_keys")
     index_keywords = models.ManyToManyField(Keywords, related_name="index_keys")
