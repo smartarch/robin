@@ -15,8 +15,9 @@
             <div class="accordion-item">
                 <h2 class="accordion-header" id="flush-heading-{{publication.id}}">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-{{publication.id}}" aria-expanded="false" aria-controls="flush-collapse-{{publication.id}}">
-                    {{publication.title}}
+                        <span class="badge bg-secondary mx-1"> added by {{ publication.user.username }} </span>{{publication.title}}
                     </button>
+
                 </h2>
                 <div id="flush-collapse-{{publication.id}}" class="accordion-collapse collapse" aria-labelledby="flush-heading-{{publication.id}}" data-bs-parent="#accordionFlushExample">
             {%endif%}
