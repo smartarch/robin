@@ -25,7 +25,7 @@
 </script>
 <form id="submitForm" method="get" action="" class="p-3">
 <div class="row border border-success mb-2 border-opacity-50">
-    <div class="col-2">
+    <div class="col-4">
         <div class="row m-1 align-items-center">
             <h5> Year </h5>
             <div class="col-12">
@@ -36,30 +36,6 @@
                 <label for="yearTo" class="col-form-label">To:</label>
                 <input type="number" id="yearTo" class="form-control-sm" max=2023 min=2006 value={{year_to}}    >
             </div>
-        </div>
-    </div>
-
-    <div class="col-3">
-        <div class="row m-1 align-items-center">
-            <h5> Document Source </h5>
-            <div class="container" >
-                {% for source, item in distinct_sources.items %}
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="check_{{source}}"
-                    {% if source in sources%}
-                    checked
-                    {% endif %}
-                    tag={{sources}}
-                    />
-                    <label class="form-check-label" for="check_{{source}}" />
-                    {{source}} ({{item}})
-                    <script>
-                        source_checks.push("{{source}}");
-                    </script>
-                    </label>
-                </div>
-                {% endfor %}
-             </div>
         </div>
     </div>
 
@@ -92,12 +68,12 @@
         </div>
     </div>
 
-    <div class="col-2 position-relative">
+    <div class="col-3 position-relative">
         <input type="hidden" name="page" value="1" />
         <div class="position-absolute top-50 start-50 translate-middle">
             <div class="btn-group-vertical" role="group" aria-label="Basic outlined example">
                 <button type="submit" class="btn btn-success" id="submitButton">Apply Filter</button>
-                <button type="button" class="btn btn-warning" id="clearButton">Clear Filter</button>
+                <a href="/" class="btn btn-warning" id="clearButton">Clear Filter</a>
             </div>
 
         </div>
