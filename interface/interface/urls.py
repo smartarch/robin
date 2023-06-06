@@ -17,12 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from publication.views import  HomeView, PublicationView, AddSinglePublication
-
+from .views import PublicView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
-    path('', HomeView.as_view(), name="home"),
+    path('', PublicView.as_view(), name="public"),
     path('publications/<slug:pk>/', PublicationView.as_view(), name="publications"),
     path('publications/add', AddSinglePublication.as_view(), name="add_single_publication"),
 ]
