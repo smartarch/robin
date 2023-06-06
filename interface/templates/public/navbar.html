@@ -1,5 +1,5 @@
 {% load static %}
-<nav class="navbar navbar-expand-md navbar-light bg-light">
+<nav class="navbar navbar-expand-md navbar-dark bg-dark">
   <div class="container-fluid">
     <a class="navbar-brand" href="/"><img src="{% static 'img/icon/logo.png' %}" height="32" class="d-inline-block align-text-top">
       Robin: A Tool for Automated Literature Review </a>
@@ -7,11 +7,6 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarScroll">
-      <ul class="navbar-nav navbar-nav-scroll">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Publications</a>
-        </li>
-      </ul>
       {% if user.is_authenticated %}
         <ul class="navbar-nav ms-auto navbar-nav-scroll dropstart">
           <li class="nav-item dropdown">
@@ -30,13 +25,6 @@
             </ul>
           </li>
         </ul>
-        
-      {% else %}
-      <ul class="navbar-nav navbar-nav-scroll ms-auto">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="{% url 'account_login' %}">Login</a>
-        </li>
-      </ul>
       {% endif %}
 
     </div>
