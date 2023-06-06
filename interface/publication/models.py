@@ -113,7 +113,3 @@ class Publication(models.Model):
 
     def __str__(self) -> str:
         return f"{self.title}"
-
-    # def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-    #     self.clean_title = re.sub('[^a-zA-Z0-9]+', '', str(self.title)).lower()
-    #     super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)

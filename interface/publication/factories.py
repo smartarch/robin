@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models import Q
 from .models import Source, Country, Affiliation, Author, Event, Publication, Keywords
-import re
+
 
 class Factory:
 
@@ -37,23 +37,6 @@ class Factory:
 				instance.__dict__[key] = value
 
 		return instance
-
-
-		# instance.save()
-		# for key, value in data.items():
-		# 	# Many-to-many relationship
-		# 	if isinstance(value, list):
-		# 		instance.save()
-		# 		for item in value:
-		# 			instance.__dict__[key].add(item)
-		#
-		# 	# One-to-many relationship
-		# 	if isinstance(value, models.Model):
-		# 		instance.save()
-		# 		instance.__dict__[key] = value
-		#
-		# instance.save()
-		# return instance
 
 
 class PublicationFactory:
