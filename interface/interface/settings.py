@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'publication',
+    'review',
+    'query',
 
     # for other social accounts please refer to https://django-allauth.readthedocs.io
     'allauth',
