@@ -1,0 +1,20 @@
+{% extends "public/base.html" %}
+{% block content %}
+    {% include "public/navbar.html" %}
+    <div class="container" >
+        <div class="row m-2">
+            <div class="col-6">
+                <div class="row mh-50">
+                    {% include "public/slideshow.html" %}
+
+                </div>
+                <div class="row">
+                     {% include "public/sponsors.html" %}
+                </div>
+            </div>
+            <div class="col-6">
+                {% include "public/account.html" %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
