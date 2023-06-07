@@ -1,0 +1,81 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard %}
+    <div class="container p-4">
+        <div class="row">
+            <div class="col-4">
+                <div id="list-example" class="list-group">
+                  <a class="list-group-item list-group-item-action" href="#profile">
+                      Update Your Profile
+                  </a>
+                  <a class="list-group-item list-group-item-action" href="#password">
+                      Set/Change Password
+                  </a>
+                  <a class="list-group-item list-group-item-action" href="#emails">
+                      Manage Emails
+                  </a>
+                  <a class="list-group-item list-group-item-action text-warning" href="#deactivate">
+                      Deactivate Your account
+                  </a>
+                </div>
+                <div class="row">
+                    {% if form.errors %}
+                        {% for error, code in form.errors.items %}
+                            <div class="text-danger">
+                                {{ code }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-8">
+                <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-smooth-scroll="true" class="scrollspy-example" tabindex="0">
+                    <div class="row shadow-sm p-3 mb-3 bg-body rounded">
+                          <h4 id="profile">
+                              Update Your Profile
+                          </h4>
+                          <div class="container">
+                              {% include "account/forms/profile.html" %}
+                          </div>
+                    </div>
+                    <hr>
+                    <div class="row shadow-sm p-3 mb-3 bg-body rounded">
+                        <div class="container">
+                            {% if user.has_usable_password %}
+                                <h4 id="password">
+                                  Change the current Password
+                                </h4>
+                                <div class="container">
+                                    {% include "account/forms/change_password.html" %}
+                                </div>
+                            {% else %}
+                                <h4 id="password">
+                                  Set a new Password
+                                </h4>
+                                <div class="container">
+                                    {% include "account/forms/set_password.html" %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row shadow-sm p-3 mb-3 bg-body rounded">
+                          <h4 id="emails">
+                              Update Your Emails
+                          </h4>
+                          <div class="container">
+                              This section is not yet developed. Basically, we require an email server.
+                          </div>
+                    </div>
+                    <div class="row shadow-sm p-3 mb-3 bg-body rounded">
+                          <h4 id="deactivate">
+                              Deactivate Your account
+                          </h4>
+                          <div class="container">
+                              At this moment, account deletion/deactivation is not allowed.
+                          </div>
+                    </div>
+                </div>
+          </div>
+        </div>
+    </div>
+{% endblock %}
