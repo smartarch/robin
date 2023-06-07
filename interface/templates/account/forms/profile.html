@@ -1,0 +1,30 @@
+<form name="profile" action="{% url 'dashboard_account' %}" method="POST">
+    {% csrf_token %}
+    <!-- Text input -->
+
+    <div class="form-floating mb-2">
+        <input type="text" id="lastNameInput" name="username" class="form-control" placeholder="user"  value="{{ user.username }}" readonly />
+        <label for="lastNameInput">Username</label>
+    </div>
+
+    <div class="form-floating mb-2">
+        <input type="text" id="firstNameInput" name="first_name" class="form-control" placeholder="first name"  value="{{ user.first_name }}" />
+        <label for="firstNameInput">First Name</label>
+      </div>
+
+      <!-- Text input -->
+      <div class="form-floating mb-2">
+        <input type="text" id="lastNameInput" name="last_name" class="form-control" placeholder="last name"  value="{{ user.last_name }}" />
+        <label for="lastNameInput">Last Name</label>
+      </div>
+
+    <div class="form-floating mb-2">
+        <input type="email" id="lastNameInput" name="email" class="form-control" placeholder="email"  value="{{ user.email }}" />
+        <label for="lastNameInput">Email</label>
+    </div>
+
+  <!-- Submit button -->
+    <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary btn-block" name="profile_saved">Save</button>
+    </div>
+</form>
