@@ -1,28 +1,26 @@
-<div class="col">
-    <form name="LoginForm" action="{% url 'account_login' %}" method="POST">
-        {% csrf_token %}
-          <div class="form-floating mb-2">
-            <input type="text" id="userInput" name="login" class="form-control" placeholder="username" required />
-            <label for="userInput">Username</label>
-          </div>
+<form name="LoginForm" action="{% url 'account_login' %}" method="POST">
+    {% csrf_token %}
+      <div class="form-floating mb-2">
+        <input type="text" id="userInput" name="login" class="form-control" placeholder="username" required />
+        <label for="userInput">Username</label>
+      </div>
 
-          <!-- Password input -->
-          <div class="form-floating">
-            <input type="password" id="passwordInput" class="form-control" placeholder="password" name="password" required/>
-            <label for="passwordInput">Password</label>
-          </div>
+      <!-- Password input -->
+      <div class="form-floating">
+        <input type="password" id="passwordInput" class="form-control" placeholder="password" name="password" required/>
+        <label for="passwordInput">Password</label>
+      </div>
 
-          <div class="d-flex justify-content-center p-1">
-        <!-- Checkbox -->
-            <div class="form-check">
-              <input class="form-check-input" name="remember" type="checkbox" value="" id="keepMeLoggedIn" checked />
-              <label class="form-check-label" for="keepMeLoggedIn"> Remember me </label>
-            </div>
-          </div>
-
-      <!-- Submit button -->
-        <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+      <div class="d-flex justify-content-center p-1">
+    <!-- Checkbox -->
+        <div class="form-check">
+          <input class="form-check-input" name="remember" type="checkbox" value="" id="keepMeLoggedIn" checked />
+          <label class="form-check-label" for="keepMeLoggedIn"> Remember me </label>
         </div>
-    </form>
-</div>
+      </div>
+
+  <!-- Submit button -->
+    <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+    </div>
+</form>

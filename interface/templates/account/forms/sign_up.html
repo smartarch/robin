@@ -1,24 +1,22 @@
-<div class="col">
-    <form name="signupForm" action="{% url 'account_signup' %}" method="POST">
-        {% csrf_token %}
-          <div class="form-floating mb-2">
-            <input type="text" id="userInput" name="login" class="form-control" placeholder="username" required />
-            <label for="userInput">Username</label>
-          </div>
+<form name="LoginForm" action="{% url 'account_signup' %}" method="POST">
+    {% csrf_token %}
+      <div class="form-floating mb-2">
+        <input type="text" id="userInput" name="username" class="form-control" placeholder="username" required />
+        <label for="userInput">Username</label>
+      </div>
 
-          <!-- Password input -->
-          <div class="form-floating mb-2">
-            <input type="password" id="password1Input" class="form-control" placeholder="password" name="password1" required/>
-            <label for="password1Input">Password</label>
-          </div>
-          <div class="form-floating">
-            <input type="password" id="password2Input" class="form-control" placeholder="password" name="password2" required/>
-            <label for="password2Input">Repeat Password</label>
-          </div>
+      <!-- Password input -->
+      <div class="form-floating mb-2">
+        <input type="password" id="password1Input" class="form-control" placeholder="password" name="password1" required/>
+        <label for="password1Input">Password</label>
+      </div>
+      <div class="form-floating mb-2">
+        <input type="password" id="password2Input" class="form-control" placeholder="password" name="password2" required/>
+        <label for="password2Input">Repeat Password</label>
+      </div>
 
-      <!-- Submit button -->
-        <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-success btn-block">Sign up</button>
-        </div>
-    </form>
-</div>
+  <!-- Submit button -->
+    <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-success btn-block">Sign up</button>
+    </div>
+</form>
