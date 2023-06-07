@@ -6,10 +6,17 @@
             <div class="col-6">
                 <div class="row mh-50">
                     {% include "public/slideshow.html" %}
-
                 </div>
                 <div class="row">
+                    {% if form.errors %}
+                        {% for error, code in form.errors.items %}
+                            <div class="text-danger">
+                                {{ code }}
+                            </div>
+                        {% endfor %}
+                   {% else %}
                      {% include "public/sponsors.html" %}
+                    {% endif %}
                 </div>
             </div>
             <div class="col-6">

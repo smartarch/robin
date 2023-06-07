@@ -2,20 +2,11 @@
     <div class="row shadow-sm p-3 mb-3 bg-body rounded">
         {% include "account/forms/login.html" %}
     </div>
-    <div class="row shadow-sm p-3 mb-3 bg-body rounded">
+    <div class="row shadow-sm p-2 mb-2 bg-body rounded">
         {% include "account/forms/login_github.html" %}
     </div>
     <div class="row shadow-sm p-3 mb-3 bg-body rounded">
         <h5 class="text-center"> No Account? Sign Up </h5>
         {% include "account/forms/sign_up.html" %}
-    </div>
-    <div class="row " >
-        {% if form.errors %}
-            {% for error, code in form.errors.items %}
-                <div class="text-danger">
-                    {{ code }}
-                </div>
-            {% endfor %}
-        {% endif %}
     </div>
 </div>
