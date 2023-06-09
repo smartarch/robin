@@ -1,6 +1,13 @@
 {% extends "dashboard/base.html" %}
 {% block dashboard %}
-    <div class="container">
-            <h1> Welcome to the dashboard {{ user }} </h1>
-    </div>
+    {% if reviews %}
+        {% include "review/index.html" %}
+    {% else %}
+         <h4> Welcome </h4>
+            <p> Robin helps your team to organize structured and automated literature reviews.
+                It is connected to the current search engines such as SCOPUS and IEEE.
+                In order to use the tool, you must be part of a review or you can create your own</p>
+            <hr>
+        {% include "review/new_join_review.html" %}
+    {% endif %}
 {% endblock %}
