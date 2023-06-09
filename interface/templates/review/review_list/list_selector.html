@@ -1,0 +1,22 @@
+<h5> Current Publication List: {{ publication_list.name }} </h5>
+<div class="mb-2 row">
+    <label for="selectReview" class="col-sm-6 col-form-label">Change List</label>
+    <div class="col-sm-6">
+        <select onchange="location = this.value;" id="selectReview" class="form-select">
+             <option value="#" selected>{{ publication_list.name }}</option>
+            {% for avaialble_list in available_publication_lists %}
+                {% if avaialble_list != publication_list %}
+                     <option value="{% url 'dashboard_review_list' review_id=review.id list_id=avaialble_list.id %}">{{ avaialble_list.name }}</option>
+                {% endif %}
+            {% endfor %}
+
+        </select>
+    </div>
+</div>
+<div class="btn-group" role="group">
+        <button type="button" class="btn btn-success m-1" data-bs-toggle="modal" data-bs-target="#newListModal">
+            Create a new List
+        </button>
+
+    </div>
+    {% include "publication_list/modals/new.html" %}

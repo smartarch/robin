@@ -1,0 +1,22 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard %}
+    <div class="container p-1">
+        <div class="row">
+            <div class="col-4">
+                <div class="row shadow-sm p-2 mb-2 bg-body rounded">
+                    {% include "review/review_list/review_selector.html" %}
+                </div>
+
+                <div class="row shadow-sm p-2 mb-2 bg-body rounded">
+                    {% include "review/review_list/list_selector.html" %}
+                </div>
+
+                {% if review.leader == user %}
+                <div class="row shadow-sm p-2 mb-2 bg-body rounded">
+                     {% include "review/review_list/dangerous.html" %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

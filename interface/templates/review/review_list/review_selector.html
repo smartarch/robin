@@ -1,0 +1,26 @@
+<h5> Current Review: {{ review.name }} </h5>
+<div class="mb-2 row">
+    <label for="selectReview" class="col-sm-6 col-form-label">Change Review</label>
+    <div class="col-sm-6">
+        <select onchange="location = this.value;" id="selectReview" class="form-select">
+             <option value="#" selected>{{ review.name }}</option>
+            {% for authorized_review in authorized_reviews %}
+
+                {% if authorized_review != review %}
+                     <option value="{% url 'dashboard_review_all_lists' review_id=authorized_review.id %}">{{ authorized_review.name }}</option>
+                {% endif %}
+            {% endfor %}
+
+        </select>
+    </div>
+</div>
+<div class="btn-group" role="group">
+    <button type="button" class="btn btn-success m-1" data-bs-toggle="modal" data-bs-target="#newReviewModal">
+        Create New Review
+    </button>
+    <button type="button" class="btn btn-primary m-1" data-bs-toggle="modal" data-bs-target="#joinReviewModal">
+        Join a Review
+    </button>
+</div>
+{% include "review/modals/new.html" %}
+{% include "review/modals/join.html" %}
