@@ -1,0 +1,50 @@
+<form name="ReviewEditForm" action="{% url 'dashboard_review_new' %}" method="POST">
+    {% csrf_token %}
+    <p class="text-secondary"> Any name will do, for example "mapping-study", "test", "my work" </p>
+      <div class="form-floating mb-2">
+        <input type="text" id="nameInput" name="review_name" class="form-control" placeholder="review_name" required value="{{ review.name }}"/>
+        <label for="nameInput">Review Name*</label>
+      </div>
+
+    <div class="form-floating mb-2">
+        <textarea  id="descInput" name="review_description" class="form-control" placeholder="review_description">{{review.description}}
+        </textarea>
+        <label for="descInput">Description</label>
+      </div>
+
+    {%  if is_leader %}
+        <div class="container ">
+            <div class="row">
+                <p class="text-secondary"> As review leader, you can manage reviewers, publication lists and also can move the leadership to an already assigned user</p>
+                <div class="col-4 shadow-sm p-3 mb-3 bg-body rounded">
+                    <h5> Change the Leader </h5>
+                    <label for="leaderSelect">Current Leader</label>
+                    <select class="form-select" id="leaderSelect">
+                        {% for reviewer in review.reviewers.all %}
+                            {% if user.id == reviewer.id %}
+                                <option selected> {{reviewer.username}} </option>
+                            {% else %}
+                                <option value="{{reviewer.id}}"  > {{reviewer.username}} </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-4 p-1">
+
+                </div>
+                <div class="col-4 p-1">
+
+                </div>
+            </div>
+        </div>
+        <div class="form-floating mb-2">
+            <input  id="secretKey" class="form-control" placeholder="review_secret_key" readonly value="{{ review.secret_key }}" />
+            <label for="secretKey">Secret Key</label>
+        </div>
+    {% endif %}
+  <!-- Submit button -->
+    <div class="d-flex flex-row-reverse">
+        <button type="submit" class="btn btn-success btn-block m-3" name="review_edited">Save the review</button>
+        <a class="btn btn-primary btn-block m-3" href="{% url 'dashboard_review_list' review_id=review.id list_id=publication_list.id %}">Go to Publications</a>
+    </div>
+</form>

@@ -1,0 +1,7 @@
+<form name="reviewDeleteForm" action="{% url 'dashboard_review_new' %}" method="POST">
+    {% csrf_token %}
+        <p> Once this is done, it cannot be undone.</p>
+    <div class="d-flex">
+        <button type="submit" class="btn btn-danger btn-block" name="review_deleted" onclick="alert('Are you sure to delete this review?')">Delete the Review</button>
+    </div>
+</form>

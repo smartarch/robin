@@ -1,0 +1,12 @@
+<form name="ReviewJoinForm" action="{% url 'dashboard_review_join' %}" method="POST">
+    {% csrf_token %}
+      <div class="form-floating mb-2">
+        <input type="text" id="secretKeyInput" name="review_secret_key" class="form-control" placeholder="review_key" required />
+        <label for="secretKeyInput">Secret Key*</label>
+      </div>
+
+  <!-- Submit button -->
+    <div class="d-flex">
+        <button type="submit" class="btn btn-primary btn-block" name="review_joined">Join the Review</button>
+    </div>
+</form>
