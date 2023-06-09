@@ -1,7 +1,7 @@
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
-
+from review.models import Review
 
 class PublicView(TemplateView):
 	template_name = "public/index.html"
@@ -35,6 +35,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 		"""
 		context = super().get_context_data(**kwargs)
 		context['user'] = request.user
+		reviews = Review.objects.filter(reviewers__in=[request.user])
+		context['reviews'] = reviews
+
 		return self.render_to_response(context)
 
 
