@@ -5,7 +5,6 @@
         <select onchange="location = this.value;" id="selectReview" class="form-select">
              <option value="#" selected>{{ review.name }}</option>
             {% for authorized_review in authorized_reviews %}
-
                 {% if authorized_review != review %}
                      <option value="{% url 'dashboard_review_all_lists' review_id=authorized_review.id %}">{{ authorized_review.name }}</option>
                 {% endif %}

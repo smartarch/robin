@@ -6,8 +6,10 @@
         <h1 class="modal-title fs-5" id="staticBackdropLabel">Add Publication by DOI</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-        <form action="{% url 'add_single_publication' %}" method="post">
+        <form action="{% url 'add_publication_by_doi' %}" method="POST">
             {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'dashboard_review_list' review_id=review.id list_id=publication_list.id %}" />
+            <input type="hidden" name="list_id" value="{{publication_list.id}}">
             <div class="modal-body">
                 <label for="doi" class="form-label"></label>
                 <input name="doi" id="doi" placeholder="DOI" class="form-control"  required  autocomplete="off"/>

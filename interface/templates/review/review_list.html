@@ -1,20 +1,57 @@
 {% extends "dashboard/base.html" %}
 {% block dashboard %}
-    <div class="container p-1">
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-4">
-                <div class="row shadow-sm p-2 mb-2 bg-body rounded">
-                    {% include "review/review_list/review_selector.html" %}
+            <div class="col-1">
+                <div class="position-fixed top-50 start-10 translate-middle">
+                    <button class="btn btn-primary btn-lg m-5" style="transform: rotate(90deg);" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions">
+                    Navigate Reviews</button>
                 </div>
+                <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
+                  <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel">Navigate to other Reviews/Lists</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                  </div>
+                  <div class="offcanvas-body">
+                      <div class="row shadow-sm p-3 mb-3 bg-body rounded">
+                        {% include "review/review_list/review_selector.html" %}
+                    </div>
 
-                <div class="row shadow-sm p-2 mb-2 bg-body rounded">
-                    {% include "review/review_list/list_selector.html" %}
+                    <div class="row shadow-sm p-3 mb-3 bg-body rounded">
+                        {% include "review/review_list/list_selector.html" %}
+                    </div>
+                    {% if review.leader == user %}
+                        <div class="row shadow-sm p-3 mb-3 bg-body rounded">
+                             {% include "review/review_list/dangerous.html" %}
+                        </div>
+                    {% endif %}
+                  </div>
                 </div>
+            </div>
 
-                {% if review.leader == user %}
-                <div class="row shadow-sm p-2 mb-2 bg-body rounded">
-                     {% include "review/review_list/dangerous.html" %}
-                </div>
+            <div class="col-11">
+            <div class="row shadow-sm p-3 mb-3 bg-body rounded">
+                    <h4 > Add publications with
+                </h4>
+                    <div class="d-flex justify-content-center">
+                        <div class="btn-group" role="group" aria-label="Add Publication example">
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#doiModal">
+                                Entering DOI</button>
+                            {% include "publication/modals/doi.html" %}
+                            <button type="button" class="btn btn-outline-primary">Uploading .bib</button>
+                            <button type="button" class="btn btn-outline-primary">Copy from other Lists/Reviews</button>
+                            <button type="button" class="btn btn-outline-primary">Searching the Web</button>
+                        </div>
+                    </div>
+            </div>
+                <hr>
+                {% if publication_list.publications.all %}
+                    <h5> Found {{publication_list.publications.all|length}} Publications in {{ publication_list.name }}</h5>
+                        {% include "review/toolbar.html" %}
+                        <hr>
+                        {% include "publication/publications.html" %}
+                    {% else %}
+                    <h5> The list is empty. </h5>
                 {% endif %}
             </div>
         </div>

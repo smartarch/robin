@@ -1,8 +1,8 @@
 <h5> Current Publication List: {{ publication_list.name }} </h5>
 <div class="mb-2 row">
-    <label for="selectReview" class="col-sm-6 col-form-label">Change List</label>
+    <label for="selectList" class="col-sm-6 col-form-label">Change List</label>
     <div class="col-sm-6">
-        <select onchange="location = this.value;" id="selectReview" class="form-select">
+        <select onchange="location = this.value;" id="selectList" class="form-select">
              <option value="#" selected>{{ publication_list.name }}</option>
             {% for avaialble_list in available_publication_lists %}
                 {% if avaialble_list != publication_list %}

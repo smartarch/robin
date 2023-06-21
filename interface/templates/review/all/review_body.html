@@ -1,51 +1,45 @@
-<form action="{% url 'dashboard_all_reviews' %}" method="POST">
-{% csrf_token %}
-    <div class="container">
-        <h4> {{ review.name }}
-            {% if user_preference.default_review == review %}
-            <b> default </b>
-            {% else %}
-                <div class="d-grid gap-2 col-3   mx-auto">
-                    <button type="submit" class="btn btn-info" name="made_default_review_{{review.id}}" >
-                        Make Default
-                    </button>
-                </div>
 
-            {% endif %}
-        </h4>
-        <p> {{ review.descriptin }}</p>
-        <hr>
-        <h5> The review currently has the following members:</h5>
-        <ul class="list-group">
-            {% for reviewer in review.reviewers.all %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ reviewer.first_name }}  {{ reviewer.last_name }} ({{ reviewer.username }})
-            {% if reviewer == review.leader %}
+<div class="container">
+<h4> <a href="{% url 'dashboard_review' review_id=review.id %}" > {{ review.name }} </a>
+    </h4>
+    <p> {{ review.description }}</p>
+    <hr>
+    <h5> The review currently has the following members:</h5>
+    <ul class="list-group">
+        {% for reviewer in review.reviewers.all %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ reviewer.first_name }}  {{ reviewer.last_name }} ({{ reviewer.username }})
+        {% if reviewer == review.leader %}
             <span class="badge bg-dark rounded-pill">leader</span>
-            {% endif %}
-            </li>
-            {% endfor %}
-        </ul>
-        <hr>
-        <h5> The review currently has the following lists:</h5>
-        {% for review_id, publication_lists in publication_lists.items %}
-            {% if review_id == review.id %}
-                <ul class="list-group">
-                    {% for publication_list in publication_lists %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {{ publication_list.name }}
-                            {% if user_preference.default_list ==  publication_list%}
-                            <span class="badge bg-dark rounded-pill">default</span>
-                            {% else %}
-                                <button type="submit" class="btn btn-primary" name="made_default_review_{{review_id}}_list_{{publication_list}}" >
+        {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    <hr>
+    <h5> The review currently has the following lists:</h5>
+    {% for review_id, publication_lists in publication_lists.items %}
+        {% if review_id == review.id %}
+            <ul class="list-group">
+                {% for publication_list in publication_lists %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a  data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Click to view the list"
+                            href="{% url 'dashboard_review_list' review_id=review_id list_id=publication_list.id %}" >
+                            {{ publication_list.name }} </a>
+                        {% if user_preference.default_list ==  publication_list%}
+                        <span class="badge bg-dark rounded-pill">default</span>
+                        {% else %}
+                            <form action="{% url 'dashboard_all_reviews' %}" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="review_id" value="{{ review_id }}" />
+                                <input type="hidden" name="list_id" value="{{ publication_list.id }}" />
+                                <button type="submit" class="btn btn-primary" name="made_default" >
                                         Make Default
                                 </button>
-                            {% endif %}
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endfor %}
-
-    </div>
-</form>
+                            </form>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endfor %}
+</div>
