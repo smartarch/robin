@@ -14,12 +14,24 @@
     </div>
 </div>
 <div class="btn-group" role="group">
-    <button type="button" class="btn btn-success m-1" data-bs-toggle="modal" data-bs-target="#newReviewModal">
-        Create New Review
+    <button class="btn btn-primary m-1" type="button" data-bs-toggle="collapse" data-bs-target="#newReviewCollapse" aria-expanded="false" aria-controls="newReviewCollapse">
+        Add new Review
     </button>
-    <button type="button" class="btn btn-primary m-1" data-bs-toggle="modal" data-bs-target="#joinReviewModal">
+    <button class="btn btn-primary m-1" type="button" data-bs-toggle="collapse" data-bs-target="#joinReviewCollapse" aria-expanded="false" aria-controls="joinReviewCollapse">
         Join a Review
     </button>
+
 </div>
-{% include "review/modals/new.html" %}
-{% include "review/modals/join.html" %}
+<div class="container">
+    <div class="collapse" id="newReviewCollapse">
+        <div class="card card-body">
+            {% include "review/forms/new.html" %}
+        </div>
+    </div>
+    <div class="collapse" id="joinReviewCollapse">
+        <div class="card card-body">
+            {% include "review/forms/join.html" %}
+        </div>
+    </div>
+</div>
+

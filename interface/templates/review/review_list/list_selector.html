@@ -13,10 +13,13 @@
         </select>
     </div>
 </div>
-<div class="btn-group" role="group">
-        <button type="button" class="btn btn-success m-1" data-bs-toggle="modal" data-bs-target="#newListModal">
-            Create a new List
-        </button>
-
-    </div>
-    {% include "publication_list/modals/new.html" %}
+<div class="container">
+  <button class="btn btn-primary m-1" type="button" data-bs-toggle="collapse" data-bs-target="#createNewListCollapse" aria-expanded="false" aria-controls="createNewListCollapse">
+    Add a new List
+  </button>
+<div class="collapse" id="createNewListCollapse">
+  <div class="card card-body">
+    {% include "publication_list/forms/new.html" %}
+  </div>
+</div>
+</div>
