@@ -99,7 +99,7 @@ class ReviewListView(LoginRequiredMixin, TemplateView):
 		user_preference = get_object_or_404(UserPreferences, user=request.user)
 
 		# for paging (for example 25 publications per page)
-		paginator = Paginator(publication_list.publications.all(), user_preference.default_page_size)
+		paginator = Paginator(publication_list.publications.all().order_by('-id'), user_preference.default_page_size)
 		page_number = request.GET.get("page")
 		page_obj = paginator.get_page(page_number)
 
@@ -119,7 +119,6 @@ class ReviewListView(LoginRequiredMixin, TemplateView):
 
 class ReviewAllListView(LoginRequiredMixin, View):
 
-	# TODO finish this class
 	def get(self, request: Any, *args: Any, **kwargs: Any) -> Any:
 		"""
 		Shows the  [current review] -> [first -> list] -> Publications
@@ -132,6 +131,7 @@ class ReviewAllListView(LoginRequiredMixin, View):
 			return redirect("dashboard", permanent=True)
 
 		authorized_reviews = Review.objects.filter(reviewers__in=[request.user])
+		print (authorized_reviews)
 		review = get_object_or_404(authorized_reviews, id=kwargs["review_id"])
 		available_publication_lists = PublicationList.objects.filter(review=review)
 		if available_publication_lists:

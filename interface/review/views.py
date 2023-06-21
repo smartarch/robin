@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from .models import Review, PublicationList, UserPreferences
 # external packages
 import cryptocode
-
+from django.db.models import Q
 
 class CreateUserPreference:
 
@@ -46,6 +46,7 @@ class AllReviewsView(LoginRequiredMixin, TemplateView ):
 		context = super().get_context_data(**kwargs)
 
 		reviews = Review.objects.filter(reviewers__in=[request.user])
+
 		if len(reviews) == 0:
 			return redirect("dashboard", permanent=True)
 
