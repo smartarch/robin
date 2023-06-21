@@ -101,7 +101,6 @@ class Publication(models.Model):
     index_keywords = models.ManyToManyField(Keywords, related_name="index_keys")
 
     # optional links
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     source = models.ForeignKey(Source, on_delete=models.SET_NULL, null=True)
 
     # optional fields
