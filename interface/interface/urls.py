@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from publication.views import HomeView, PublicationView, AddSinglePublication
+from publication.views import AddPublicationByDOI
 from review.views import NewReviewView, JoinReviewView, AllReviewsView, ReviewView, ReviewDeleteView
 from review.list_views import NewListView, CopyListView, ReviewAllListView, ReviewListView, ListDeleteView
 from .views import PublicView, DashboardView, DashboardAccountView
@@ -29,21 +29,21 @@ urlpatterns = [
     path('dashboard/account', DashboardAccountView.as_view(), name="dashboard_account"),
 
     # review views
-    path('dashboard/review/all', AllReviewsView.as_view(), name="dashboard_all_reviews"),
-    path('dashboard/review/new', NewReviewView.as_view(), name="dashboard_review_new"),
-    path('dashboard/review/join', JoinReviewView.as_view(), name="dashboard_review_join"),
-    path('dashboard/review/<int:review_id>/', ReviewView.as_view(), name="dashboard_review"),
-    path('dashboard/review/<int:review_id>/delete', ReviewDeleteView.as_view(), name="dashboard_review_delete"),
+    path('dashboard/all_reviews', AllReviewsView.as_view(), name="dashboard_all_reviews"),
+    path('dashboard/new_review', NewReviewView.as_view(), name="dashboard_review_new"),
+    path('dashboard/join_review', JoinReviewView.as_view(), name="dashboard_review_join"),
+    path('dashboard/view_review/<int:review_id>/', ReviewView.as_view(), name="dashboard_review"),
+    path('dashboard/delete_review/<int:review_id>/', ReviewDeleteView.as_view(), name="dashboard_review_delete"),
 
-    path('dashboard/review/<int:review_id>/list/all', ReviewAllListView.as_view(), name="dashboard_review_all_lists"),
-    path('dashboard/review/<int:review_id>/list/new', NewListView.as_view(), name="dashboard_review_new_list"),
-    path('dashboard/review/<int:review_id>/list/copy/<int:list_id>/', CopyListView.as_view(),
+    path('dashboard/review/<int:review_id>/all_lists', ReviewAllListView.as_view(), name="dashboard_review_all_lists"),
+    path('dashboard/review/<int:review_id>/new_list', NewListView.as_view(), name="dashboard_review_new_list"),
+    path('dashboard/review/<int:review_id>/copy_to_list/<int:list_id>/', CopyListView.as_view(),
          name="dashboard_review_copy_list"),
-    path('dashboard/review/<int:review_id>/list/<int:list_id>/', ReviewListView.as_view(),
+    path('dashboard/review/<int:review_id>/view_list/<int:list_id>/', ReviewListView.as_view(),
          name="dashboard_review_list"),
-    path('dashboard/review/<int:review_id>/list/<int:list_id>/delete', ListDeleteView.as_view(),
+    path('dashboard/review/<int:review_id>/delete_list/<int:list_id>/', ListDeleteView.as_view(),
          name="dashboard_review_list_delete"),
 
-    path('publications/<slug:pk>/', PublicationView.as_view(), name="publications"),
-    path('publications/add', AddSinglePublication.as_view(), name="add_single_publication"),
+
+    path('publications/add/doi', AddPublicationByDOI.as_view(), name="add_publication_by_doi"),
 ]
