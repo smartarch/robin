@@ -1,0 +1,17 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+
+   <div class="container p-1">
+        <h4> Edit the Mapping </h4>
+        {% include "mapping/forms/edit.html" %}
+        <hr>
+        {% if user == mapping.leader %}
+            <h4 class="text-danger">
+                Delete The Mapping
+            </h4>
+            {% include "mapping/forms/delete.html" %}
+        {% endif %}
+   </div>
+
+
+{% endblock %}

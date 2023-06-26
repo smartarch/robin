@@ -1,0 +1,18 @@
+<form name="MappingForm" action="{% url 'dashboard_mapping_new' %}" method="POST">
+    {% csrf_token %}
+    <p class="text-secondary"> Any name will do, for example "mapping-study", "test", "my work" </p>
+      <div class="form-floating mb-2">
+        <input type="text" id="nameInput" name="mapping_name" class="form-control" placeholder="mapping_name" required />
+        <label for="nameInput">Mapping Name*</label>
+      </div>
+
+    <div class="form-floating mb-2">
+        <textarea  id="descInput" name="mapping_description" class="form-control" placeholder="mapping_description"></textarea>
+        <label for="descInput">Description</label>
+      </div>
+
+  <!-- Submit button -->
+    <div class="d-flex">
+        <button type="submit" class="btn btn-success btn-block" name="mapping_created">Create New Mapping</button>
+    </div>
+</form>

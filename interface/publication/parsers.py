@@ -32,9 +32,12 @@ import  re
 
 def parse_doi(data: json) -> dict:
 
-    def parse_affiliation(author_affiliation: str) -> dict:
+    def parse_affiliation(author_affiliation) -> dict:
         if author_affiliation:
-            code = author_affiliation.split(',')
+            if isinstance(author_affiliation, dict):
+                code = author_affiliation['name']
+            else:
+                code = author_affiliation.split(',')
             if len(code) > 1:
                 return {
                     "institute": ", ".join(code[:-1]),
@@ -75,8 +78,8 @@ def parse_doi(data: json) -> dict:
 
         },
         "authors": [{
-            "first_name": author["given"],
-            "last_name": author["family"],
+            "first_name": author["given"] if "given" in author else try_get(msg=author, key="name"),
+            "last_name": author["family"] if "family" in author else try_get(msg=author, key="name"),
             "affiliation": parse_affiliation(try_access(try_get(msg=author, key="affiliation"),index=0)),
             }
             for author in data["author"]

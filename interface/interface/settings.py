@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'publication',
-    'review',
+    'mapping',
     'query',
 
     # for other social accounts please refer to https://django-allauth.readthedocs.io

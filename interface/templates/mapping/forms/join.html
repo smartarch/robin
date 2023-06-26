@@ -1,0 +1,12 @@
+<form name="MappingJoinForm" action="{% url 'dashboard_mapping_join' %}" method="POST">
+    {% csrf_token %}
+      <div class="form-floating mb-2">
+        <input type="text" id="secretKeyInput" name="mapping_secret_key" class="form-control" placeholder="mapping_key" required />
+        <label for="secretKeyInput">Secret Key*</label>
+      </div>
+
+  <!-- Submit button -->
+    <div class="d-flex">
+        <button type="submit" class="btn btn-primary btn-block" name="mapping_joined">Join the Mapping</button>
+    </div>
+</form>

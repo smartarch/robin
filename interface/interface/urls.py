@@ -17,8 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from publication.views import AddPublicationByDOI
-from review.views import NewReviewView, JoinReviewView, AllReviewsView, ReviewView, ReviewDeleteView
-from review.list_views import NewListView, CopyListView, ReviewAllListView, ReviewListView, ListDeleteView
+from mapping.views import NewMappingView, JoinMappingView, AllMappingsView, MappingView, MappingDeleteView
+from mapping.list_views import NewListView, CopyListView, MappingAllListView, MappingListView, ListDeleteView
 from .views import PublicView, DashboardView, DashboardAccountView
 
 urlpatterns = [
@@ -28,21 +28,22 @@ urlpatterns = [
     path('dashboard', DashboardView.as_view(), name="dashboard"),
     path('dashboard/account', DashboardAccountView.as_view(), name="dashboard_account"),
 
-    # review views
-    path('dashboard/all_reviews', AllReviewsView.as_view(), name="dashboard_all_reviews"),
-    path('dashboard/new_review', NewReviewView.as_view(), name="dashboard_review_new"),
-    path('dashboard/join_review', JoinReviewView.as_view(), name="dashboard_review_join"),
-    path('dashboard/view_review/<int:review_id>/', ReviewView.as_view(), name="dashboard_review"),
-    path('dashboard/delete_review/<int:review_id>/', ReviewDeleteView.as_view(), name="dashboard_review_delete"),
+    # mapping views
+    path('dashboard/all_mappings', AllMappingsView.as_view(), name="dashboard_all_mappings"),
+    path('dashboard/new_mapping', NewMappingView.as_view(), name="dashboard_mapping_new"),
+    path('dashboard/join_mapping', JoinMappingView.as_view(), name="dashboard_mapping_join"),
+    path('dashboard/view_mapping/<int:mapping_id>/', MappingView.as_view(), name="dashboard_mapping"),
+    path('dashboard/delete_mapping/<int:mapping_id>/', MappingDeleteView.as_view(), name="dashboard_mapping_delete"),
 
-    path('dashboard/review/<int:review_id>/all_lists', ReviewAllListView.as_view(), name="dashboard_review_all_lists"),
-    path('dashboard/review/<int:review_id>/new_list', NewListView.as_view(), name="dashboard_review_new_list"),
-    path('dashboard/review/<int:review_id>/copy_to_list/<int:list_id>/', CopyListView.as_view(),
-         name="dashboard_review_copy_list"),
-    path('dashboard/review/<int:review_id>/view_list/<int:list_id>/', ReviewListView.as_view(),
-         name="dashboard_review_list"),
-    path('dashboard/review/<int:review_id>/delete_list/<int:list_id>/', ListDeleteView.as_view(),
-         name="dashboard_review_list_delete"),
+    path('dashboard/mapping/<int:mapping_id>/all_lists', MappingAllListView.as_view(),
+         name="dashboard_mapping_all_lists"),
+    path('dashboard/mapping/<int:mapping_id>/new_list', NewListView.as_view(), name="dashboard_mapping_new_list"),
+    path('dashboard/mapping/<int:mapping_id>/copy_to_list/<int:list_id>/', CopyListView.as_view(),
+         name="dashboard_mapping_copy_list"),
+    path('dashboard/mapping/<int:mapping_id>/view_list/<int:list_id>/', MappingListView.as_view(),
+         name="dashboard_mapping_list"),
+    path('dashboard/mapping/<int:mapping_id>/delete_list/<int:list_id>/', ListDeleteView.as_view(),
+         name="dashboard_mapping_list_delete"),
 
 
     path('publications/add/doi', AddPublicationByDOI.as_view(), name="add_publication_by_doi"),

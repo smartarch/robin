@@ -1,4 +1,4 @@
-<form name="PublicationListForm" action="{% url 'dashboard_review_new_list' review_id=review.id %}" method="POST">
+<form name="PublicationListForm" action="{% url 'dashboard_mapping_new_list' mapping_id=mapping.id %}" method="POST">
     {% csrf_token %}
     <p class="text-secondary"> Any name will do, for example "important", "shared", "conference" </p>
       <div class="form-floating mb-2">

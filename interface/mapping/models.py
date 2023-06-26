@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from publication.models import Publication
 from django.db.models import Q
 
-class Review(models.Model):
+
+class Mapping(models.Model):
 	name = models.CharField(max_length=128)
 	description = models.TextField(blank=True)
 	leader = models.ForeignKey(User, on_delete=models.PROTECT)
@@ -18,9 +19,9 @@ class Review(models.Model):
 
 class PublicationList(models.Model):
 	name = models.CharField(max_length=128)
-	review = models.ForeignKey(Review, on_delete=models.CASCADE)
+	mapping = models.ForeignKey(Mapping, on_delete=models.CASCADE)
 	publications = models.ManyToManyField(Publication)
-	followers = models.ManyToManyField("PublicationList", null=True)
+	followers = models.ManyToManyField("PublicationList")
 	criteria = models.TextField(blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
@@ -49,11 +50,11 @@ class PublicationList(models.Model):
 
 
 	def __str__(self):
-		return f"{self.name} for {self.review}"
+		return f"{self.name} for {self.mapping}"
 
 
 class UserPreferences(models.Model):
 	user = models.ForeignKey(User, on_delete=models.CASCADE)
-	default_review = models.ForeignKey(Review, on_delete=models.SET_NULL, null=True)
+	default_mapping = models.ForeignKey(Mapping, on_delete=models.SET_NULL, null=True)
 	default_list = models.ForeignKey(PublicationList, on_delete=models.SET_NULL, null=True)
 	default_page_size = models.PositiveSmallIntegerField(default=25)

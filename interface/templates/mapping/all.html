@@ -1,0 +1,53 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard %}
+    <div class="container p-1">
+        <div class="row">
+            <h4> You are participating in the following mappings </h4>
+            <div class="row">
+                <div class="accordion" id="allMappingAccordion">
+                {% for mapping in mappings %}
+                    {% if forloop.first %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{mapping.id}}">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{mapping.id}}" aria-expanded="true" aria-controls="collapse{{mapping.id}}">
+                                {{ mapping.name }} by {{ mapping.leader.first_name }}
+                                {% if user_preference.default_mapping == mapping %}
+                                    <span class="badge bg-dark mx-4">default mapping</span>
+                                {% endif %}
+                            </button>
+                        </h2>
+                        <div id="collapse{{mapping.id}}" class="accordion-collapse collapse show" aria-labelledby="heading{{mapping.id}}">
+                            <div class="accordion-body">
+                                {% include "mapping/all/mapping_body.html" %}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{mapping.id}}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{mapping.id}}" aria-expanded="false" aria-controls="collapse{{mapping.id}}">
+                                {{ mapping.name }} by {{ mapping.leader.first_name }}
+                                {% if user_preference.default_mapping == mapping %}
+                                    <span class="badge bg-dark mx-4">default mapping</span>
+                                {% endif %}
+                            </button>
+                        </h2>
+                        <div id="collapse{{mapping.id}}" class="accordion-collapse collapse" aria-labelledby="heading{{mapping.id}}">
+                            <div class="accordion-body">
+                                {% include "mapping/all/mapping_body.html" %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="row p-2">
+            <h4> Create new Mappings or Join </h4>
+            {% include "mapping/new_join_mapping.html" %}
+        </div>
+
+    </div>
+{% endblock %}

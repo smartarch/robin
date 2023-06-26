@@ -1,0 +1,7 @@
+<form name="mappingDeleteForm" action="{% url 'dashboard_mapping_new' %}" method="POST">
+    {% csrf_token %}
+        <p> Once this is done, it cannot be undone.</p>
+    <div class="d-flex">
+        <button type="submit" class="btn btn-danger btn-block" name="mapping_deleted" onclick="alert('Are you sure to delete this mapping?')">Delete the Mapping</button>
+    </div>
+</form>

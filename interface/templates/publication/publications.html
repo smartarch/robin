@@ -3,13 +3,6 @@
         {% for publication in page_obj %}
             <div class="row p-1">
                 <div class="row">
-                    <div class="col-1">
-                        <input type="checkbox" name="publication_select" value="{{publication.id}}"
-                        {% if publication.id in selected %}
-                            checked
-                        {% endif %} id="publicationSelect{{publication.id}}"    >
-                        <label for="publicationSelect{{publication.id}}"></label>
-                    </div>
                     <div class="col-11">
                         <h5>  {{ publication.title }} </h5>
                     </div>

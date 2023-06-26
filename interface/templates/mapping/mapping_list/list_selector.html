@@ -6,7 +6,7 @@
              <option value="#" selected>{{ publication_list.name }}</option>
             {% for avaialble_list in available_publication_lists %}
                 {% if avaialble_list != publication_list %}
-                     <option value="{% url 'dashboard_review_list' review_id=review.id list_id=avaialble_list.id %}">{{ avaialble_list.name }}</option>
+                     <option value="{% url 'dashboard_mapping_list' mapping_id=mapping.id list_id=avaialble_list.id %}">{{ avaialble_list.name }}</option>
                 {% endif %}
             {% endfor %}
 
