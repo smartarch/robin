@@ -1,37 +1,37 @@
-<h5> Current Mapping: {{ mapping.name }} </h5>
-<div class="mb-2 row">
-    <label for="selectMapping" class="col-sm-6 col-form-label">Change Mapping</label>
-    <div class="col-sm-6">
-        <select onchange="location = this.value;" id="selectMapping" class="form-select">
-             <option value="#" selected>{{ mapping.name }}</option>
-            {% for authorized_mapping in authorized_mappings %}
-                {% if authorized_mapping != mapping %}
-                     <option value="{% url 'dashboard_mapping_all_lists' mapping_id=authorized_mapping.id %}">{{ authorized_mapping.name }}</option>
-                {% endif %}
-            {% endfor %}
-
-        </select>
-    </div>
-</div>
-<div class="btn-group" role="group">
-    <button class="btn btn-primary m-1" type="button" data-bs-toggle="collapse" data-bs-target="#newMappingCollapse" aria-expanded="false" aria-controls="newMappingCollapse">
-        Add new Mapping
-    </button>
-    <button class="btn btn-primary m-1" type="button" data-bs-toggle="collapse" data-bs-target="#joinMappingCollapse" aria-expanded="false" aria-controls="joinMappingCollapse">
-        Join a Mapping
-    </button>
-
-</div>
 <div class="container">
-    <div class="collapse" id="newMappingCollapse">
-        <div class="card card-body">
-            {% include "mapping/forms/new.html" %}
+    <div class="mb-2 row">
+        <label for="selectMapping" class="col-sm-6 col-form-label">Change Mapping</label>
+        <div class="col-sm-6">
+            <select onchange="location = this.value;" id="selectMapping" class="form-select">
+                 <option value="#" selected>{{ mapping.name }}</option>
+                {% for authorized_mapping in authorized_mappings %}
+                    {% if authorized_mapping != mapping %}
+                         <option value="{% url 'dashboard_mapping_all_lists' mapping_id=authorized_mapping.id %}">{{ authorized_mapping.name }}</option>
+                    {% endif %}
+                {% endfor %}
+
+            </select>
         </div>
     </div>
-    <div class="collapse" id="joinMappingCollapse">
-        <div class="card card-body">
-            {% include "mapping/forms/join.html" %}
+    <div class="btn-group" role="group">
+        <button class="btn btn-primary m-1" type="button" data-bs-toggle="collapse" data-bs-target="#newMappingCollapse" aria-expanded="false" aria-controls="newMappingCollapse">
+            Add new Mapping
+        </button>
+        <button class="btn btn-primary m-1" type="button" data-bs-toggle="collapse" data-bs-target="#joinMappingCollapse" aria-expanded="false" aria-controls="joinMappingCollapse">
+            Join a Mapping
+        </button>
+
+    </div>
+    <div class="container">
+        <div class="collapse" id="newMappingCollapse">
+            <div class="card card-body">
+                {% include "mapping/forms/new.html" %}
+            </div>
+        </div>
+        <div class="collapse" id="joinMappingCollapse">
+            <div class="card card-body">
+                {% include "mapping/forms/join.html" %}
+            </div>
         </div>
     </div>
 </div>
-

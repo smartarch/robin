@@ -1,25 +1,26 @@
-<h5> Current Publication List: {{ publication_list.name }} </h5>
-<div class="mb-2 row">
-    <label for="selectList" class="col-sm-6 col-form-label">Change List</label>
-    <div class="col-sm-6">
-        <select onchange="location = this.value;" id="selectList" class="form-select">
-             <option value="#" selected>{{ publication_list.name }}</option>
-            {% for avaialble_list in available_publication_lists %}
-                {% if avaialble_list != publication_list %}
-                     <option value="{% url 'dashboard_mapping_list' mapping_id=mapping.id list_id=avaialble_list.id %}">{{ avaialble_list.name }}</option>
-                {% endif %}
-            {% endfor %}
-
-        </select>
-    </div>
-</div>
 <div class="container">
-  <button class="btn btn-primary m-1" type="button" data-bs-toggle="collapse" data-bs-target="#createNewListCollapse" aria-expanded="false" aria-controls="createNewListCollapse">
-    Add a new List
-  </button>
-<div class="collapse" id="createNewListCollapse">
-  <div class="card card-body">
-    {% include "publication_list/forms/new.html" %}
-  </div>
-</div>
+    <div class="mb-2 row">
+        <label for="selectList" class="col-sm-6 col-form-label">Change List</label>
+        <div class="col-sm-6">
+            <select onchange="location = this.value;" id="selectList" class="form-select">
+                 <option value="#" selected>{{ publication_list.name }}</option>
+                {% for avaialble_list in available_publication_lists %}
+                    {% if avaialble_list != publication_list %}
+                         <option value="{% url 'dashboard_mapping_list' mapping_id=mapping.id list_id=avaialble_list.id %}">{{ avaialble_list.name }}</option>
+                    {% endif %}
+                {% endfor %}
+
+            </select>
+        </div>
+    </div>
+    <div class="container">
+      <button class="btn btn-primary m-1" type="button" data-bs-toggle="collapse" data-bs-target="#createNewListCollapse" aria-expanded="false" aria-controls="createNewListCollapse">
+        Add a new List
+      </button>
+    <div class="collapse" id="createNewListCollapse">
+      <div class="card card-body">
+        {% include "publication_list/forms/new.html" %}
+      </div>
+    </div>
+    </div>
 </div>
