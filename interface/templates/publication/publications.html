@@ -3,14 +3,16 @@
         {% for publication in page_obj %}
             <div class="row p-1">
                 <div class="row">
-                    <div class="col-11">
-                        <h5>  {{ publication.title }} </h5>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" name="selected_publications"
+                             id="selectPublication{{ publication.id }}" value="{{ publication.id }}">
+                      <h5> <label class="form-check-label" for="selectPublication{{ publication.id }}">
+                          {{ publication.title }} <b> ({{ publication.year }}) </b>  </label></h5>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col">
-                       <i>{{ publication.event.name }} <b> ({{ publication.year }}) </b> </i>
-                        <br>
+                       <i>{{ publication.event.name }}  </i>
                         <a data-bs-toggle="collapse" href="#collapse{{publication.id}}" role="button" aria-expanded="false" aria-controls="collapse{{publication.id}}">
                         See more
                       </a>
@@ -28,18 +30,53 @@
                       <div class="row p-1">
                           <div class="col">
                               {% for keyword in publication.author_keywoards.all %}
-                                    <span class="badge bg-secondary" > keyword.name </span>
+                                    <span class="badge bg-secondary" > {{ keyword.name }}</span>
                               {% endfor %}
                               {% for keyword in publication.index_keywords.all %}
-                                    <span class="badge bg-secondary" > keyword.name </span>
+                                    <span class="badge bg-secondary" > {{  keyword.name }} </span>
                               {% endfor %}
                           </div>
                       </div>
                       <div class="row p-1">
-                          <span>  DOI:{{ publication.doi }}  </span>
-                          <span> URL:<a href="{{ publication.url }}" target="_blank" > {{ publication.url }}</a> </span>
-                          <span>{{ publication.event.type}},{{ publication.event.accronym}},{{ publication.event.publisehr }},{{ publication.event.volume}},{{ publication.event.number}} </span>
-                          <span > <b> Abstract</b> {{ publication.abstract }}</span>
+                          <div class="col">
+                              {% if  publication.doi %}
+                                 <span class="badge text-bg-light">
+                                     <a href="https://doi.org/{{publication.doi}}" target="_blank">  {{ publication.doi }}
+                                     </a>
+                                 </span>
+                                {% endif %}
+                                {% if  publication.url %}
+                                 <span class="badge text-bg-light">
+                                     <a href="{{publication.url}}" target="_blank">  {{ publication.url }}
+                                     </a>
+                                 </span>
+                                {% endif %}
+                          </div>
+                          <br>
+                          <div class="col p-1">
+                              {% if publication.event.type %}
+                                <span class="badge text-bg-light">{{ publication.event.type }}  </span>
+                              {% endif %}
+
+                              {% if publication.event.acronym %}
+                                <span class="badge text-bg-light">{{ publication.event.acronym }} </span>
+                              {% endif %}
+
+                              {% if publication.event.volume %}
+                                <span class="badge text-bg-light">volume {{ publication.event.volume }}  </span>
+                              {% endif %}
+
+                              {% if publication.event.publisher %}
+                                <span class="badge text-bg-light">published by {{ publication.event.publisher}}  </span>
+                              {% endif %}
+
+                              {% if publication.event.number %}
+                                <span class="badge text-bg-light">number/issue  {{ publication.event.number }}  </span>
+                              {% endif %}
+                          </div>
+                         {% if publication.abstract %}
+                            <span > <b> Abstract</b> {{ publication.abstract }}</span>
+                         {% endif %}
                       </div>
                       </div>
                     </div>
