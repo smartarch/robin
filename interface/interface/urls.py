@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from publication.views import AddPublicationByDOI
+from publication.views import AddPublicationByDOI, AddPublicationsByBibText, AddPublicationsByWeb
 from mapping.views import NewMappingView, JoinMappingView, AllMappingsView, MappingView, MappingDeleteView
 from mapping.list_views import NewListView, CopyListView, MappingAllListView, MappingListView, ListDeleteView
 from .views import PublicView, DashboardView, DashboardAccountView
@@ -45,6 +45,7 @@ urlpatterns = [
     path('dashboard/mapping/<int:mapping_id>/delete_list/<int:list_id>/', ListDeleteView.as_view(),
          name="dashboard_mapping_list_delete"),
 
-
+    path ('publications/add/bib_text', AddPublicationsByBibText.as_view(), name="add_publication_by_bib_text"),
+    path('publications/add/web/<int:list_id>/', AddPublicationsByWeb.as_view(), name="add_publication_by_web"),
     path('publications/add/doi', AddPublicationByDOI.as_view(), name="add_publication_by_doi"),
 ]
