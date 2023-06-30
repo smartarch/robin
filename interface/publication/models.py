@@ -62,11 +62,11 @@ class Event(models.Model):
     """
         Represents the conference/journal of the publications.
     """
-    name = models.CharField(max_length=2014)
-    type = models.CharField(max_length=2014)
+    name = models.CharField(max_length=2048)
+    type = models.CharField(max_length=2048)
 
     # optional fields
-    publisher = models.CharField(max_length=2014, blank=True)
+    publisher = models.CharField(max_length=2048, blank=True)
     acronym = models.CharField(max_length=10, blank=True)
     volume = models.SlugField(blank=True)
     number = models.SlugField(blank=True)
