@@ -38,12 +38,19 @@
                 <i class="text-secondary">{{ mapping.description }}</i>
                     <div class="d-flex justify-content-center">
                         <div class="btn-group" role="group" aria-label="Add Publication example">
+
                             <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#doiModal">
                                 Entering DOI</button>
                             {% include "publication/modals/doi.html" %}
-                            <button type="button" class="btn btn-outline-primary">Uploading .bib</button>
+
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bibTextModal">
+                                Uploading .bib
+
+                            </button>
+                            {% include "publication/modals/bib_text.html" %}
+
                             <button type="button" class="btn btn-outline-primary">Copy from other Lists/Mappings</button>
-                            <button type="button" class="btn btn-outline-primary">Searching the Web</button>
+                            <a class="btn btn-outline-primary" href="{% url 'add_publication_by_web' list_id=publication_list.id %}">Searching the Web</a>
                         </div>
                     </div>
             </div>
