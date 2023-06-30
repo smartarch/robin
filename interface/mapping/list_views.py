@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 
 # local packages
 from .models import Mapping, PublicationList, UserPreferences
-
+from .criteria import create_advanced_query
 
 def copy_publication_lists(request: Any, authorized_mappings: Any, publication_list: Any) -> None:
 	if request.POST.__contains__("copy_from"):
@@ -98,7 +98,28 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 		user_preference = get_object_or_404(UserPreferences, user=request.user)
 
 		# for paging (for example 25 publications per page)
-		paginator = Paginator(publication_list.publications.all().order_by('-id'), user_preference.default_page_size)
+		publications = publication_list.publications.all()
+
+		if request.GET.__contains__("filter_text"):
+			filter_text = request.GET.get('filter_text')
+			try:
+				filter_object = create_advanced_query(filter_text)
+				publications = publications.filter(publications)
+				filter_errors = ""
+			except BufferError:
+				filter_errors = f"The filter text: {filter_text} has syntax errors. Please double check."
+		else:
+			filter_text = ""
+			filter_errors = ""
+
+		if request.GET.__contains__("order_text"):
+			order_text = request.GET.get("order_text")
+		else:
+			order_text = "-id"
+
+		publications = publications.order_by(order_text)
+
+		paginator = Paginator(publications, user_preference.default_page_size)
 		page_number = request.GET.get("page")
 		page_obj = paginator.get_page(page_number)
 
@@ -107,6 +128,9 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 			"user": request.user,
 			"authorized_mappings": authorized_mapping,
 			"mapping": mapping,
+			"filter_text": filter_text,
+			"filter_errors": filter_errors,
+			"order_text": order_text,
 			"available_publication_lists": available_publication_lists,
 			"publication_list": publication_list,
 			"user_preference": user_preference,
@@ -114,7 +138,6 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 		}
 
 		return self.render_to_response(context)
-
 
 class MappingAllListView(LoginRequiredMixin, View):
 
