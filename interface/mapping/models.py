@@ -1,8 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from publication.models import Publication
-from django.db.models import Q
 
+from .criteria import create_advanced_query
 
 class Mapping(models.Model):
 	name = models.CharField(max_length=128)
@@ -21,33 +21,26 @@ class PublicationList(models.Model):
 	name = models.CharField(max_length=128)
 	mapping = models.ForeignKey(Mapping, on_delete=models.CASCADE)
 	publications = models.ManyToManyField(Publication)
-	followers = models.ManyToManyField("PublicationList")
+	subscriptions = models.ManyToManyField("PublicationList")
 	criteria = models.TextField(blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 
-	# async def signal(self, publications : list[Publication]) -> None:
-	# 	def parse_query (query: str) -> Q:
-	# 		return Q()
-	#
-	# 	def parse_query(query, tokens):
-	# 		if isinstance(tokens, list):
-	# 			for operator in ('OR', 'AND'):
-	# 				try:
-	# 					index = tokens.index(operator)
-	# 					break
-	# 				except ValueError:
-	# 					pass
-	# 			else:
-	# 				return q(query, tokens[0])
-	# 			return (Q.__or__ if operator == 'OR' else Q.__and__)(
-	# 				parse_query(query, tokens[:index]), q(query, tokens[index + 1:]))
-	# 		else:
-	# 			d = query[int(tokens)]
-	# 			return Q(**{'__'.join((d['field'], d['operator'])): d['value']})
-
-
-
+	def collect(self):
+		if self.criteria:
+			try:
+				query = create_advanced_query(self.criteria)
+				collected = None
+				for subscription in self.subscriptions.all():
+					if collected:
+						collected = collected | subscription.publications.filter(query)
+					else:
+						collected = subscription.publications.filter(query)
+				return collected
+			except BufferError:
+				return None
+		else:
+			return self.publications
 
 	def __str__(self):
 		return f"{self.name} for {self.mapping}"
