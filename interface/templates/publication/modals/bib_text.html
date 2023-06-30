@@ -1,0 +1,30 @@
+<!-- Modal -->
+<div class="modal fade" id="bibTextModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="bibTextModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="bibTextModalLabel">Add Publication by DOI</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+        <form action="{% url 'add_publication_by_bib_text' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'dashboard_mapping_list' mapping_id=mapping.id list_id=publication_list.id %}" />
+            <input type="hidden" name="list_id" value="{{publication_list.id}}">
+            <div class="modal-body">
+                <label for="bibText" class="form-label">Copy bib text file content here: </label>
+                <textarea name="bib_text" id="bibText" placeholder="bib text" class="form-control" autocomplete="off"></textarea>
+            </div>
+            <div class="modal-footer">
+                <div class="input-group mb-3">
+                  <input type="file" class="form-control" id="bibTextBrowser" accept=".bib" name="bib_text_files"
+                  multiple="multiple" autocomplete="off">
+                  <label class="input-group-text" for="bibTextBrowser">or Upload BibText File(s)</label>
+                </div>
+
+              <button type="submit" class="btn btn-primary">Add Publication</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </form>
+    </div>
+  </div>
+</div>
