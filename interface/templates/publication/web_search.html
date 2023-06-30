@@ -1,0 +1,127 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard %}
+    <div class="container p-2">
+        <div class="row">
+            {% if platforms %}
+                <form action="{% url 'add_publication_by_web' list_id=desired_list %}" method="POST">
+                {% csrf_token %}
+                <h4> Search the query using currently activated platforms</h4>
+                <div class="input-group mb-3 g-3">
+                  <button class="btn btn-success" type="submit" id="queryInput" name="search_on_web">Search</button>
+                  <input type="text" class="form-control" aria-label="Query Input" name="query"
+                         {% if query %}
+                         value="{{ query }}"
+                         {% endif %}
+                         aria-describedby="queryInput" required>
+
+                </div>
+
+                <p class="text-secondary"> <i> an example of query in scopus: ALL("machine learning in self-adaptive systems"), same example in IEEE: "machine learning in self-adaptive systems" </i></p>
+                {% for platform in platforms %}
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="source" id="platofrm{{ platform.id }}"
+                             value="{{ platform.id }}"
+                             {% if platform.id == source %}
+                                checked
+                             {% endif %} required>
+                      <label class="form-check-label" for="platofrm{{ platform.id }}">
+                          {{ platform.source}}
+                          {% if platform.help_link %}
+                            <i class="text-secondary"> Please check
+                                <a href="{{ platform.help_link }}" target="_blank">
+                                {{ platform.help_link }}
+                                </a>
+                            </i>
+                          {% endif %}
+                      </label>
+                    </div>
+                {% endfor %}
+                <hr>
+                <div>
+                    <label for="maxResultsInput"> Max Results (count)</label>
+                    <input type="number" min="1" max="200" name="max_results" id="maxResultsInput" required
+                           {% if max_results %}
+                                value="{{ max_results }}"
+                           {% else %}
+                               value="25"
+                           {% endif %}>
+                </div>
+                </form>
+            {% else %}
+                <h4 class="text-danger"> No activated Query Platform is found. Please ask the system admin to add query
+                platforms by using the admin panel at
+                    <a href="/admin/query/queryplatform/add/" target="_blank"><i> new query platform</i></a></h4>
+            {% endif %}
+        </div>
+    </div>
+    <hr>
+    {% if publications %}
+        <div class="container">
+
+            <form class="row" action="{% url 'add_publication_by_web' list_id=desired_list %}" method="POST">
+                {% csrf_token %}
+                  <div class="col-auto">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="selectAllPublications"  id="selectAllPublications">
+                          <h5><label class="form-check-label" for="selectAllPublications"> Select All </label></h5>
+                      </div>
+                  </div>
+                <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+                    <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasRightLabel">Add Publications to Lists</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        {% include "mapping/forms/select.html" %}
+                        <button type="submit" class="btn btn-success" name="add_from_web" id="addPublicationsToLists" disabled> Add Selected Papers to the Lists </button>
+                    </div>
+                </div>
+                {%  include "publication/publications.html" %}
+                <input type="hidden" value="{{ publications }}" name="publications">
+                <input type="hidden" value="{{ query }}" name="queried_text">
+                <input type="hidden" value="{{ source }}" name="source_used">
+            </form>
+            <div class="position-fixed bottom-0 end-0">
+                 <button class="btn btn-warning" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" id="showPublicationLists" disabled>
+            Select Publication Lists</button>
+            </div>
+
+        <script>
+
+            function checkAtLeastOneList(){
+                let all_lists = document.getElementsByName("selected_lists");
+                for (let i =0 ; i < all_lists.length; i++) {
+                    if (all_lists[i].checked) {
+                        document.getElementById("addPublicationsToLists").removeAttribute("disabled");
+                        return;
+                    }
+                }
+                document.getElementById("addPublicationsToLists").setAttribute('disabled', '');
+            }
+            function checkAtLeastOnePaper(){
+                let all_checkboxes = document.getElementsByName("selected_publications");
+                for (let i =0 ; i < all_checkboxes.length; i++) {
+                    if (all_checkboxes[i].checked) {
+                        document.getElementById("showPublicationLists").removeAttribute("disabled");
+                        checkAtLeastOneList()
+                        return
+                    }
+                }
+                document.getElementById("showPublicationLists").setAttribute('disabled', '');
+            }
+
+            document.getElementById("selectAllPublications").addEventListener("change",function (){
+                document.getElementsByName("selected_publications").forEach(function(element){
+                  element.checked = document.getElementById("selectAllPublications").checked;
+                  checkAtLeastOnePaper();
+                })});
+
+            document.getElementsByName("selected_publications").forEach( function (element){
+                element.addEventListener("change",checkAtLeastOnePaper)});
+
+            document.getElementsByName("selected_lists").forEach( function (element){
+                element.addEventListener("change",checkAtLeastOneList)});
+        </script>
+      </div>
+    {% endif %}
+{% endblock %}
