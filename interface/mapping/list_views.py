@@ -63,7 +63,7 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 		available_publication_lists = PublicationList.objects.filter(mapping=mapping)
 		current_publication_list = get_object_or_404(available_publication_lists, id=kwargs["list_id"])
 
-		copy_instance = user_preference = page_size = None
+		copy_instance = user_preference = page_size = subscriber_instance_end = follower_instance =  None
 		move_instead_of_copy = False
 
 		copy_matcher = [re.findall("copy_to_(\d+)",key) for key in request.POST.keys()]
@@ -85,6 +85,17 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 				page_size = int(page[0])
 				user_preference = get_object_or_404(UserPreferences, user=request.user)
 
+		subscription_ender = [re.findall("end_subscription_(\d+)", key) for key in request.POST.keys()]
+		for subscriber in subscription_ender:
+			if subscriber:
+				subscriber_id = int(subscriber[0])
+				subscriber_instance_end = get_object_or_404(PublicationList, id=subscriber_id)
+
+		followers = [re.findall("follow_(\d+)", key) for key in request.POST.keys()]
+		for follower in followers:
+			if follower:
+				follower_id = int(follower[0])
+				follower_instance = get_object_or_404(PublicationList, id=follower_id)
 
 		selected_publications = [int(x) for x in request.POST.getlist("selected_publications")]
 		if selected_publications:
@@ -120,6 +131,30 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 			if page_size is not None:
 				user_preference.default_page_size = page_size
 				user_preference.save()
+
+		if subscriber_instance_end:
+			current_publication_list.subscriptions.remove(subscriber_instance_end)
+			current_publication_list.save()
+			subscriber_instance_end.followers.remove(current_publication_list)
+			subscriber_instance_end.save()
+
+		if follower_instance:
+			if follower_instance not in current_publication_list.followers.all():
+				current_publication_list.subscriptions.add(follower_instance)
+				current_publication_list.save()
+				follower_instance.followers.add(current_publication_list)
+				follower_instance.save()
+
+		if request.POST.__contains__("create_follower"):
+			new_follower_name = request.POST.get("follower_name")
+			filtered_text = request.POST.get("filtered_text")
+			new_follower = PublicationList(name=new_follower_name, mapping=mapping, criteria=filtered_text)
+			new_follower.save()
+			new_follower.subscriptions.add(current_publication_list)
+			new_follower.save()
+			current_publication_list.followers.add(new_follower)
+			current_publication_list.save()
+			return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=new_follower.id, permanent=True)
 
 		return self.get(request, *args, **kwargs)
 
