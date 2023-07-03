@@ -24,7 +24,7 @@ class KeywordsAdmin(admin.ModelAdmin):
 @admin.register(Publication)
 class PublicationAdmin(admin.ModelAdmin):
     list_display = ("doi", "title")
-    search_fields = ("doi", "title", "abstract", "keywords", "author")
+    search_fields = ("doi", "title", "abstract",)
 
 @admin.register(Source)
 class SourceAdmin(admin.ModelAdmin):
