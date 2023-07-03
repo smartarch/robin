@@ -62,7 +62,7 @@ class PublicationFactory:
 	def resolve_authors(self, authors: list) -> [Author]:
 		created_authors = []
 		for author in authors:
-			new_author = self.author.create({"first_name":author["first_name"], "last_name": author["last_name"]})
+			new_author = self.author.create({"first_name": author["first_name"], "last_name": author["last_name"]})
 			if "affiliation" in author:
 				if "institute" in author["affiliation"]:
 					new_affiliation = self.affiliation.create({"institute": author["affiliation"]["institute"]})
