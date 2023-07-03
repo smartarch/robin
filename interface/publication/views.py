@@ -98,7 +98,6 @@ class AddPublicationsByBibText(LoginRequiredMixin, View):
         return redirect(next_url, permanent=True)
 
 
-
 class AddPublicationsByWeb(LoginRequiredMixin, TemplateView):
     template_name = "publication/web_search.html"
 
@@ -185,7 +184,6 @@ class AddPublicationsByWeb(LoginRequiredMixin, TemplateView):
         query_platform = get_object_or_404(QueryPlatform.objects.all(), id=source)
         query = None
 
-        print (publications[40600: ])
         json_reader = json.loads(publications.replace('\'','\"').replace(': None', ': \"None\"'))
         publication_creator = PublicationFactory()
         already_added = []
