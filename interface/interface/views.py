@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from mapping.models import Mapping, UserPreferences
 from allauth.socialaccount.models import SocialApp
 
@@ -94,3 +94,15 @@ class DashboardAccountView(LoginRequiredMixin, TemplateView):
 		context = super().get_context_data(**kwargs)
 		context['user'] = request.user
 		return self.render_to_response(context)
+
+
+def not_found(request, exception):
+	return render(request, 'errors/404.html', context={"exception": exception})
+
+def server_error(request):
+	return render(request, 'errors/500.html')
+def bad_request(request, exception):
+	return render(request, 'errors/500.html')
+
+def access_denied(request, exception):
+	return render(request, 'errors/500.html')
