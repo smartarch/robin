@@ -1,7 +1,6 @@
 from django.db.models import Q
 from typing import Any
 
-
 def create_parser(text: str) -> list:
 	"""
 	This method converts the text of filter to a list of conditions, testing examples:
@@ -30,7 +29,7 @@ def create_parser(text: str) -> list:
 
 			item = stack.pop()
 			if '=' in item:
-				item = {''.join(item[:item.index('=')]): ''.join(item[item.index('=')+1:]).replace("=","")}
+				item = {''.join(item[:item.index('=')]): ''.join(item[item.index('=')+1:]).replace("=", "")}
 			stack[-1].append(item)
 			index = index + 1
 
@@ -63,7 +62,9 @@ def create_advanced_query(text: str) -> Q:
 	:return: Q model
 	"""
 
-	def creat_Q_item(tokens: list) -> Q:
+	def creat_q_item(tokens: list) -> Q:
+		if len(tokens) == 0:
+			return Q()
 
 		def manage_stack(_stack: list, _token: Any) -> list:
 			if len(_stack) > 0:
@@ -91,7 +92,7 @@ def create_advanced_query(text: str) -> Q:
 				stack = manage_stack(stack, token)
 
 			elif isinstance(token, list):
-				stack = manage_stack(stack, creat_Q_item(token))
+				stack = manage_stack(stack, creat_q_item(token))
 
 			else:
 				stack.append(token)
@@ -102,4 +103,4 @@ def create_advanced_query(text: str) -> Q:
 		return stack[0]
 
 	tokens = create_parser(text)
-	return creat_Q_item(tokens)
+	return creat_q_item(tokens)
