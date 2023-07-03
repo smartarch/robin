@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from publication.views import AddPublicationByDOI, AddPublicationsByBibText, AddPublicationsByWeb
 from mapping.views import NewMappingView, JoinMappingView, AllMappingsView, MappingView, MappingDeleteView
-from mapping.list_views import NewListView, CopyListView, MappingAllListView, MappingListView, ListDeleteView
+from mapping.list_views import NewListView, MappingAllListView, MappingListView, ListDeleteView
 from .views import PublicView, DashboardView, DashboardAccountView
 
 urlpatterns = [
@@ -38,8 +38,7 @@ urlpatterns = [
     path('dashboard/mapping/<int:mapping_id>/all_lists', MappingAllListView.as_view(),
          name="dashboard_mapping_all_lists"),
     path('dashboard/mapping/<int:mapping_id>/new_list', NewListView.as_view(), name="dashboard_mapping_new_list"),
-    path('dashboard/mapping/<int:mapping_id>/copy_to_list/<int:list_id>/', CopyListView.as_view(),
-         name="dashboard_mapping_copy_list"),
+
     path('dashboard/mapping/<int:mapping_id>/view_list/<int:list_id>/', MappingListView.as_view(),
          name="dashboard_mapping_list"),
     path('dashboard/mapping/<int:mapping_id>/delete_list/<int:list_id>/', ListDeleteView.as_view(),
