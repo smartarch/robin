@@ -129,7 +129,7 @@ class ParseBibText (Parser):
 
     def parse_keywords(self, keyword_list: str) -> list | None:
         if keyword_list:
-            return [key.strip() for key in keyword_list.split(',')]
+            return [{"name": key.strip()} for key in keyword_list.split(',')]
 
         return []
 
@@ -220,7 +220,7 @@ class IEEEXploreParser(Parser):
 
     def parse_keywords(self, keyword_list: dict) -> list | None:
         if keyword_list and "terms" in keyword_list:
-            return [{"name": keyword.replace('\'','')} for keyword in keyword_list["terms"]]
+            return [{"name": keyword.replace('\'', '')} for keyword in keyword_list["terms"]]
         return []
 
     def parse(self, text: Any) -> Any:
