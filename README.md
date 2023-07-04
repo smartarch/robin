@@ -198,7 +198,7 @@ For example enter the following BiBText twice:
 }
 ```
 
-A whole file can also be uploaded. Try  uploading `[paper.bib](readme_contents/paper.bib)`. Since, we have already uploaded some of the publications, the duplicated ones will not be re-added. The publications that are listed, are the ones that have been reviewed conducting this research. So we can move them to new list. Create a new list, using `Navigate Mapping`, and name it SEFM2023
+A whole file can also be uploaded. Try  uploading [`paper.bib`](readme_contents/paper.bib). Since, we have already uploaded some of the publications, the duplicated ones will not be re-added. The publications that are listed, are the ones that have been reviewed conducting this research. So we can move them to new list. Create a new list, using `Navigate Mapping`, and name it SEFM2023
 
 <img src="readme_contents/add_list_page.png" alt="add new list" />
 
