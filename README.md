@@ -196,9 +196,9 @@ It is possible to import publications using the connected paper search APIs such
 {
 key: <IEEE API KEY>,
 source: IEEEXplore,
-"params": """
+params: """
 {
-    "params":{
+    "params:{
         "querytext": %query%,
         "open_access": "True",
         "format": "json",
@@ -207,7 +207,7 @@ source: IEEEXplore,
         }
 }
 """,
-"rl: http://ieeexploreapi.ieee.org/api/v1/search/articles,
+url: http://ieeexploreapi.ieee.org/api/v1/search/articles,
 help_link: https://developer.ieee.org/docs/read/IEEE_Xplore_Metadata_API_Overview,
 }
 ```
@@ -218,7 +218,7 @@ help_link: https://developer.ieee.org/docs/read/IEEE_Xplore_Metadata_API_Overvie
 {
     key: <SCOPUS KEY>,
     source: Scopus,
-    "params": """
+    params: """
 { 
     "headers":{
         "Accept": "application/json",
@@ -231,7 +231,7 @@ help_link: https://developer.ieee.org/docs/read/IEEE_Xplore_Metadata_API_Overvie
     }
 }""",
     url: https://api.elsevier.com/content/search/scopus,
-    help_link": "https://dev.elsevier.com/sc_search_tips.html,
+    help_link: "https://dev.elsevier.com/sc_search_tips.html,
 }
 ```
 
