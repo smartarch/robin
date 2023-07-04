@@ -19,9 +19,9 @@ class Mapping(models.Model):
 class PublicationList(models.Model):
 	name = models.CharField(max_length=128)
 	mapping = models.ForeignKey(Mapping, on_delete=models.CASCADE)
-	publications = models.ManyToManyField(Publication)
-	followers = models.ManyToManyField("PublicationList", related_name="my_followers")
-	subscriptions = models.ManyToManyField("PublicationList", related_name="my_subscriptions")
+	publications = models.ManyToManyField(Publication, blank=True)
+	followers = models.ManyToManyField("PublicationList", related_name="my_followers", blank=True)
+	subscriptions = models.ManyToManyField("PublicationList", related_name="my_subscriptions" , blank=True)
 	criteria = models.TextField(blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
