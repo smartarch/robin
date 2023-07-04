@@ -8,7 +8,7 @@ This document describes how to install **Robin**, and it provides use-cases wher
 
 ## Installation
 
-**Robin** is written in `python-django` which is a Python package, and can be installed in the local library. To skip the installation section and use Docker, refer to the [Docker](/container). This section covers the following sections:
+**Robin** is written in `python-django` which is a Python package, and can be installed in the local library. To skip the installation section and use Docker, refer to the Docker image on: https://zenodo.org/record/8113307. This section covers the following sections:
 
 * Virtual Environment Setup and Package Installation
 * Migrating (Creating) The Database
