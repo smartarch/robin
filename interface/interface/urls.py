@@ -25,28 +25,28 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path('', PublicView.as_view(), name="public"),
-    path('dashboard', DashboardView.as_view(), name="dashboard"),
+    path('dashboard/', DashboardView.as_view(), name="dashboard"),
     path('dashboard/account', DashboardAccountView.as_view(), name="dashboard_account"),
 
     # mapping views
-    path('dashboard/all_mappings', AllMappingsView.as_view(), name="dashboard_all_mappings"),
-    path('dashboard/new_mapping', NewMappingView.as_view(), name="dashboard_mapping_new"),
-    path('dashboard/join_mapping', JoinMappingView.as_view(), name="dashboard_mapping_join"),
+    path('dashboard/all_mappings/', AllMappingsView.as_view(), name="dashboard_all_mappings"),
+    path('dashboard/new_mapping/', NewMappingView.as_view(), name="dashboard_mapping_new"),
+    path('dashboard/join_mapping/', JoinMappingView.as_view(), name="dashboard_mapping_join"),
     path('dashboard/view_mapping/<int:mapping_id>/', MappingView.as_view(), name="dashboard_mapping"),
     path('dashboard/delete_mapping/<int:mapping_id>/', MappingDeleteView.as_view(), name="dashboard_mapping_delete"),
 
-    path('dashboard/mapping/<int:mapping_id>/all_lists', MappingAllListView.as_view(),
+    path('dashboard/mapping/<int:mapping_id>/all_lists/', MappingAllListView.as_view(),
          name="dashboard_mapping_all_lists"),
-    path('dashboard/mapping/<int:mapping_id>/new_list', NewListView.as_view(), name="dashboard_mapping_new_list"),
+    path('dashboard/mapping/<int:mapping_id>/new_list/', NewListView.as_view(), name="dashboard_mapping_new_list"),
 
     path('dashboard/mapping/<int:mapping_id>/view_list/<int:list_id>/', MappingListView.as_view(),
          name="dashboard_mapping_list"),
     path('dashboard/mapping/<int:mapping_id>/delete_list/<int:list_id>/', ListDeleteView.as_view(),
          name="dashboard_mapping_list_delete"),
 
-    path ('publications/add/bib_text', AddPublicationsByBibText.as_view(), name="add_publication_by_bib_text"),
+    path ('publications/add/bib_text/', AddPublicationsByBibText.as_view(), name="add_publication_by_bib_text"),
     path('publications/add/web/<int:list_id>/', AddPublicationsByWeb.as_view(), name="add_publication_by_web"),
-    path('publications/add/doi', AddPublicationByDOI.as_view(), name="add_publication_by_doi"),
+    path('publications/add/doi/', AddPublicationByDOI.as_view(), name="add_publication_by_doi"),
 ]
 
 handler404 = "interface.views.not_found"
