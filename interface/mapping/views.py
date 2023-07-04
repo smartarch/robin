@@ -44,11 +44,9 @@ class AllMappingsView(LoginRequiredMixin, TemplateView ):
 
 	def get(self, request: Any, *args: Any, **kwargs: Any) -> Any:
 		context = super().get_context_data(**kwargs)
-
 		mappings = Mapping.objects.filter(reviewers__in=[request.user])
-
 		if len(mappings) == 0:
-			return redirect("dashboard", permanent=True)
+			return redirect("dashboard")
 
 		user_preference = UserPreferences.objects.filter(user=request.user)
 		if not user_preference:
@@ -77,7 +75,7 @@ class AllMappingsView(LoginRequiredMixin, TemplateView ):
 				user_preference.default_list = get_object_or_404(PublicationList, id=request.POST.get("list_id"))
 			user_preference.save()
 
-		return redirect("dashboard_all_mappings", permanent=True)
+		return redirect("dashboard_all_mappings")
 
 class NewMappingView(LoginRequiredMixin, TemplateView, CreateUserPreference):
 	template_name = "dashboard/index.html"
@@ -112,9 +110,9 @@ class NewMappingView(LoginRequiredMixin, TemplateView, CreateUserPreference):
 			new_publication_list.save()
 
 			_ = self.find_user_preference(request.user, new_mapping, new_publication_list)
-			return redirect("dashboard_mapping", mapping_id=new_mapping.id, permanent=True)
+			return redirect("dashboard_mapping", mapping_id=new_mapping.id)
 
-		return redirect("dashboard_all_mappings", permanent=True)
+		return redirect("dashboard_all_mappings")
 
 
 class JoinMappingView(LoginRequiredMixin, TemplateView, CreateUserPreference):
@@ -151,9 +149,9 @@ class JoinMappingView(LoginRequiredMixin, TemplateView, CreateUserPreference):
 				user_preference.default_list = publication_list
 				user_preference.save()
 
-			return redirect("dashboard_mapping", mapping_id=mapping.id, permanent=True)
+			return redirect("dashboard_mapping", mapping_id=mapping.id)
 
-		return redirect("dashboard", permanent=True)
+		return redirect("dashboard")
 
 
 class MappingView(LoginRequiredMixin, TemplateView):
@@ -169,7 +167,7 @@ class MappingView(LoginRequiredMixin, TemplateView):
 		"""
 		context = super().get_context_data(**kwargs)
 		if 'mapping_id' not in kwargs:
-			return redirect("dashboard_all_mappings", permanent=True)
+			return redirect("dashboard_all_mappings")
 
 		authorized_mappings = Mapping.objects.filter(reviewers__in=[request.user])
 		mapping = get_object_or_404(authorized_mappings, id=kwargs['mapping_id'])
@@ -185,7 +183,6 @@ class MappingView(LoginRequiredMixin, TemplateView):
 		return self.render_to_response(context)
 
 	def post(self, request: Any, *args: Any, **kwargs: Any) -> Any:
-		# TODO finish this method
 		"""
 
 		:param request:
@@ -195,7 +192,7 @@ class MappingView(LoginRequiredMixin, TemplateView):
 		"""
 		context = super().get_context_data(**kwargs)
 		if 'mapping' not in kwargs:
-			return redirect("dashboard_all_mappings", permanent=True)
+			return redirect("dashboard_all_mappings")
 
 		mapping = get_object_or_404(Mapping, id=kwargs['id'])
 		context['mapping'] = mapping
@@ -207,7 +204,7 @@ class MappingDeleteView(LoginRequiredMixin, DeleteView):
 
 	def post(self, request, *args, **kwargs) -> {}:
 		if 'mapping_id' not in kwargs:
-			return redirect("dashboard_all_mappings", permanent=True)
+			return redirect("dashboard_all_mappings")
 
 		fully_authorized_mappings = Mapping.objects.filter(leader=request.user)
 		mapping = get_object_or_404(fully_authorized_mappings, id=kwargs["mapping_id"])
@@ -215,4 +212,4 @@ class MappingDeleteView(LoginRequiredMixin, DeleteView):
 		if request.POST.__contains__("mapping_deleted"):
 			mapping.delete()
 
-		return redirect("dashboard_all_mappings", permanent=True)
+		return redirect("dashboard_all_mappings")

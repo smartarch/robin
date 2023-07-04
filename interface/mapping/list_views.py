@@ -35,10 +35,10 @@ class NewListView(LoginRequiredMixin, CreateView):
 		:return:
 		"""
 		if not request.POST.__contains__("list_created"):
-			return redirect("dashboard_mapping_all_lists", permanent=True)
+			return redirect("dashboard_mapping_all_lists")
 
 		if "mapping_id" not in kwargs:
-			return redirect("dashboard_mapping_all_lists", permanent=True)
+			return redirect("dashboard_mapping_all_lists")
 
 		authorized_mappings = Mapping.objects.filter(reviewers__in=[request.user])
 		mapping = get_object_or_404(authorized_mappings, id=kwargs["mapping_id"])
@@ -48,7 +48,7 @@ class NewListView(LoginRequiredMixin, CreateView):
 
 		copy_publication_lists(request, authorized_mappings, new_publication_list)
 
-		return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=new_publication_list.id, permanent=True)
+		return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=new_publication_list.id)
 
 
 class MappingListView(LoginRequiredMixin, TemplateView):
@@ -56,7 +56,7 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 
 	def post(self, request: Any, *args: Any, **kwargs: Any) -> Any:
 		if "mapping_id" not in kwargs or "list_id" not in kwargs:
-			return redirect("dashboard_mapping_all_lists", permanent=True)
+			return redirect("dashboard_mapping_all_lists")
 
 		authorized_mapping = Mapping.objects.filter(reviewers__in=[request.user])
 		mapping = get_object_or_404(authorized_mapping, id=kwargs["mapping_id"])
@@ -109,7 +109,7 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 						if move_instead_of_copy:
 							current_publication_list.publications.remove(pub)
 							current_publication_list.save()
-					return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=copy_instance.id, permanent=True)
+					return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=copy_instance.id)
 
 				elif request.POST.__contains__("delete_from_current_list"):
 					for pub in available_publications:
@@ -154,7 +154,7 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 			new_follower.save()
 			current_publication_list.followers.add(new_follower)
 			current_publication_list.save()
-			return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=new_follower.id, permanent=True)
+			return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=new_follower.id)
 
 		return self.get(request, *args, **kwargs)
 
@@ -168,10 +168,13 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 		:return:
 		"""
 		if "mapping_id" not in kwargs or "list_id" not in kwargs:
-			return redirect("dashboard_mapping_all_lists", permanent=True)
-
+			return redirect("dashboard_mapping_all_lists")
 
 		authorized_mappings = Mapping.objects.filter(reviewers__in=[request.user])
+
+		if len(authorized_mappings) == 0:
+			return redirect("dashboard_all_mappings")
+
 		mapping = get_object_or_404(authorized_mappings, id=kwargs["mapping_id"])
 		available_publication_lists = PublicationList.objects.filter(mapping=mapping)
 		publication_list = get_object_or_404(available_publication_lists, id=kwargs['list_id'])
@@ -238,16 +241,16 @@ class MappingAllListView(LoginRequiredMixin, View):
 		:return:
 		"""
 		if "mapping_id" not in kwargs:
-			return redirect("dashboard", permanent=True)
+			return redirect("dashboard")
 
 		authorized_mappings = Mapping.objects.filter(reviewers__in=[request.user])
 		mapping = get_object_or_404(authorized_mappings, id=kwargs["mapping_id"])
 		available_publication_lists = PublicationList.objects.filter(mapping=mapping)
 		if available_publication_lists:
 			current_list_id = available_publication_lists[0].id
-			return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=current_list_id, permanent=True)
+			return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=current_list_id)
 
-		return redirect("dashboard", permanent=True)
+		return redirect("dashboard")
 
 
 class ListDeleteView(LoginRequiredMixin, DeleteView):
@@ -255,7 +258,7 @@ class ListDeleteView(LoginRequiredMixin, DeleteView):
 
 	def post(self, request, *args, **kwargs) -> {}:
 		if 'mapping_id' not in kwargs or 'list_id' not in kwargs:
-			return redirect("dashboard_mapping_all_lists", mapping_id=kwargs["mapping_id"], permanent=True)
+			return redirect("dashboard_mapping_all_lists", mapping_id=kwargs["mapping_id"])
 
 		fully_authorized_mappings = Mapping.objects.filter(leader=request.user)
 		mapping = get_object_or_404(fully_authorized_mappings, id=kwargs["mapping_id"])
@@ -263,6 +266,7 @@ class ListDeleteView(LoginRequiredMixin, DeleteView):
 		publication_list = get_object_or_404(fully_authorized_lists, id=kwargs["list_id"])
 
 		if request.POST.__contains__("list_deleted"):
-			publication_list.delete()
+			if len(fully_authorized_lists) > 1:
+				publication_list.delete()
 
-		return redirect("dashboard_mapping_all_lists", mapping_id=kwargs["mapping_id"], permanent=True)
+		return redirect("dashboard_mapping_all_lists", mapping_id=kwargs["mapping_id"])

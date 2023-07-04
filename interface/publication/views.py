@@ -54,7 +54,7 @@ class AddPublicationByDOI(LoginRequiredMixin, CreateView):
                 if new_publication not in publication_list.publications.all():
                     publication_list.publications.add(new_publication)
 
-        return redirect(next_url, permanent=True)
+        return redirect(next_url)
 
 
 class AddPublicationsByBibText(LoginRequiredMixin, View):
@@ -95,7 +95,7 @@ class AddPublicationsByBibText(LoginRequiredMixin, View):
                                 publication_list.publications.add(new_publication)
             except:
                 return HttpResponseBadRequest("The bib text is not correct", status=406)  # 406: Not acceptable
-        return redirect(next_url, permanent=True)
+        return redirect(next_url)
 
 
 class AddPublicationsByWeb(LoginRequiredMixin, TemplateView):
@@ -243,7 +243,7 @@ class AddPublicationsByWeb(LoginRequiredMixin, TemplateView):
         current_list = get_object_or_404(PublicationList, id=int(kwargs["list_id"]))
 
         return redirect("dashboard_mapping_list",
-                        mapping_id=current_list.mapping.id, list_id=current_list.id, permanent=True)
+                        mapping_id=current_list.mapping.id, list_id=current_list.id)
 
     def post(self, request: Any, *args: Any, **kwargs: Any) -> Any:
         if request.POST.__contains__("search_on_web"):
