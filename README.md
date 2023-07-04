@@ -2,7 +2,8 @@
 This document describes <b>Robin</b> architecture and it provides use-cases where the tool can be helpful. <b>Robin</b> helps research teams to conduct literature mapping, which is important part of research methodology. Technically, <b>Robin</b> helps research team members to collectively conduct a literature mapping study by create dependent and independent publication lists. This document is consist of four sections:
 
 * [Installation](#Installation)
-* [Quck Usage](#Quick-Usage)
+* [Quick Usage](#Quick-Usage)
+* [Automation](#Automation)
 
 
 ## Installation
@@ -241,4 +242,42 @@ After activating the search APIs, then publications can be searched using a quer
 
 <img src="readme_contents/search_web_page.png" alt="results of a search based" />
 
-<i> NOTE that the publications are not stored in database by just searching, but they are when the user add them to the publications lists. However, once the publication list is updated, the query information is saved.`
+<i> NOTE that the publications are not stored in database by just searching, but they are when the user add them to the publications lists. However, once the publication list is updated, the query information is saved.</i>
+
+## Automation
+One of key contributions of the `Robin` is the possibility to automatically update lists. It is possible to filter the current publication lists and create follower lists.
+
+A list can follow other lists, as well it can have its own followers. If list `A` is following list `B` with given condition, once `B` is updated with newer publications, `A` is also updated if the new publications meet the conditions. 
+
+For example, let's create a follower list that follows the default list, with the condition of newest publications only.
+
+The condition is written in terms of `Django-lookups`, and the following filter text, only accepts publications that are published in 2019 and later.
+
+```python
+(year__gte=2019)
+```
+
+<img src="readme_contents/filter_page.png" alt="filtering the page" />
+
+Now, since there are some results, we can follow the `default` list with condition `year>=2019` and name it `recent'.
+
+It is then possible to follow/unfollow other lists as shown:
+
+<img src="readme_contents/manage_followers_page.png" alt="manage the followers" />
+
+Now if we add the following two publications to the `default` list, the publication of `2021` will also be added to `recent`
+
+* 10.1109/ACCESS.2021.3076118
+* 10.1109/ACCESS.2018.2865383
+
+
+Another example will be to filter out only journal papers which are between 2010 and 2020 with following:
+
+```python
+(((year__gte=2010) and (year__lte=2020)) and (event__type=Journal Article))
+```
+
+
+
+
+
