@@ -16,6 +16,8 @@ This document describes how to install **Robin**, and it provides use-cases wher
 4. [Starting Robin server](#starting-robin-server)
 5. [Optional features](#optional-features)
    * [GitHub OAuth](#github-oauth)
+   * [IEEE Xplore Search](#ieee-xplore-search)
+   * [Scopus Search](#scopus-search)
 
 ### Virtual Environment Setup
 
@@ -127,6 +129,59 @@ sites: "<choose the site from the list, usually example.com>",
 
 Once saved, the other users should be able to login using GitHub account. To use it as another use, try a session on browser, or logout from the admin panel.
 
+#### IEEE Xplore Search
+
+Robin allows importing publications using a search query in the IEEE Xplore database.
+
+The IEEE Xplore database is accessed through API. To get an API access please check <https://developer.ieee.org/>. It might take over a week to activate the `key`. Once the `key` is active, the following information must be added by the admin using this link: <http://127.0.0.1:8000/admin/query/queryplatform/add/>
+
+```
+key: <IEEE API KEY>,
+source: IEEEXplore,
+params: """
+{
+    "params:{
+        "querytext": %query%,
+        "open_access": "True",
+        "format": "json",
+        "apikey": %key%,
+        "max_records": %max_results%
+        }
+}
+""",
+url: http://ieeexploreapi.ieee.org/api/v1/search/articles,
+help_link: https://developer.ieee.org/docs/read/IEEE_Xplore_Metadata_API_Overview,
+```
+
+Please note that even with APIs activated, searching is monitored and if the API keys are abused they will be banned by the providers.
+
+#### Scopus Search
+
+Robin allows importing publications using a search query in the Scopus database.
+
+The Scopus database is accessed  through API. To get an API access please check <https://dev.elsevier.com/>. The activation is immediate. Once the `key` is active, the following information must be added by the admin using this link: <http://127.0.0.1:8000/admin/query/queryplatform/add/>
+
+```
+key: <SCOPUS KEY>,
+source: Scopus,
+params: """
+{ 
+    "headers":{
+        "Accept": "application/json",
+        "X-ELS-APIKey": %key%
+    },
+    "params": {
+        "start":0,
+        "count":%max_results%,
+        "query": %query%
+    }
+}""",
+url: https://api.elsevier.com/content/search/scopus,
+help_link: "https://dev.elsevier.com/sc_search_tips.html,
+```
+
+Please note that even with APIs activated, searching is monitored and if the API keys are abused they will be banned by the providers.
+
 ## Quick Usage
 
 In this section, we will describe how to use the tool with  a simple example.
@@ -216,54 +271,7 @@ The copying and moving to other lists can also be done within the main publicati
 
 #### From Web Search
 
-It is possible to import publications using the connected paper search APIs such as Scoups and IEEExplore. To activate this, the admin must add their credentials as `QueryPlaform` instances.
-
-* IEEEXplore, to get an API access please check <https://developer.ieee.org/>. It might take over a week to activate the `key`. Once the `key` is active, the following information must be added by the admin using this link: <http://127.0.0.1:8000/admin/query/queryplatform/add/>
-
-```
-{
-key: <IEEE API KEY>,
-source: IEEEXplore,
-params: """
-{
-    "params:{
-        "querytext": %query%,
-        "open_access": "True",
-        "format": "json",
-        "apikey": %key%,
-        "max_records": %max_results%
-        }
-}
-""",
-url: http://ieeexploreapi.ieee.org/api/v1/search/articles,
-help_link: https://developer.ieee.org/docs/read/IEEE_Xplore_Metadata_API_Overview,
-}
-```
-
-* Scopus, to get an API access please check <https://dev.elsevier.com/>. The activation is immediate. Once the `key` is active, the following information must be added by the admin using this link: <http://127.0.0.1:8000/admin/query/queryplatform/add/>
-
-```
-{
-    key: <SCOPUS KEY>,
-    source: Scopus,
-    params: """
-{ 
-    "headers":{
-        "Accept": "application/json",
-        "X-ELS-APIKey": %key%
-    },
-    "params": {
-        "start":0,
-        "count":%max_results%,
-        "query": %query%
-    }
-}""",
-    url: https://api.elsevier.com/content/search/scopus,
-    help_link: "https://dev.elsevier.com/sc_search_tips.html,
-}
-```
-
-Please note that even with APIs activated, searching is monitored and if the API keys are abused they will be banned by the providers.
+It is possible to import publications using the connected paper search APIs such as Scopus and IEEExplore. To activate this, the admin must connect these APIs as described above ([Scopus](#scopus-search), [IEEE Xplore](#ieee-xplore-search)).
 
 After activating the search APIs, then publications can be searched using a query text, and then they can be added to any list that the user is authorized.
 
