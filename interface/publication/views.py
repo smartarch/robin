@@ -53,6 +53,7 @@ class AddPublicationByDOI(LoginRequiredMixin, CreateView):
             if request.user in publication_list.mapping.reviewers.all():
                 if new_publication not in publication_list.publications.all():
                     publication_list.publications.add(new_publication)
+                    publication_list.save()
 
         return redirect(next_url)
 
@@ -93,6 +94,7 @@ class AddPublicationsByBibText(LoginRequiredMixin, View):
                         if request.user in publication_list.mapping.reviewers.all():
                             if new_publication not in publication_list.publications.all():
                                 publication_list.publications.add(new_publication)
+                                publication_list.save()
             except:
                 return HttpResponseBadRequest("The bib text is not correct", status=406)  # 406: Not acceptable
         return redirect(next_url)
