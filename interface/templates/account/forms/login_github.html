@@ -3,7 +3,7 @@
     <div class="row">
         <div class="btn-group" role="group" >
           <button type="submit" class="btn btn-outline-dark m-2"
-          {% if github_not_defined %}
+          {% if not github_enabled %}
               disabled
           {% endif %}  >
               <span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">

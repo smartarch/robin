@@ -19,7 +19,7 @@ class PublicView(TemplateView):
 		context = super().get_context_data(**kwargs)
 		github_enabled = SocialApp.objects.filter(name="github")
 
-		context["github_not_defined"] = len(github_enabled) == 0
+		context["github_enabled"] = len(github_enabled) > 0
 
 		if request.user:
 			return redirect("dashboard")
