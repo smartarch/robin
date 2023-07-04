@@ -1,6 +1,6 @@
 # Robin: A tool for automated literature mapping
 
-This document describes **Robin** architecture and it provides use-cases where the tool can be helpful. **Robin** helps research teams to conduct literature mapping, which is important part of research methodology. Technically, **Robin** helps research team members to collectively conduct a literature mapping study by create dependent and independent publication lists. This document is consist of four sections:
+This document describes how to install **Robin**, and it provides use-cases where the tool can be helpful. **Robin** helps research teams to conduct literature mapping, which is important part of research methodology. Research team members can use **Robin** to collectively conduct a literature mapping study by create dependent and independent publication lists. This document is consist of the following sections:
 
 * [Installation](#installation)
 * [Quick Usage](#quick-usage)
@@ -8,16 +8,16 @@ This document describes **Robin** architecture and it provides use-cases where t
 
 ## Installation
 
-**Robin** is written in `python-django` which is a python package, and can be installed in the local library. To skip the installation section and use a docker, refer to the [Docker](/container). This section covers the following sections:
+**Robin** is written in `python-django` which is a Python package, and can be installed in the local library. To skip the installation section and use Docker, refer to the [Docker](/container). This section covers the following sections:
 
 * Virtual Environment Setup and Package Installation
-* Migrating The Database
+* Migrating (Creating) The Database
 * Creating Admin User
 * Connecting to GitHub
 
 ### Virtual Environment Setup
 
-We recommend using a `python-virtual-environement`, which can be used as the source of packages required for this project. To create the virtual environment, first make sure that `python-dev` is installed.
+We recommend using a Python virtual environment, which can be used as the source of packages required for this project. To create the virtual environment, first make sure that `python-dev` is installed.
 
 On Linux
 
@@ -26,13 +26,13 @@ sudo apt-get update
 sudo apt-get install python3 python3-dev python3-venv
 ```
 
-On windows
+On Windows
 
 ```commandline
 pip install virtualenv
 ```
 
-If above command throws an error, then it means the pip is not installed, and it needs to be downloaded from the official website <https://docs.python.org/3/installing/index.html#basic-usage>
+If above command throws an error, then it means the `pip` is not installed, and it needs to be downloaded from the official website <https://docs.python.org/3/installing/index.html#basic-usage>
 
 After installation of `venv` the following command on both Linux and Windows can be used to start a virtual environment.
 
@@ -44,13 +44,13 @@ If faced an issue while creating the virtual environment, refer to <https://docs
 
 If the environment is correctly created, it needs to be activated.
 
-On `Linux` use:
+On Linux use:
 
 ```commandline
 source env/bin/activate
 ```
 
-On `Windows` use:
+On Windows use:
 
 ```commandline
 env\Scripts\activate
@@ -62,13 +62,13 @@ After activating the virtual environment, the command line should look like this
 (env) /path_to_robin/
 ```
 
-Now, to install the packages, the list of packages is in `requirments.txt`, and by using `pip` they can be installed on the virtual environment.
+Now, to install the packages (list of packages is in `requirments.txt`), use `pip` in the virtual environment.
 
 ```commandline
 pip install -r requirements.txt
 ```
 
-### Migrating The Database
+### Migrating (Creating) The Database
 
 The next step is to start a database instance (which in this case is `SQLite`). To do so, use the following command while being on the `robin` folder:
 
@@ -91,17 +91,23 @@ If no issues were reported, proceed and create a super-user. A super-user is an 
 python manage.py createsuperuser
 ```
 
+### Starting Robin
+
 Now, it is time to run the server. To start the server, run the following command:
 
 ```commandline
 python manage.py runserver
 ```
 
-Now open <http://127.0.0.1:8000/admin>, which is the `admin` page of the tool.
+Now open <http://127.0.0.1:8000/>, where the Robin app should be accessible (as shown in the following screenshot).
 
-### Connecting to GitHub
+<img src="readme_contents/public_page.png" alt="home page shown with login access" />
 
-In order to use `login-via-github`, two main steps should be taken.
+To open the administration of the tool, go to <http://127.0.0.1:8000/admin>.
+
+### Connecting to GitHub (Optional)
+
+In order to enable login via GitHub, two main steps should be taken.
 
 * Create an oAuth app on GitHub, which can be done using <https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app>
 
@@ -116,12 +122,6 @@ In order to use `login-via-github`, two main steps should be taken.
 ```
 
 Once saved, the other users should be able to login using GitHub account. To use it as another use, try a session on browser, or logout from the admin panel.
-
-Now open <http://127.0.0.1:8000/>, where this screen should be shown:
-
-<img src="readme_contents/public_page.png" alt="home page shown with login access" />
-
-Now create a new user, or join using the github enabled logins and proceed to create the first `mapping`.
 
 ## Quick Usage
 
@@ -212,9 +212,9 @@ The copying and moving to other lists can also be done within the main publicati
 
 #### From Web Search
 
-It is possible to import publications using the connected paper search APIs such as Scoups and IEEExplor. To activate this, the admin must add their credentials as `QueryPlaform` instances.
+It is possible to import publications using the connected paper search APIs such as Scoups and IEEExplore. To activate this, the admin must add their credentials as `QueryPlaform` instances.
 
-* IEEEXplore, to get an api please check <https://developer.ieee.org/>. It might take over a week to activate the `key`. Once the `key` is active, the following information must be added by the admin using this link: <http://127.0.0.1:8000/admin/query/queryplatform/add/>
+* IEEEXplore, to get an API access please check <https://developer.ieee.org/>. It might take over a week to activate the `key`. Once the `key` is active, the following information must be added by the admin using this link: <http://127.0.0.1:8000/admin/query/queryplatform/add/>
 
 ```
 {
@@ -236,7 +236,7 @@ help_link: https://developer.ieee.org/docs/read/IEEE_Xplore_Metadata_API_Overvie
 }
 ```
 
-* Scopus, to get an api please check <https://dev.elsevier.com/>. The activation is immediate. Once the `key` is active, the following information must be added by the admin using this link: <http://127.0.0.1:8000/admin/query/queryplatform/add/>
+* Scopus, to get an API access please check <https://dev.elsevier.com/>. The activation is immediate. Once the `key` is active, the following information must be added by the admin using this link: <http://127.0.0.1:8000/admin/query/queryplatform/add/>
 
 ```
 {
