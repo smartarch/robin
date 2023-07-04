@@ -148,13 +148,10 @@ class ParseBibText (Parser):
         else:
             spliter = spliter[1:]
         article_types = re.findall("\s*\@(\w+)\{", text)
-        print (spliter)
-        print (article_types)
         for data, article_type in zip(spliter, article_types):
             parsed_attributes = re.findall("(?:.*)\s(\w+)\s=\s\{([\S\s]+?(?=\},))", data)
 
             if article_type.lower() not in ARTICLE_TYPES:
-                print ("unsupported article type")
                 continue
 
             parsed_dict = {
