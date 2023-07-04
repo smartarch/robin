@@ -8,12 +8,14 @@ This document describes how to install **Robin**, and it provides use-cases wher
 
 ## Installation
 
-**Robin** is written in `python-django` which is a Python package, and can be installed in the local library. To skip the installation section and use Docker, refer to the Docker image on: https://zenodo.org/record/8113307. This section covers the following sections:
+**Robin** is written in `python-django` which is a Python package, and can be installed in the local library. To skip the installation section and use Docker, refer to the [Docker image](https://zenodo.org/record/8113307). This section covers the following:
 
-* Virtual Environment Setup and Package Installation
-* Migrating (Creating) The Database
-* Creating Admin User
-* Connecting to GitHub
+1. [Virtual Environment Setup and Package Installation](#virtual-environment-setup)
+2. [Migrating (Creating) the Database](#migrating-creating-the-database)
+3. [Creating Admin User](#creating-admin-user)
+4. [Starting Robin server](#starting-robin-server)
+5. [Optional features](#optional-features)
+   * [GitHub OAuth](#github-oauth)
 
 ### Virtual Environment Setup
 
@@ -21,14 +23,14 @@ We recommend using a Python virtual environment, which can be used as the source
 
 On Linux
 
-```commandline
+```bash
 sudo apt-get update
 sudo apt-get install python3 python3-dev python3-venv
 ```
 
 On Windows
 
-```commandline
+```bash
 pip install virtualenv
 ```
 
@@ -36,7 +38,7 @@ If above command throws an error, then it means the `pip` is not installed, and 
 
 After installation of `venv` the following command on both Linux and Windows can be used to start a virtual environment.
 
-```commandline
+```bash
 python3 -m venv env
 ```
 
@@ -46,25 +48,25 @@ If the environment is correctly created, it needs to be activated.
 
 On Linux use:
 
-```commandline
+```bash
 source env/bin/activate
 ```
 
 On Windows use:
 
-```commandline
+```bat
 env\Scripts\activate
 ```
 
 After activating the virtual environment, the command line should look like this:
 
-```commandline
+```bash
 (env) /path_to_robin/
 ```
 
 Now, to install the packages (list of packages is in `requirments.txt`), use `pip` in the virtual environment.
 
-```commandline
+```bash
 pip install -r requirements.txt
 ```
 
@@ -72,14 +74,14 @@ pip install -r requirements.txt
 
 The next step is to start a database instance (which in this case is `SQLite`). To do so, use the following command while being on the `robin` folder:
 
-```commandline
+```bash
 cd interface
 python manage.py migrate
 ```
 
 From this point, all the given commands will need to be done while in `interface` folder. To check if there is any issue with the project, run the following command
 
-```commandline
+```bash
 python manage.py check
 ```
 
@@ -87,38 +89,40 @@ python manage.py check
 
 If no issues were reported, proceed and create a super-user. A super-user is an admin with all privileges. To create such user, run the following command and enter requested information.
 
-```commandline
+```bash
 python manage.py createsuperuser
 ```
 
-### Starting Robin
+### Starting Robin server
 
-Now, it is time to run the server. To start the server, run the following command:
+Now, it is time to run the server. To start the server, run the following command in the `interface` folder:
 
-```commandline
+```bash
 python manage.py runserver
 ```
 
 Now open <http://127.0.0.1:8000/>, where the Robin app should be accessible (as shown in the following screenshot).
 
-<img src="readme_contents/public_page.png" alt="home page shown with login access" />
+![home page shown with login access](readme_contents/public_page.png)
 
 To open the administration of the tool, go to <http://127.0.0.1:8000/admin>.
 
-### Connecting to GitHub (Optional)
+### Optional Features
+
+#### GitHub OAuth
 
 In order to enable login via GitHub, two main steps should be taken.
 
-* Create an oAuth app on GitHub, which can be done using <https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app>
+* Create an OAuth app on GitHub, which can be done using <https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app>
 
 * Create a social account on Robin. If the local server is running, simply login to admin section for social accounts (<http://127.0.0.1:8000/admin/socialaccount/socialapp/add/>) and enter the following details:
 
 ```
-    provider: "github",
-    name: "github",
-    client_id: "<client id from github app>",
-    secret: "<secret key from the github app>",
-    sites: "<choose the site from the list usually is example.com>",
+provider: "github",
+name: "github",
+client_id: "<client id from github app>",
+secret: "<secret key from the github app>",
+sites: "<choose the site from the list, usually example.com>",
 ```
 
 Once saved, the other users should be able to login using GitHub account. To use it as another use, try a session on browser, or logout from the admin panel.
@@ -136,7 +140,7 @@ A user with no associated mapping will be directed to this page:
 
 <http://127.0.0.1:8000/dashboard/>
 
-<img src="readme_contents/dashboard_page.png" alt="create or join a review" />
+![create or join a review](readme_contents/dashboard_page.png)
 
 A logged-in user can:
 
@@ -145,7 +149,7 @@ A logged-in user can:
 
 Once a mapping is created, they are redirected to the `mapping` page where the `secret key` is shown.
 
-<img src="readme_contents/mapping_page.png" alt="The mapping page with secret key" />
+![The mapping page with secret key](readme_contents/mapping_page.png)
 
 The `secret key` can be shared via other communication platforms since at this moment, `Robin` does not have any communication platform.
 
@@ -155,7 +159,7 @@ Now, clicking on the `Go To Publications` will redirect to the publication list 
 
 Each `mapping` consists of at least one publication list (the first is called `default`). Once the user is redirected to the publication URL, the following page should be shown:
 
-<img src="readme_contents/publication_list_page.png" alt="TThe list of publications of a mapping" />
+![The list of publications of a mapping](readme_contents/publication_list_page.png)
 
 As shown the list is empty, and there are many ways to populate the list with publications:
 
@@ -200,7 +204,7 @@ For example enter the following BiBText twice:
 
 A whole file can also be uploaded. Try  uploading [`paper.bib`](readme_contents/paper.bib). Since, we have already uploaded some of the publications, the duplicated ones will not be re-added. The publications that are listed, are the ones that have been reviewed conducting this research. So we can move them to new list. Create a new list, using `Navigate Mapping`, and name it SEFM2023
 
-<img src="readme_contents/add_list_page.png" alt="add new list" />
+![add new list](readme_contents/add_list_page.png)
 
 #### Importing form Other Lists
 
@@ -208,7 +212,7 @@ Another way to import publications is to import from other lists that the user i
 
 The copying and moving to other lists can also be done within the main publication list page, shown in red box:
 
-<img src="readme_contents/new_list_page.png" alt="manage publications in the list" />
+![manage publications in the list](readme_contents/new_list_page.png)
 
 #### From Web Search
 
@@ -263,7 +267,7 @@ Please note that even with APIs activated, searching is monitored and if the API
 
 After activating the search APIs, then publications can be searched using a query text, and then they can be added to any list that the user is authorized.
 
-<img src="readme_contents/search_web_page.png" alt="results of a search based" />
+![results of a search based](readme_contents/search_web_page.png)
 
 * NOTE that the publications are not stored in database by just searching, but they are when the user add them to the publications lists. However, once the publication list is updated, the query information is saved.*
 
@@ -281,13 +285,13 @@ The condition is written in terms of `Django-lookups`, and the following filter 
 (year__gte=2019)
 ```
 
-<img src="readme_contents/filter_page.png" alt="filtering the page" />
+![filtering the page](readme_contents/filter_page.png)
 
 Now, since there are some results, we can follow the `default` list with condition `year>=2019` and name it `recent`.
 
 It is then possible to follow/unfollow other lists as shown:
 
-<img src="readme_contents/manage_followers_page.png" alt="manage the followers" />
+![manage the followers](readme_contents/manage_followers_page.png)
 
 Now if we add the following two publications to the `default` list, the publication of `2021` will also be added to `recent`
 
