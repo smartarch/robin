@@ -1,7 +1,7 @@
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
-from mapping.models import Mapping, UserPreferences
+from mapping.models import Mapping, UserPreferences, PublicationList
 from allauth.socialaccount.models import SocialApp
 
 class PublicView(TemplateView):
@@ -22,7 +22,7 @@ class PublicView(TemplateView):
 		context["github_not_defined"] = len(github_enabled) == 0
 
 		if request.user:
-			return redirect("dashboard", permanent=True)
+			return redirect("dashboard")
 		return self.render_to_response(context)
 
 
@@ -46,10 +46,20 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 			user_preferences = UserPreferences.objects.filter(user=request.user)
 			if len(user_preferences) > 0:
 				mapping = user_preferences[0].default_mapping
-				def_list = user_preferences[0].default_list
-				return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=def_list.id, permanent=True)
+				if not mapping:
+					mapping = mappings[0]
+					user_preferences[0].default_mapping = mapping
+					user_preferences[0].save()
 
-			return redirect("dashboard_all_mappings",  permanent=True)
+				def_list = user_preferences[0].default_list
+				if not def_list:
+					def_list = PublicationList.objects.filter(mapping=mapping)[0]
+					user_preferences[0].default_list = def_list
+					user_preferences[0].save()
+
+				return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=def_list.id)
+
+			return redirect("dashboard_all_mappings")
 
 		return self.render_to_response(context)
 
