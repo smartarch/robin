@@ -1,83 +1,113 @@
-# robin
-Research Observatory Instrument
+# Robin: A tool for automated literature mapping
+This document describes <b>Robin</b> architecture and it provides use-cases where the tool can be helpful. <b>Robin</b> helps research teams to conduct literature mapping, which is important part of research methodology. Technically, <b>Robin</b> helps research team members to collectively conduct a literature mapping study by create dependent and independent publication lists. This document is consist of four sections:
+
+* [Installation](#Installation)
+* [Overall Architecture](#Overall-Architecture)
+* [User Management](#User-Management)
+* [Managing Mappings](#Managing-Mappings)
+* [Making Queries](#Making-Queries)
+* [Working With Lists](#Working-With-Lists)
+* [Deploying](#Deploying)
 
 
-### Create a Local Database File
-To manage the publications on a local server, the first step is to create a database. By default, Django uses `SQLite3`. For other type of database please refer to: https://docs.djangoproject.com/en/4.2/ref/databases/
+## Installation
+<b>Robin</b> is written in `python-django` which is a python package, and can be installed in the local library. To skip the installation section and use a docker, refer to the [Docker](/contianer). This section covers the following sections:
 
-Robin uses the default djagno database, and to create it run the following command lines:
+* Virtual Environment Setup and Package Installation
+* Migrating The Database
+* Creating Admin User
+* Connecting to GitHub
+* Connecting to IEEE and Scopus APIs
+
+### Virtual Environment Setup 
+
+We recommend using a `python-virtual-environement`, which can be used as the source of packages required for this project. To create the virtual environment, first make sure that `python-dev` is installed.
+
+On Linux
+```commandline
+sudo apt-get update
+sudo apt-get install python3 python3-dev python3-venv
+```
+
+On windows
+```commandline
+pip install virtualenv
+```
+
+If above command throws an error, then it means the pip is not installed, and it needs to be downloaded from the official website https://docs.python.org/3/installing/index.html#basic-usage
+
+After installation of `venv` the following command on both Linux and Windows can be used to start a virtual environment.
+
+```commandline
+python3 -m venv env
+```
+
+If faced an issue while creating the virtual environment, refer to https://docs.python.org/3/library/venv.html. 
+
+If the environment is correctly created, it needs to be activated. 
+
+On `Linux` use:
+```commandline
+source env/bin/activate
+```
+
+On `Windows` use:
+```commandline
+env\Scripts\activate
+```
+
+After activating the virtual environment, the command line should look like this:
+```
+(env) /path_to_robin/
+```
+
+Now, to install the packages, the list of packages is in `requirments.txt`, and by using `pip` they can be installed on the virtual environment.
+```commandline
+pip install -r requirements.txt
+```
+### Migrating The Database
+The next step is to start a database instance (which in this case is `SQLite`). To do so, use the following command while being on the `robin` folder:
 ```commandline
 cd interface
-python manage.py makemigrations
 python manage.py migrate
 ```
 
-By migrating, the tables will be created in the database file, and the new database file will be visible. In order to view the table, we have enabled the Admin site, which is accessible by a super user, and the following command is to make one:
+From this point, all the given commands will need to be done while in `interface` folder. To check if there is any issue with the project, run the following command
+```commandline
+python manage.py check
+```
+### Creating Admin User
+If no issues were reported, proceed and create a super-user. A super-user is an admin with all privileges. To create such user, run the following command and enter requested information.
 
 ```commandline
-cd interface
 python manage.py createsuperuser
 ```
 
-Once the superuser is created, run the server using the following command:
+Now, it is time to run the server. To start the server, run the following command:
 ```commandline
-cd interface
 python manage.py runserver
 ```
 
-Now, open provided link http://127.0.0.1:8000/admin/ (usually it is run on port 8000) and enter the username and password. Once entered the Admin panel, the tables of all apps are accessible.
+Now open http://127.0.0.1:8000/admin, which is the `admin` page of the tool.
+
+### Connecting to GitHub
+In order to use `login-via-github`, two main steps should be taken. 
+- Create an oAuth app on GitHub
+- Create a social account on Robin
 
 
-### Working With Django Models
-For Django a model is a python class that represents a table in the database. To understand fully on Django models, please refer to https://docs.djangoproject.com/en/4.2/topics/db/models/ . We provide a simple example to work with Django Model to populate the `Country` table in the database. 
-
-First, we show how to add one single country in Django provided shell.
-```commandline
-cd interface
-python manage.py shell
-```
-```python
-from publication.models import Country      # Country is a class in models.py
-new_country = Country(name= "Czechia", other_forms= "Czech Republic;CZ")          # to create a new country
-new_country.save()                          # save the object in the the database
-```
-If the server is running, the added country can be seen in http://127.0.0.1:8000/admin/publication/country/.
-Note that the name of `country` is unique, and if we try the above line again, it will throw an exception.
-To remove the country using the shell, we can try the following:
-
-```python
-added_country = Country.objects.get(name="Czechia")
-added_country.delete()
-```
-
-Now we try to add all the countries from list of countries as a csv file `country_names.csv` from 
-https://github.com/lukes/ISO-3166-Countries-with-Regional-Codes/blob/master/all/all.csv.
-```python
-from publication.models import Country
-with open("country_names.csv", "r") as country_names:
-    for line in country_names.readlines():
-    country_name, other_forms = line.strip("\"").strip().split(",",1)
-    new_country = Country (name=country_name, other_forms=other_forms)
-    new_country.save()
-
-```
-
-Since the list of countries is not often changed (at least at the time of this publication), we can keep the country list to the populated one. Please be aware that some publication affiliation countries use different names such as "USA" instead of "United States". 
-
-### Enable Github Login
-By the support of Django-allauth (https://django-allauth.readthedocs.io), we have provided login using Github. The login requires a oAuth key. Run the server if it is not already running, then perform the following steps:
 
 
-* Register a new OAuth application at https://github.com/settings/applications/new
-    - Set homepage to http://127.0.0.1:8000
-    - Set Authorization callback URL to http://127.0.0.1:8000/accounts/github/login/callback/
-* Open http://127.0.0.1:8000/admin/socialaccount/socialapp/add/
-    - set Provider as Github
-    - Provide a name for example 'github'
-    - Client ID and Secret key are extracted from the github OAuth application
-    - Key is optional
-    - Move the available site to chosen site
-    - Save
-  
-Now the team can access Robin using Github account from this link http://127.0.0.1:8000/accounts/github/login/  
+## Overall Architecture
 
+
+
+## User Management
+
+## Managing Mappings
+
+## Making Queries
+
+## Working With Lists
+
+## Deploying
