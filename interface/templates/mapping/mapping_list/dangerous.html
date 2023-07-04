@@ -1,13 +1,11 @@
 <h5> Dangerous Area</h5>
 <div class="btn-group" role="group">
-    <form action="{% url 'dashboard_mapping_list_delete' mapping_id=mapping.id list_id=publication_list.id %}" method="POST"
-    onsubmit="return confirm('Are you sure to delete the list {{ publication_list }}?');" >
-    {% csrf_token %}
-        <button type="submit" class="btn btn-warning m-1" name="list_deleted"> Delete the List    </button>
-    </form>
-    <form action="{% url 'dashboard_mapping_delete' mapping_id=mapping.id %}" method="POST"
-    onsubmit="return confirm('Are you sure to delete the mapping {{ mapping }}) with all its list?');">
-    {% csrf_token %}
-        <button type="submit" class="btn btn-danger m-1" name="mapping_deleted">   Delete the Mapping  </button>
-    </form>
+    {% if available_publication_lists|length > 1 %}
+        <form action="{% url 'dashboard_mapping_list_delete' mapping_id=mapping.id list_id=publication_list.id %}" method="POST"
+        onsubmit="return confirm('Are you sure to delete the list {{ publication_list }}?');" >
+        {% csrf_token %}
+            <button type="submit" class="btn btn-warning m-1" name="list_deleted"> Delete the List    </button>
+        </form>
+    {% endif %}
+    {%  include "mapping/forms/delete.html" %}
 </div>
