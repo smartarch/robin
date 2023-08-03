@@ -25,7 +25,7 @@
         <ul class="navbar-nav ms-auto navbar-nav-scroll dropstart">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle " href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Welcome {{user.username}}
+              Welcome {{user.short_name}}
             </a>
             <ul class="dropdown-menu " aria-labelledby="navbarScrollingDropdown">
               <li><a class="dropdown-item" href="{% url 'account_change_password' %}">Change Password</a></li>

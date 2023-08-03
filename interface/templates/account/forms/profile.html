@@ -3,8 +3,8 @@
     <!-- Text input -->
 
     <div class="form-floating mb-2">
-        <input type="text" id="lastNameInput" name="username" class="form-control" placeholder="user"  value="{{ user.username }}" readonly />
-        <label for="lastNameInput">Username</label>
+        <input type="email" id="lastNameInput"  class="form-control" placeholder="email"  value="{{ user.email }}" required readonly/>
+        <label for="lastNameInput">Email</label>
     </div>
 
     <div class="form-floating mb-2">
@@ -18,10 +18,6 @@
         <label for="lastNameInput">Last Name</label>
       </div>
 
-    <div class="form-floating mb-2">
-        <input type="email" id="lastNameInput" name="email" class="form-control" placeholder="email"  value="{{ user.email }}" />
-        <label for="lastNameInput">Email</label>
-    </div>
 
   <!-- Submit button -->
     <div class="d-grid gap-2">

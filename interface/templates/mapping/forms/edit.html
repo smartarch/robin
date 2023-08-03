@@ -22,9 +22,9 @@
                     <select class="form-select" id="leaderSelect">
                         {% for reviewer in mapping.reviewers.all %}
                             {% if user.id == reviewer.id %}
-                                <option selected> {{reviewer.username}} </option>
+                                <option selected> {{reviewer.email}} </option>
                             {% else %}
-                                <option value="{{reviewer.id}}"  > {{reviewer.username}} </option>
+                                <option value="{{reviewer.id}}"  > {{reviewer.email}} </option>
                             {% endif %}
                         {% endfor %}
                     </select>
