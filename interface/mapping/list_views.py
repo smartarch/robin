@@ -43,7 +43,7 @@ class NewListView(LoginRequiredMixin, CreateView):
 		authorized_mappings = Mapping.objects.filter(reviewers__in=[request.user])
 		mapping = get_object_or_404(authorized_mappings, id=kwargs["mapping_id"])
 
-		new_publication_list = PublicationList(name=request.POST.get("list_name"), mapping=mapping)
+		new_publication_list = PublicationList(name=request.POST.get("list_name"), mapping=mapping, user=request.user)
 		new_publication_list.save()
 
 		copy_publication_lists(request, authorized_mappings, new_publication_list)
@@ -63,10 +63,21 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 		available_publication_lists = PublicationList.objects.filter(mapping=mapping)
 		current_publication_list = get_object_or_404(available_publication_lists, id=kwargs["list_id"])
 
-		copy_instance = user_preference = page_size = subscriber_instance_end = follower_instance =  None
+		copy_instance = user_preference = page_size = subscriber_instance_end = follower_instance = None
 		move_instead_of_copy = False
 
-		copy_matcher = [re.findall("copy_to_(\d+)",key) for key in request.POST.keys()]
+		copy_move_new = [re.findall("(move|copy)_to_new_list", key) for key in request.POST.keys()]
+		for copy_move in copy_move_new:
+			if copy_move:
+				new_list_name = request.POST.get(f"new_list_name_{copy_move[0]}")
+				new_publication_list = PublicationList(name=new_list_name, mapping=mapping, user=request.user)
+				new_publication_list.save()
+
+				copy_instance = new_publication_list
+				move_instead_of_copy = copy_move[0] == "move"
+
+		copy_matcher = [re.findall("copy_to_(\d+)", key) for key in request.POST.keys()]
+
 		for copy in copy_matcher:
 			if copy:
 				copy_id = int(copy[0])
@@ -148,7 +159,8 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 		if request.POST.__contains__("create_follower"):
 			new_follower_name = request.POST.get("follower_name")
 			filtered_text = request.POST.get("filtered_text")
-			new_follower = PublicationList(name=new_follower_name, mapping=mapping, criteria=filtered_text)
+			new_follower = PublicationList(name=new_follower_name, mapping=mapping, criteria=filtered_text,
+			    user=request.user)
 			new_follower.save()
 			new_follower.subscriptions.add(current_publication_list)
 			new_follower.save()
@@ -158,6 +170,25 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 
 		return self.get(request, *args, **kwargs)
 
+
+	def compare (self, publication_list: PublicationList, publications: Any, filter_object: Any = None) -> {}:
+		found = [pub for pub in publications if pub in publication_list.publications.all()]
+		compact_results = {
+			'shared': len(found),
+			'shared_rate': f"{100 * len(found) / len(publications):0.2f}%" if len(publications) > 0 else "",
+			'total': len(publications),
+		}
+		if not filter_object:
+			return compact_results
+		else:
+			only_in_results = [pub for pub in publications if pub not in publication_list.publications.all()]
+			only_in_list = [pub for pub in publication_list.publications.all() if pub not in publications]
+			return {
+				**compact_results,
+				"found": found,
+				"only_in_results": only_in_results,
+				"only_in_list": only_in_list,
+			}
 
 	def get(self, request: Any, *args: Any, **kwargs: Any) -> Any:
 		"""
@@ -188,6 +219,15 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 		filter_errors = ""
 		filtered_size = None
 
+		compared = {}
+		detailed_results = {}
+		overall_results = {
+			'all': {
+				pub_list.id: self.compare(pub_list, publications)
+				for pub_list in available_publication_lists
+			}
+		}
+
 		if request.GET.__contains__("filter_text"):
 			filter_text = request.GET.get('filter_text')
 			if filter_text != "":
@@ -196,6 +236,19 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 					publications = publications.filter(filter_object)
 					filter_errors = ""
 					filtered_size = len(publications)
+					overall_results['filtered'] = {
+						pub_list.id : self.compare(pub_list, publications)
+						for pub_list in available_publication_lists
+					}
+					if request.GET.__contains__("compare_to"):
+						compared = {
+							int(x): get_object_or_404(available_publication_lists, id=int(x))
+							for x in request.GET.getlist("compare_to")
+						}
+						detailed_results = {
+							publication_list: self.compare(publication_list, publications, filter_object)
+							for _, publication_list in compared.items()
+						}
 				except:
 					filter_errors = f"The filter text: {filter_text} has syntax errors. Please double check."
 
@@ -216,6 +269,9 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 			"mappings": {mp: PublicationList.objects.filter(mapping=mp) for mp in authorized_mappings},
 			"authorized_mappings": authorized_mappings,
 			"mapping": mapping,
+			"compared": compared.keys(),
+			"overall_results": overall_results,
+			"detailed_results": detailed_results,
 			"original_size": original_size,
 			"filtered_size": filtered_size,
 			"filter_text": filter_text,
@@ -224,7 +280,7 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 			"available_publication_lists": available_publication_lists,
 			"publication_list": publication_list,
 			"user_preference": user_preference,
-			"available_page_sizes": [x for x in range(25, min(200, original_size), 25)],
+			"available_page_sizes": [x for x in range(25, min(201, original_size+1), 25)],
 			"page_obj": page_obj,
 		}
 
