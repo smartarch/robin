@@ -106,7 +106,7 @@ class NewMappingView(LoginRequiredMixin, TemplateView, CreateUserPreference):
 			new_mapping.secret_key = cryptocode.encrypt(str(new_mapping.id), "mapping_id_this_is_for_encryption")
 			new_mapping.save()
 
-			new_publication_list = PublicationList(name="default", mapping=new_mapping)
+			new_publication_list = PublicationList(name="default", mapping=new_mapping, user=request.user)
 			new_publication_list.save()
 
 			_ = self.find_user_preference(request.user, new_mapping, new_publication_list)
