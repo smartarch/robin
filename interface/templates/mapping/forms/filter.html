@@ -1,7 +1,7 @@
 <form class="row">
   <div class="col-10">
-    <label for="inputPassword2" class="visually-hidden">Filter</label>
-    <input type="text" class="form-control" id="inputPassword2" placeholder="(title__icontains=performance)"
+    <label for="filterTex" class="visually-hidden">Filter</label>
+    <input type="text" class="form-control" id="filterTex" placeholder="(title__icontains=performance)"
     value="{{ filter_text }}" name="filter_text" required>  </div>
   <div class="col-2">
     <button type="submit" class="btn btn-primary mb-3">Filter</button>
@@ -9,100 +9,219 @@
   </div>
 </form>
 
- <form method="POST" action="{% url 'dashboard_mapping_list' mapping_id=mapping.id list_id=publication_list.id %}">
-    {% csrf_token %}
-    <div class="accordion" id="accordionPanelsStayOpen">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="howToUseFilterHead">
-          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#howToUseFilter" aria-expanded="true" aria-controls="howToUseFilter">
-            How To use the Filter
-          </button>
-        </h2>
-        <div id="howToUseFilter" class="accordion-collapse collapse show" aria-labelledby="howToUseFilterHead">
-          <div class="accordion-body">
-            <ul>
-                <li class="text-secondary">condition format: "(attribute__lookup=value)"</li>
-                <li class="text-secondary">conditional phrase: ((condition1) WHITE_SPACE and/or WHITE_SPACE ((condition2) WHITE_SPACE and/or WHITE_SPACE (condition3)) ... )</li>
-                <li class="text-secondary">not conditions: "(not WHITE_SPACE (condition))"</li>
-                <li class="text-secondary">example 1: ((title__icontains=performance) and (year__gte=2021))</li>
-                <li class="text-secondary">example 2: ((title__icontains=performance) and (authors__last_name=Abdullah)) or (index_keywords__name__iexact=performance analysis)</li>
-                 <li class="text-secondary">example 3: ((year__gte=2014) and (not (event__type=Conference Paper)))</li>
-                <li class="text-secondary">For more lookups please check <a href="https://docs.djangoproject.com/en/4.2/ref/models/querysets/#field-lookups" target="_blank"> Django Lookup</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
 
+
+<div class="btn-group">
+    <button type="button" class="btn btn-outline-primary" id="helpTabKey" onclick="selectTab('help');">
+        How To Use Filter
+    </button>
+
+    <button type="button" class="btn btn-outline-primary" id="subscriptionsTabKey" onclick="selectTab('subscriptions');"
+        {% if not publication_list.criteria %}
+                disabled
+        {% endif %}         >
+        Manage Subscriptions
+    </button>
+
+    <button type="button" class="btn btn-outline-primary" id="followersTabKey" onclick="selectTab('followers');"
+        {% if not filter_text %}
+        disabled
+    {% endif %}>
+        Create Followers
+    </button>
+
+    <button type="button" class="btn btn-outline-primary" id="benchmarkTabKey"  onclick="selectTab('benchmark');">
+        Benchmark
+    </button>
+
+</div>
+ <div class="row m-2">
+     <div class="container border border-primary d-none" id="helpTab" >
+         <ul>
+            <li class="text-secondary">condition format: "(attribute__lookup=value)"</li>
+            <li class="text-secondary">conditional phrase: ((condition1) WHITE_SPACE and/or WHITE_SPACE ((condition2) WHITE_SPACE and/or WHITE_SPACE (condition3)) ... )</li>
+            <li class="text-secondary">not conditions: "(not WHITE_SPACE (condition))"</li>
+            <li class="text-secondary">example 1: ((title__icontains=performance) and (year__gte=2021))</li>
+            <li class="text-secondary">example 2: ((title__icontains=performance) and (authors__last_name=Abdullah)) or (index_keywords__name__iexact=performance analysis)</li>
+             <li class="text-secondary">example 3: ((year__gte=2014) and (not (event__type=Conference Paper)))</li>
+            <li class="text-secondary">For more lookups please check <a href="https://docs.djangoproject.com/en/4.2/ref/models/querysets/#field-lookups" target="_blank"> Django Lookup</a></li>
+        </ul>
+     </div>
+
+     <div class="container border border-primary d-none" id="subscriptionsTab" >
         {% if publication_list.criteria %}
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="manageSubscriptionsHead">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#manageSubscribtions" aria-expanded="false" aria-controls="manageSubscribtions">
-            Manage Subscriptions
-          </button>
-        </h2>
-        <div id="manageSubscribtions" class="accordion-collapse collapse" aria-labelledby="manageSubscriptionsHead">
-          <div class="accordion-body">
-
-                    <h5> Manage Subscriptions </h5>
-                    <div class="row">
-                    <p class="text-secondary"> This list is currently following the below publications lists using the filter text.
-                        To end a subscription, click on end. To add more subscriptions use the selector. </p>
-                     <h6 class="text-primary"> Filter:  {{publication_list.criteria }} </h6>
-                        {% for mp, lists in mappings.items %}
-                            {% if mp == mapping  %}
-                                {% for other_publications in lists %}
-                                    {% if other_publications != publication_list and other_publications not in publication_list.followers.all %}
-                                        <div class="card m-3" style="width: 12rem;">
-                                          <div class="card-body">
-                                            <h5 class="card-title"> <a href="{% url 'dashboard_mapping_list' mapping_id=mapping.id list_id=other_publications.id%}"> {{ other_publications.name}} </a></h5>
-                                            <h6 class="card-subtitle mb-2 text-muted">{{other_publications.publications.all|length}} Papers</h6>
-                                             <p class="card-text">{{ other_publications.followers.all|length }} followers</p>
-                                            {% if publication_list in other_publications.followers.all %}
-                                                <button type="submit" name="end_subscription_{{ other_publications.id}}" class="btn btn-warning card-lin">Unfollow</button>
-                                                {% else %}
-                                                <button type="submit" name="follow_{{ other_publications.id}}" class="btn btn-primary card-lin">Follow</button>
-                                            {% endif %}
-                                          </div>
-                                        </div>
+            <form method="POST" action="{% url 'dashboard_mapping_list' mapping_id=mapping.id list_id=publication_list.id %}">
+            {% csrf_token %}
+            <div class="row">
+                <p class="text-secondary"> This list is currently following the below publications lists using the filter text.
+                To end a subscription, click on end. To add more subscriptions use the selector. </p>
+                <h6 class="text-primary"> Filter:  {{publication_list.criteria }} </h6>
+                {% for mp, lists in mappings.items %}
+                    {% if mp == mapping  %}
+                        {% for other_publications in lists %}
+                            {% if other_publications != publication_list and other_publications not in publication_list.followers.all %}
+                                <div class="card m-3" style="width: 12rem;">
+                                  <div class="card-body">
+                                    <h5 class="card-title"> <a href="{% url 'dashboard_mapping_list' mapping_id=mapping.id list_id=other_publications.id%}"> {{ other_publications.name}} </a></h5>
+                                    <h6 class="card-subtitle mb-2 text-muted">{{other_publications.publications.all|length}} Papers</h6>
+                                     <p class="card-text">{{ other_publications.followers.all|length }} followers</p>
+                                    {% if publication_list in other_publications.followers.all %}
+                                        <button type="submit" name="end_subscription_{{ other_publications.id}}" class="btn btn-warning card-lin">Unfollow</button>
+                                        {% else %}
+                                        <button type="submit" name="follow_{{ other_publications.id}}" class="btn btn-primary card-lin">Follow</button>
                                     {% endif %}
-                                {% endfor %}
+                                  </div>
+                                </div>
                             {% endif %}
                         {% endfor %}
-                    </div>
-           </div>
-        </div>
-      </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            </form>
         {% endif %}
+     </div>
 
-
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="createFollowersHead">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#createFollowers" aria-expanded="false" aria-controls="createFollowers">
-            Create Followers
-          </button>
-        </h2>
-        <div id="createFollowers" class="accordion-collapse collapse" aria-labelledby="createFollowersHead">
-          <div class="accordion-body">
-            <h5> Create Followers </h5>
-            <p class="text-secondary"> Using the filter, create lists that automatically and conditionally follow this list <i> {{ publication_list.name }}</i>.
+     <div class="container border border-primary d-none" id="followersTab" >
+         {% if filter_text %}
+             <form method="POST" action="{% url 'dashboard_mapping_list' mapping_id=mapping.id list_id=publication_list.id %}">
+            {% csrf_token %}
+                <p class="text-secondary"> Using the filter, create lists that automatically and conditionally follow this list <i> {{ publication_list.name }}</i>.
                 Once this list is updated, all its followers will update if the new added publications pass the condition.</p>
-                {% if filter_text %}
-                    <div class="mb-3 row">
+                 <div class="mb-3 row">
                     <label for="filteredText" class="col-sm-2 col-form-label">Filter Text</label>
                     <div class="col-sm-10">
                       <input type="text" readonly class="form-control-plaintext" name="filtered_text" id="filteredText" value="{{filter_text}}" required>
                     </div>
                   </div>
-                    <div class="input-group mb-3">
+                 <div class="input-group mb-3">
                       <input type="text" class="form-control" name="follower_name" placeholder="New Follower List Name" aria-label="New Follower List Name" aria-describedby="createNewFollower" required>
                       <button class="btn btn-outline-success" type="submit" name="create_follower" id="createNewFollower">Create New Follower</button>
-                    </div>
-                {% else %}
-                    <p class="text-warning"> Use the filter to enable this section. </p>
-                {% endif %}
-          </div>
-        </div>
-      </div>
-    </div>
-</form>
+                 </div>
+             </form>
+         {% endif %}
+     </div>
 
+     <div class="container border border-primary
+        {% if not compared %}
+        d-none
+        {% endif %}" id="benchmarkTab" >
+        <p class="text-secondary"> By benchmarking the filtered list against any other lists, a comparison is made between the filtered list and other lists,
+            where the results indicate how accurate the filtering is. </p>
+         <form>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">List Name</th>
+                        <th scope="col">User</th>
+                        <th scope="col">Publications</th>
+                        <th scope="col">Shared with '{{ publication_list.name }}'</th>
+                        <th scope="col">Shared with filtered list</th>
+                    </tr>
+                 {% for pub_list in available_publication_lists %}
+                     {% with pub_list_id=pub_list.id %}
+                         {% if pub_list != publication_list and pub_list.publications.all|length > 0 %}
+                            <tr>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="compare{{ pub_list_id}}" value="{{ pub_list_id }}"
+                                         {% if compared %}
+                                            {% if pub_list_id in compared %}
+                                                checked
+                                            {% endif %}
+                                         {% endif %}
+                                         name="compare_to">
+                                        <label class="form-check-label" for="compare{{ pub_list_id }}">
+                                            {{ pub_list.name}}
+                                        </label>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    {% if pub_list.user %}
+                                        {{ pub_list.user }}
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {{pub_list.publications.all|length}}
+                                </td>
+
+                                <td>
+                                    {% if overall_results %}
+                                        {% if overall_results.all %}
+                                            {% for  key, results in overall_results.all.items %}
+                                                {% if key == pub_list_id %}
+                                                    <b>{{results.shared}} / {{ results.total }}</b>
+                                                    ({{results.shared_rate }})
+                                                    <div class="progress">
+                                                      <div class="progress-bar progress-bar-striped" role="progressbar" style="width: {{results.shared_rate}}" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if overall_results %}
+                                        {% if overall_results.filtered %}
+                                            {% for  key, results in overall_results.filtered.items %}
+                                                {% if key == pub_list_id %}
+                                                    <b>{{results.shared}} / {{ results.total }}</b>
+                                                    ({{results.shared_rate }})
+                                                    <div class="progress">
+                                                      <div class="progress-bar progress-bar-striped" role="progressbar" style="width: {{results.shared_rate}}" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                         {% endif %}
+                     {% endwith %}
+                {% endfor %}
+                </thead>
+            </table>
+            <input type="hidden" value="{{ filter_text }}" name="filter_text">
+            <button type="submit" class="btn btn-primary mb-3"
+            {% if not filter_text %}
+                    disabled
+            {% endif %}
+            >Compare To Filtered List </button> <i class="mx-2"> {{ filter_text }}</i>
+         </form>
+        {% if detailed_results %}
+            <div class="container-fluid">
+                {% include "mapping/mapping_list/compare.html" %}
+            </div>
+        {% endif %}
+     </div>
+ </div>
+ <script>
+     let selectedTabName = "";
+     function selectTab(tabName){
+         const currentTabKey = document.getElementById(`${selectedTabName}TabKey`);
+         const currentTab = document.getElementById(`${selectedTabName}Tab`);
+
+         if (currentTabKey && currentTab){
+             currentTabKey.classList.remove("btn-primary");
+             currentTabKey.classList.add("btn-outline-primary");
+             currentTab.classList.add("d-none");
+         }
+         if (selectedTabName !== tabName){
+             const selectedTabKey = document.getElementById(`${tabName}TabKey`);
+             const selectedTab = document.getElementById(`${tabName}Tab`);
+
+             selectedTabKey.classList.add("btn-primary");
+             selectedTabKey.classList.remove("btn-outline-primary");
+             selectedTab.classList.remove("d-none");
+             selectedTabName = tabName;
+         }
+         else{
+             selectedTabName = "";
+         }
+
+
+     }
+ </script>
