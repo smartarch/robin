@@ -1,11 +1,71 @@
 <div class="container">
     <div class="row">
-        <form action="{% url "publications" %}" method="POST">
-            {% csrf_token %}
-            <div class="form-row">
-                {{ forms.affiliation }}
+        <p> <i>{{ publication.event.name }}  </i></p>
+        <div class="row">
+            <div class="col">
+                {% for author in publication.authors.all %}
+                    <span class="badge bg-dark" > {{ author.first_name }} {{ author.last_name }}</span>
+                {% endfor %}
             </div>
-            <button type="submit" class="btn btn-primary">Save</button>
-        </form>
+        </div>
+        <div class="row">
+            {% with first_author=publication.authoer.all|first %}
+                {% if first_author.affiliation %}
+                    <p> {{ first_author.affiliation.institute }}, {{ first_author.affilaiton.country }}</p>
+                {% endif %}
+            {% endwith %}
+        </div>
+        <div class="row">
+          <div class="col">
+              {% for keyword in publication.author_keywoards.all %}
+                    <span class="badge bg-secondary" > {{ keyword.name }}</span>
+              {% endfor %}
+              {% for keyword in publication.index_keywords.all %}
+                    <span class="badge bg-secondary" > {{  keyword.name }} </span>
+              {% endfor %}
+          </div>
+        </div>
+        <div class="row p-1">
+          <div class="col">
+              {% if  publication.doi %}
+                 <span class="badge text-bg-light">
+                     <a href="https://doi.org/{{publication.doi}}" target="_blank">  {{ publication.doi }}
+                     </a>
+                 </span>
+                {% endif %}
+                {% if  publication.url %}
+                 <span class="badge text-bg-light">
+                     <a href="{{publication.url}}" target="_blank">  {{ publication.url }}
+                     </a>
+                 </span>
+                {% endif %}
+          </div>
+          <div class="row">
+              <div class="col p-1">
+                  {% if publication.event.type %}
+                    <span class="badge text-bg-light">{{ publication.event.type }}  </span>
+                  {% endif %}
+
+                  {% if publication.event.acronym %}
+                    <span class="badge text-bg-light">{{ publication.event.acronym }} </span>
+                  {% endif %}
+
+                  {% if publication.event.volume %}
+                    <span class="badge text-bg-light">volume {{ publication.event.volume }}  </span>
+                  {% endif %}
+
+                  {% if publication.event.publisher %}
+                    <span class="badge text-bg-light">published by {{ publication.event.publisher}}  </span>
+                  {% endif %}
+
+                  {% if publication.event.number %}
+                    <span class="badge text-bg-light">number/issue  {{ publication.event.number }}  </span>
+                  {% endif %}
+              </div>
+          </div>
+         {% if publication.abstract %}
+            <span > <b> Abstract</b> {{ publication.abstract }}</span>
+         {% endif %}
+      </div>
     </div>
 </div>
