@@ -18,6 +18,7 @@ class Mapping(models.Model):
 
 class PublicationList(models.Model):
 	name = models.CharField(max_length=128)
+	user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 	mapping = models.ForeignKey(Mapping, on_delete=models.CASCADE)
 	publications = models.ManyToManyField(Publication, blank=True)
 	followers = models.ManyToManyField("PublicationList", related_name="my_followers", blank=True)
