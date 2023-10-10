@@ -1,0 +1,26 @@
+<div class="container-fluid">
+    {% if my_review %}
+        <p>You have assigned a review to this publication list already with the name of {{ review.name }}</p>
+        <form action="{% url 'review_edit' mapping_id=mapping.id list_id=publication_list.id %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" class="form-control" name="review_id" value="{{ my_review.id }}">
+                <div class="input-group my-1">
+                  <input type="text" class="form-control" name="review_name" required placeholder="Review Name" aria-label="Review Name" aria-describedby="button-addon3" value="{{ my_review.name }}">
+                  <button class="btn btn-outline-primary" type="submit" id="button-addon3" name="edit_review">Update Review</button>
+                </div>
+
+            </form>
+    {% else %}
+        <h5 class="text-center my-1" > Leave a Review </h5>
+            <form action="{% url 'review_new' mapping_id=mapping.id list_id=publication_list.id %}" method="POST">
+                {% csrf_token %}
+                <div class="input-group mb-3">
+                  <input type="text" class="form-control" name="review_name" required placeholder="Review Name" aria-label="Review Name" aria-describedby="button-addon2">
+                  <button class="btn btn-outline-success" type="submit" id="button-addon2" name="add_review">Create Review</button>
+                </div>
+
+            </form>
+
+    {% endif %}
+
+</div>

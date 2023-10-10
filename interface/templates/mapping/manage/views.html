@@ -1,0 +1,16 @@
+{% if filter_text %}
+    <form method="POST" action="{% url 'publication_list' mapping_id=mapping.id list_id=publication_list.id %}">
+    {% csrf_token %}
+        <p > After the filter is performed, it is possible to create automatic <b>Views</b> which will be updated automatically when the parent list (in this case <i>'{{ publication_list.name }}</i>), is updated and the given condition is True.</p>
+         <div class="mb-3 row">
+            <label for="filteredText" class="col-sm-2 col-form-label">Filter Text</label>
+            <div class="col-sm-10">
+              <input type="text" readonly class="form-control-plaintext" name="filtered_text" id="filteredText" value="{{filter_text}}" required>
+            </div>
+          </div>
+         <div class="input-group mb-3">
+              <input type="text" class="form-control" name="view_name" placeholder="New View Name" aria-label="New View Name" aria-describedby="createNewView" required>
+              <button class="btn btn-outline-success" type="submit" name="create_view" id="createNewView">Create New View</button>
+         </div>
+    </form>
+{% endif %}
