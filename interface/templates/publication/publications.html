@@ -14,6 +14,13 @@
                               name="selected_publications">
                               <label class="form-check-label d-block" for="select_{{ publication.id }}">
                                   {% include "publication/publication_types.html" %}{{ publication.title}} <b> ({{ publication.year }}) </b>
+                                  <span class="me-auto">
+                                      {% with pdf=publication.get_full_text %}
+                                          {% if pdf %}
+                                            <a href="{{ pdf }}" target="_blank" class="btn btn-outline-success"> View Full Text </a>
+                                          {% endif     %}
+                                      {% endwith %}
+                                  </span>
                               </label>
 
                             </div>
@@ -28,20 +35,37 @@
                         </div>
                     </div>
                 </div>
-                    <div class="d-none container-fluid bg-info bg-opacity-10 border border-info border-start-0 rounded-end mb-3" id="containerDetails_{{ publication.id }}">
-                        <div class="col-10">
-                            {% include "publication/publication_single.html" %}
-                        </div>
-                        <div class="col-2">
-                            {% with publication_id=publication.id %}
-                                {% if publication_id in other_lists %}
-                                    <h5> Also exists in </h5>
-                                    {% for other_list in other_lists.publication_id %}
-                                        <p> {{ other_list }} by {{ other_list.creator }}</p>
-                                    {% endfor %}
-                                {% endif %}
-                            {% endwith %}
-
+                    <div class="d-none container-fluid bg-info bg-opacity-10 border border-info border-start-0 rounded-end p-2" id="containerDetails_{{ publication.id }}">
+                        <div class="row">
+                            <div class="col-8">
+                                {% include "publication/publication_single.html" %}
+                            </div>
+                            <div class="col-4">
+                                    {% if my_review %}
+                                        <div class="row mb-1">
+                                            <h5 class="text-center"> Your Review: {{ review.name }} </h5>
+                                            <div class="container-fluid">
+                                                {% include "mapping_review/publication_review.html" %}
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        Add a review using the "Step 4: Synthesis and Review" Section
+                                    {% endif %}
+                                    <div class="row mb-1">
+                                        <h5 class="text-center"> Other Reviewers Review </h5>
+                                        {% include "mapping_review/publication_reviews.html" %}
+                                    </div>
+                                <div class="row">
+                                    {% with publication_id=publication.id %}
+                                        {% if publication_id in other_lists %}
+                                            <h5> Also exists in </h5>
+                                            {% for other_list in other_lists.publication_id %}
+                                                <p> {{ other_list }} by {{ other_list.creator }}</p>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                            </div>
                         </div>
                     </div>
             {% endfor %}
@@ -89,6 +113,7 @@
         </nav>
         </div>
     </div>
+
 </div>
 <div class="position-fixed bottom-0 mb-5 end-0 w-50" style="z-index: 99999;" >
     {% for publication in  page_obj %}
