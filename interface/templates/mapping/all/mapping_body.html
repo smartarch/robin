@@ -1,6 +1,6 @@
 
 <div class="container">
-<h4> <a href="{% url 'dashboard_mapping' mapping_id=mapping.id %}" > {{ mapping.name }} </a>
+<h4> <a href="{% url 'mapping' mapping_id=mapping.id %}" > {{ mapping.name }} </a>
     </h4>
     <p> {{ mapping.description }}</p>
     <hr>
@@ -23,12 +23,12 @@
                 {% for publication_list in publication_lists %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <a  data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Click to view the list"
-                            href="{% url 'dashboard_mapping_list' mapping_id=mapping_id list_id=publication_list.id %}" >
+                            href="{% url 'publication_list' mapping_id=mapping_id list_id=publication_list.id %}" >
                             {{ publication_list.name }} </a>
                         {% if user_preference.default_list ==  publication_list%}
                         <span class="badge bg-dark rounded-pill">default</span>
                         {% else %}
-                            <form action="{% url 'dashboard_all_mappings' %}" method="POST">
+                            <form action="{% url 'mapping_all' %}" method="POST">
                                 {% csrf_token %}
                                 <input type="hidden" name="mapping_id" value="{{ mapping_id }}" />
                                 <input type="hidden" name="list_id" value="{{ publication_list.id }}" />
