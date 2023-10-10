@@ -11,7 +11,7 @@ from .managers import ReviewerManager
 class Reviewer(AbstractUser):
     username = None
     email = models.EmailField(_("email address"), unique=True)
-
+    photo = models.ImageField(upload_to="user_profile_pictures", null=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
