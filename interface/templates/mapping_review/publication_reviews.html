@@ -1,0 +1,48 @@
+<div class="container-fluid">
+    <div class="row">
+        <table>
+            <thead class="table">
+                <tr class="border-bottom border-danger border-opacity-50">
+                    <th> Reviewer </th>
+                    <th> Caption </th>
+                    <th> Value </th>
+                    <th> Accepted </th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for field in reviewer_fields %}
+                {% for other_review in all_reviews %}
+                    {% if  other_review != my_review %}
+                              {% for reviewed_field, reviewed_reviews in user_field_reviews.items %}
+                                    {% if reviewed_field == field %}
+                                        {% for reviewed_review, reviewed_publications  in  reviewed_reviews.items %}
+                                            {% if reviewed_review == other_review %}
+                                                {% for reviewed_publication, checked_fields in reviewed_publications.items %}
+                                                    {% if reviewed_publication == publication %}
+                                                        {% if checked_fields %}
+                                                            <tr>
+                                                            <td> {{ reviewed_review.reviewer.short_name }}  </td>
+                                                            <td> {{ field.caption }}  </td>
+                                                            <td> {{ field.value }}</td>
+                                                                {% with first=checked_fields|first %}
+                                                                    {% if first.checked  %}
+                                                                        <td>  <span class="badge bg-success"> Accepted </span> </td>
+                                                                    {% else %}
+                                                                       <td> <span class="badge bg-danger"> Rejected </span></td>
+                                                                    {% endif %}
+                                                                {% endwith %}
+                                                            </tr>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endif %}
+                                        {% endfor %}
+                                  {% endif %}
+                              {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
