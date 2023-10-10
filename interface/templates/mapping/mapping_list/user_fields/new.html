@@ -1,0 +1,31 @@
+<form method="POST" action="{% url 'field_new' mapping_id=view.kwargs.mapping_id list_id=view.kwargs.list_id %}">
+    {% csrf_token %}
+    <div class="row mt-1 p-2">
+        <div class="col-3 px-1">
+          <div class="input-group">
+              <span class="input-group-text" id="basic-addon1">Caption</span>
+              <input type="text" class="form-control" placeholder="Field Caption" aria-label="Caption" aria-describedby="basic-addon1" name="field_caption" required>
+          </div>
+        </div>
+
+        <div class="col-4 px-1">
+            <div class="input-group">
+                <span class="input-group-text" id="basic-addon1">Value</span>
+                <input type="text" class="form-control" placeholder="Field Value" aria-label="Value" aria-describedby="basic-addon2" name="field_value" required>
+            </div>
+        </div>
+        <div class="col-3 px-1">
+            <select class="form-select" aria-label="Field Type" required name="field_type" >
+                <option value="T" selected>Text Field</option>
+                <option value="N" >Numeric Field (Integer or Real)</option>
+                <option value="B" >Boolean Field (True or False)</option>
+                <option value="L" >List Filed (Separate by comma)</option>
+            </select>
+        </div>
+        <div class="col-2">
+            <div class="row align-middle">
+                <button class="btn btn-outline-success" type="submit" id="button-addon2" name="add_field">Add</button>
+            </div>
+        </div>
+    </div>
+</form>
