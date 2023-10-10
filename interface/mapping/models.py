@@ -23,7 +23,7 @@ class Mapping(models.Model):
 
 class PublicationList(models.Model):
 	name = models.CharField(max_length=64)
-	user = models.ForeignKey(Reviewer, on_delete=models.SET_NULL, null=True)
+	reviewer = models.ForeignKey(Reviewer, on_delete=models.CASCADE)
 	mapping = models.ForeignKey(Mapping, on_delete=models.CASCADE)
 	publications = models.ManyToManyField(Publication, blank=True)
 	type = models.CharField(max_length=1, choices=[("M", "Manual"), ("A", "Automated")], default="M")
@@ -53,7 +53,8 @@ class PublicationList(models.Model):
 class UserField(models.Model):
 	caption = models.CharField(max_length=64)
 	value = models.CharField(max_length=2048)
-	type = models.CharField(max_length=1, choices=[("T", "Text"), ("N", "Number"), ("B", "Boolean"), ("L", "list")])
+	type = models.CharField(max_length=1, choices=[("T", "Text"), ("N", "Number"), ("B", "Boolean"), ("L", "List")])
+	reviewer = models.ForeignKey(Reviewer, on_delete=models.CASCADE)
 	publication_list = models.ForeignKey(PublicationList, on_delete=models.CASCADE)
 	@property
 	def data(self) -> str | float | int | bool | list[str]:
@@ -73,42 +74,42 @@ class UserField(models.Model):
 			return self.value.lower() == "true"
 
 	@data.setter
-	def data(self, value: str | float | int | bool | list[str]) -> None:
-		if isinstance(value, str):
-			self.value = value
-			self.type = "T"
+	def data(self, value: str) -> None:
+		self.value = value
 
-		elif isinstance(value, float) or isinstance(value, int):
-			self.value = str(value)
-			self.type = "N"
-
-		elif isinstance(value, list):
-			self.value = ",".join(value)
-			self.type = "L"
-
-		elif isinstance(value, bool):
-			self.value = str(value)
-			self.type = "B"
+	def __str__(self):
+		return self.caption
 
 
 class Review(models.Model):
-	user = models.ForeignKey(Reviewer, on_delete=models.CASCADE)
+	name = models.CharField(max_length=128)
+	reviewer = models.ForeignKey(Reviewer, on_delete=models.CASCADE)
 	publication_list = models.ForeignKey(PublicationList, on_delete=models.CASCADE)
-	publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
 
+	def __str__(self):
+		return self.reviewer.short_name()
 
 class Comment(models.Model):
-	user = models.ForeignKey(Reviewer, on_delete=models.CASCADE)
+	reviewer = models.ForeignKey(Reviewer, on_delete=models.CASCADE)
 	original = models.ForeignKey("Comment", on_delete=models.CASCADE, related_name="original_comment")
-	comment = models.TextField(blank=False)
 	review = models.ForeignKey(Review, on_delete=models.CASCADE)
-
+	publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
+	comment = models.TextField(blank=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
 
 class UserFieldReview (models.Model):
-	user_field = models.ForeignKey(UserField, on_delete=models.CASCADE)
+	reviewer_field = models.ForeignKey(UserField, on_delete=models.CASCADE)
+	publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
 	review = models.ForeignKey(Review, on_delete=models.CASCADE)
 	checked = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
 
+	def __str__(self):
+		return f"{self.reviewer_field.caption} - of {self.publication.title} as {self.checked}"
 
 class UserPreferences(models.Model):
 	user = models.ForeignKey(Reviewer, on_delete=models.CASCADE)
