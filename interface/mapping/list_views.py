@@ -7,10 +7,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, get_object_or_404
 from django.core.paginator import Paginator
 
-# local packages
-from .models import Mapping, PublicationList, UserPreferences
-from .criteria import create_advanced_query
 
+# local packages
+from .models import Mapping, PublicationList, UserPreferences, UserField, Review, UserFieldReview, Comment
+from .criteria import create_advanced_query
+from .field_views import FieldReviewView
 def copy_publication_lists(request: Any, authorized_mappings: Any, publication_list: Any) -> None:
 	if request.POST.__contains__("copy_from"):
 		copy_from = [int(x) for x in request.POST.get_list("copy_from")]
@@ -34,21 +35,24 @@ class NewListView(LoginRequiredMixin, CreateView):
 		:param kwargs:
 		:return:
 		"""
-		if not request.POST.__contains__("list_created"):
-			return redirect("dashboard_mapping_all_lists")
 
 		if "mapping_id" not in kwargs:
-			return redirect("dashboard_mapping_all_lists")
+			return redirect("mapping_all")
 
-		authorized_mappings = Mapping.objects.filter(reviewers__in=[request.user])
+		if not request.POST.__contains__("list_created"):
+			return redirect("publication_list_all", mapping_id=kwargs["mapping_id"])
+
+		user = request.user
+
+		authorized_mappings = Mapping.objects.filter(reviewers__in=[user])
 		mapping = get_object_or_404(authorized_mappings, id=kwargs["mapping_id"])
 
-		new_publication_list = PublicationList(name=request.POST.get("list_name"), mapping=mapping, user=request.user)
+		new_publication_list = PublicationList(name=request.POST.get("list_name"), mapping=mapping, reviewer=user)
 		new_publication_list.save()
 
 		copy_publication_lists(request, authorized_mappings, new_publication_list)
 
-		return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=new_publication_list.id)
+		return redirect("publication_list", mapping_id=mapping.id, list_id=new_publication_list.id)
 
 
 class MappingListView(LoginRequiredMixin, TemplateView):
@@ -56,12 +60,19 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 
 	def post(self, request: Any, *args: Any, **kwargs: Any) -> Any:
 		if "mapping_id" not in kwargs or "list_id" not in kwargs:
-			return redirect("dashboard_mapping_all_lists")
+			return redirect("mapping_all")
+
+		# TODO we need to split the form of publications somehow
+		if "save_field_reviews" in request.POST:
+			view = FieldReviewView()
+			return view.post(request, *args, **kwargs)
+
 
 		authorized_mapping = Mapping.objects.filter(reviewers__in=[request.user])
 		mapping = get_object_or_404(authorized_mapping, id=kwargs["mapping_id"])
 		available_publication_lists = PublicationList.objects.filter(mapping=mapping)
 		current_publication_list = get_object_or_404(available_publication_lists, id=kwargs["list_id"])
+		user = request.user
 
 		copy_instance = user_preference = page_size = subscriber_instance_end = follower_instance = None
 		move_instead_of_copy = False
@@ -70,7 +81,7 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 		for copy_move in copy_move_new:
 			if copy_move:
 				new_list_name = request.POST.get(f"new_list_name_{copy_move[0]}")
-				new_publication_list = PublicationList(name=new_list_name, mapping=mapping, user=request.user)
+				new_publication_list = PublicationList(name=new_list_name, mapping=mapping, reviewer=user)
 				new_publication_list.save()
 
 				copy_instance = new_publication_list
@@ -94,7 +105,7 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 		for page in page_sizer:
 			if page:
 				page_size = int(page[0])
-				user_preference = get_object_or_404(UserPreferences, user=request.user)
+				user_preference = get_object_or_404(UserPreferences, user=user)
 
 		subscription_ender = [re.findall("end_subscription_(\d+)", key) for key in request.POST.keys()]
 		for subscriber in subscription_ender:
@@ -120,7 +131,7 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 						if move_instead_of_copy:
 							current_publication_list.publications.remove(pub)
 							current_publication_list.save()
-					return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=copy_instance.id)
+					return redirect("publication_list", mapping_id=mapping.id, list_id=copy_instance.id)
 
 				elif request.POST.__contains__("delete_from_current_list"):
 					for pub in available_publications:
@@ -156,22 +167,22 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 				follower_instance.followers.add(current_publication_list)
 				follower_instance.save()
 
-		if request.POST.__contains__("create_follower"):
-			new_follower_name = request.POST.get("follower_name")
+		if request.POST.__contains__("create_view"):
+			new_view_name = request.POST.get("view_name")
 			filtered_text = request.POST.get("filtered_text")
-			new_follower = PublicationList(name=new_follower_name, mapping=mapping, criteria=filtered_text,
-			    user=request.user)
-			new_follower.save()
-			new_follower.subscriptions.add(current_publication_list)
-			new_follower.save()
-			current_publication_list.followers.add(new_follower)
+			new_view = PublicationList(name=new_view_name, mapping=mapping, criteria=filtered_text, reviewer=user)
+			new_view.save()
+			new_view.type = "Automated"
+			new_view.subscriptions.add(current_publication_list)
+			new_view.save()
+			current_publication_list.followers.add(new_view)
 			current_publication_list.save()
-			return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=new_follower.id)
+			return redirect("publication_list", mapping_id=mapping.id, list_id=new_view.id)
+
 
 		return self.get(request, *args, **kwargs)
 
-
-	def compare (self, publication_list: PublicationList, publications: Any, filter_object: Any = None) -> {}:
+	def compare(self, publication_list: PublicationList, publications: Any, filter_object: Any = None) -> {}:
 		found = [pub for pub in publications if pub in publication_list.publications.all()]
 		compact_results = {
 			'shared': len(found),
@@ -199,12 +210,12 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 		:return:
 		"""
 		if "mapping_id" not in kwargs or "list_id" not in kwargs:
-			return redirect("dashboard_mapping_all_lists")
+			return redirect("mapping_all")
 
 		authorized_mappings = Mapping.objects.filter(reviewers__in=[request.user])
 
 		if len(authorized_mappings) == 0:
-			return redirect("dashboard_all_mappings")
+			return redirect("publication_list_all", mapping_id=kwargs["mapping_id"])
 
 		mapping = get_object_or_404(authorized_mappings, id=kwargs["mapping_id"])
 		available_publication_lists = PublicationList.objects.filter(mapping=mapping)
@@ -263,6 +274,22 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 		page_number = request.GET.get("page")
 		page_obj = paginator.get_page(page_number)
 
+		reviewer_fields = UserField.objects.filter(publication_list=publication_list)
+		reviews = Review.objects.filter(publication_list=publication_list)
+		my_review = reviews.filter(reviewer=request.user)
+
+		user_field_reviews = {
+			reviewer_field: {
+				review: {
+					publication: UserFieldReview.objects.filter(
+						reviewer_field=reviewer_field).filter(review=review).filter(publication=publication)
+					for publication in publications
+				}
+				for review in reviews
+			}
+			for reviewer_field in reviewer_fields
+		}
+
 		context = {
 			**super().get_context_data(**kwargs),
 			"user": request.user,
@@ -273,6 +300,7 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 			"overall_results": overall_results,
 			"detailed_results": detailed_results,
 			"original_size": original_size,
+			"reviewer_fields": reviewer_fields,
 			"filtered_size": filtered_size,
 			"filter_text": filter_text,
 			"filter_errors": filter_errors,
@@ -280,6 +308,9 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 			"available_publication_lists": available_publication_lists,
 			"publication_list": publication_list,
 			"user_preference": user_preference,
+			"my_review": my_review[0] if my_review else None,
+			"all_reviews": reviews,
+			"user_field_reviews": user_field_reviews,
 			"available_page_sizes": [x for x in range(25, min(201, original_size+1), 25)],
 			"page_obj": page_obj,
 		}
@@ -304,7 +335,7 @@ class MappingAllListView(LoginRequiredMixin, View):
 		available_publication_lists = PublicationList.objects.filter(mapping=mapping)
 		if available_publication_lists:
 			current_list_id = available_publication_lists[0].id
-			return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=current_list_id)
+			return redirect("publication_list", mapping_id=mapping.id, list_id=current_list_id)
 
 		return redirect("dashboard")
 
@@ -314,7 +345,7 @@ class ListDeleteView(LoginRequiredMixin, DeleteView):
 
 	def post(self, request, *args, **kwargs) -> {}:
 		if 'mapping_id' not in kwargs or 'list_id' not in kwargs:
-			return redirect("dashboard_mapping_all_lists", mapping_id=kwargs["mapping_id"])
+			return redirect("publication_list_all", mapping_id=kwargs["mapping_id"])
 
 		fully_authorized_mappings = Mapping.objects.filter(leader=request.user)
 		mapping = get_object_or_404(fully_authorized_mappings, id=kwargs["mapping_id"])
@@ -325,4 +356,4 @@ class ListDeleteView(LoginRequiredMixin, DeleteView):
 			if len(fully_authorized_lists) > 1:
 				publication_list.delete()
 
-		return redirect("dashboard_mapping_all_lists", mapping_id=kwargs["mapping_id"])
+		return redirect("publication_list_all", mapping_id=kwargs["mapping_id"])
