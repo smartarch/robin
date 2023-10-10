@@ -57,15 +57,12 @@
                                 Entering DOI</button>
                             {% include "publication/modals/doi.html" %}
 
-                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bibTextModal">
-                                Uploading .bib
+                            <a class="btn btn-outline-primary" href="{% url 'add_publication_by_web' list_id=publication_list.id %}">Searching the Web</a>
 
-                            </button>
-                            {% include "publication/modals/bib_text.html" %}
 
-                            <form action="{% url 'dashboard_mapping_list' mapping_id=mapping.id list_id=publication_list.id %}" name="import_form" method="POST">
+                            <form action="{% url 'publication_list' mapping_id=mapping.id list_id=publication_list.id %}" name="import_form" method="POST">
                                 {% csrf_token %}
-                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Import from other Lists/Mappings</button>
+                                <button type="button" class="btn btn-outline-primary mx-1" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Import from other Lists/Mappings</button>
                                 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
                                     <div class="offcanvas-header">
                                     <h5 class="offcanvas-title" id="offcanvasRightLabel">Import from Publication Lists</h5>
@@ -78,8 +75,6 @@
                                 </div>
                             </form>
 
-
-                            <a class="btn btn-outline-primary" href="{% url 'add_publication_by_web' list_id=publication_list.id %}">Searching the Web</a>
                         </div>
                     </div>
             </div>
@@ -114,12 +109,14 @@
                         </div>
                         <div class="col-12">
                             {% include "mapping/forms/filter.html" %}
+                            {% include "mapping/manage.html" %}
                         </div>
                         <hr>
                         <div class="col-12">
-                            <form action="{% url 'dashboard_mapping_list' mapping_id=mapping.id list_id=publication_list.id %}" name="manage_publications" method="POST">
+                            <form action="{% url 'publication_list' mapping_id=mapping.id list_id=publication_list.id %}" name="manage_publications" method="POST">
                                 {% csrf_token %}
-                                    {% include "publication/select.html" %}
+                                {% include "publication/select.html" %}
+
                                 <hr>
                                 <div class="row">
                                     {% include "publication/publications.html" %}
