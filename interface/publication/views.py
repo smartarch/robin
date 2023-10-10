@@ -1,23 +1,17 @@
 from typing import Any
 import json
-from django.http import HttpResponse
 from django.core.paginator import Paginator
-from django.template import loader
-from django.db.models import Q
-from django.views.generic import TemplateView, View, CreateView
-from .models import Publication, Keywords
+from django.views.generic import TemplateView, CreateView
+from .models import Publication
 from django.http import HttpResponseBadRequest
-from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.mixins import LoginRequiredMixin
 import requests
 from mapping.models import PublicationList, UserPreferences, Mapping
 from query.models import QueryPlatform, Query
 from django.shortcuts import get_object_or_404, redirect
 # parsers
-from .parsers import DOIParser, ParseBibText, IEEEXploreParser, ScopusParser
-from .factories import PublicationFactory
-import re
-from urllib import parse
+from .parsers import DOIParser, IEEEXploreParser, ScopusParser, get_publication_by_doi
+from .factories import PublicationFactory, create_publication
 
 class AddPublicationByDOI(LoginRequiredMixin, CreateView):
     model = Publication
@@ -32,73 +26,25 @@ class AddPublicationByDOI(LoginRequiredMixin, CreateView):
             next_url = "/dashboard"
 
         doi = request.POST.get("doi")
+        new_publication = None
         already_added_publications = Publication.objects.filter(doi=doi)
         if len(already_added_publications) > 0:
             new_publication = already_added_publications[0]
         else:
-            request_data = requests.get(f"https://doi.org/{doi}", headers={
-                "Accept": "application/vnd.citationstyles.csl+json"})
-            doi_parser = DOIParser()
-            parsed_json = doi_parser.parse(request_data.json())
-
-            publication_creator = PublicationFactory()
-            new_publication = publication_creator.create(parsed_json)
-            if new_publication:
-                new_publication.save()
+            request_data = get_publication_by_doi(doi)
+            if isinstance(request_data, dict):
+                new_publication = create_publication(request_data)
 
         if request.POST.__contains__("list_id"):
             list_id = int(request.POST.get("list_id"))
             publication_list = get_object_or_404(PublicationList, id=list_id)
 
             if request.user in publication_list.mapping.reviewers.all():
-                if new_publication not in publication_list.publications.all():
+                if new_publication and new_publication not in publication_list.publications.all():
                     publication_list.publications.add(new_publication)
                     publication_list.save()
 
         return redirect(next_url)
-
-
-class AddPublicationsByBibText(LoginRequiredMixin, View):
-    def post(self, request: Any, *args: Any, **kwargs: Any) -> Any:
-        if not request.POST.__contains__("bib_text") and not request.FILES:
-            return HttpResponseBadRequest("The bib text is not specified", status=406)  # 406: Not acceptable
-
-        if request.POST.__contains__("next"):
-            next_url = request.POST.get("next")
-        else:
-            next_url = "/dashboard"
-
-        sources = {
-            **{a.name: a for a in request.FILES.getlist("bib_text_files")},
-            'direct_text': request.POST.get("bib_text").split('\n')
-        }
-
-        for filename, content in sources.items():
-            sources[filename] = "\n".join([line if isinstance(line, str) else line.decode("UTF-8") for line in content])
-
-        publication_creator = PublicationFactory()
-        for source, publications in sources.items():
-            parser = ParseBibText()
-            try:
-                temporary_jsons = parser.parse(publications)
-                for temporary_json in temporary_jsons:
-                    new_publication = publication_creator.create(temporary_json)
-
-                    if new_publication:
-                        new_publication.save()
-
-                    if request.POST.__contains__("list_id"):
-                        list_id = int(request.POST.get("list_id"))
-                        publication_list = get_object_or_404(PublicationList, id=list_id)
-
-                        if request.user in publication_list.mapping.reviewers.all():
-                            if new_publication not in publication_list.publications.all():
-                                publication_list.publications.add(new_publication)
-                                publication_list.save()
-            except:
-                return HttpResponseBadRequest("The bib text is not correct", status=406)  # 406: Not acceptable
-        return redirect(next_url)
-
 
 class AddPublicationsByWeb(LoginRequiredMixin, TemplateView):
     template_name = "publication/web_search.html"
@@ -244,8 +190,7 @@ class AddPublicationsByWeb(LoginRequiredMixin, TemplateView):
 
         current_list = get_object_or_404(PublicationList, id=int(kwargs["list_id"]))
 
-        return redirect("dashboard_mapping_list",
-                        mapping_id=current_list.mapping.id, list_id=current_list.id)
+        return redirect("publication_list", mapping_id=current_list.mapping.id, list_id=current_list.id)
 
     def post(self, request: Any, *args: Any, **kwargs: Any) -> Any:
         if request.POST.__contains__("search_on_web"):
