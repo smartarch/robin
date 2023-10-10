@@ -1,5 +1,7 @@
 from django.db import models
 
+import os
+
 class Source(models.Model):
     """
         Represents the source of publication (i.e. ACM, IEEE, SCOPUS ...).
@@ -41,7 +43,7 @@ class Author(models.Model):
 
     # optional fields
     affiliation = models.ForeignKey(Affiliation, on_delete=models.CASCADE, blank=True, null=True)
-    identifier = models.SlugField(max_length=1024, blank=True)
+    ORCID = models.SlugField(max_length=1024, null=True)
 
     @property
     def name(self) -> str:
@@ -81,7 +83,6 @@ class Keywords(models.Model):
     def __str__(self) -> str:
         return f"{self.name}"
 
-
 class Publication(models.Model):
     """
         Represents the publication.
@@ -100,12 +101,31 @@ class Publication(models.Model):
     # optional links
     source = models.ForeignKey(Source, on_delete=models.SET_NULL, null=True)
 
-    # optional fields
-    citations = models.PositiveIntegerField(default=0)
     abstract = models.TextField(blank=True)
-    doi = models.SlugField(max_length=1024, blank=True)
-    url = models.URLField(max_length=1024, blank=True)
-    note = models.TextField(blank=True)
+    doi = models.SlugField(max_length=1024, unique=True)
 
     def __str__(self) -> str:
         return f"{self.title}"
+
+    def get_full_text(self):
+        all_full_texts = FullText.objects.filter(publication=self)
+        pdf_text = all_full_texts.filter(type="P")
+        if pdf_text:
+            if pdf_text[0].resource:
+                return f"/{pdf_text[0].resource}"
+            else:
+                return pdf_text[0].url
+        if all_full_texts:
+            return all_full_texts[0].url
+
+        return None
+class FullText(models.Model):
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
+    type = models.CharField(max_length=1, default="T",
+            choices=[("H", "text/html"), ("P", "application/pdf"), ("X", "text/xml"), ("T", "text/plain")])
+    resource = models.FileField(upload_to="full_text", null=True)
+    url = models.URLField(max_length=1024)
+
+    def delete(self, using=None, keep_parents=False):
+        os.remove(self.resource.path)
+        super().delete(using=using, keep_parents=keep_parents)
