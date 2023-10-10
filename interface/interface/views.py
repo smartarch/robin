@@ -57,9 +57,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 					user_preferences[0].default_list = def_list
 					user_preferences[0].save()
 
-				return redirect("dashboard_mapping_list", mapping_id=mapping.id, list_id=def_list.id)
+				return redirect("publication_list", mapping_id=mapping.id, list_id=def_list.id)
 
-			return redirect("dashboard_all_mappings")
+			return redirect("mapping_all")
 
 		return self.render_to_response(context)
 
@@ -94,7 +94,6 @@ class DashboardAccountView(LoginRequiredMixin, TemplateView):
 			if request.user.is_active:
 				request.user.first_name = request.POST.get("first_name")
 				request.user.last_name = request.POST.get("last_name")
-				request.user.email = request.POST.get("email")
 				request.user.save()
 
 		if request.POST.__contains__("user_deactivated"):
