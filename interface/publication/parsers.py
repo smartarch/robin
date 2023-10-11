@@ -320,7 +320,6 @@ def get_publication_by_doi(doi: str) -> dict | int:
                 contributors_list = [contributors_dict["person_name"]]
             else:
                 contributors_list = contributors_dict["person_name"]
-
             for contributor in contributors_list:
                 authors.append({
                     "first_name": contributor["given_name"],

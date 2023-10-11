@@ -1,7 +1,6 @@
 from django.db import models
 from django.db.models import Q
 from .models import Source, Country, Affiliation, Author, Event, Publication, Keywords, FullText
-from django.core.files.base import ContentFile
 import requests
 
 
@@ -63,6 +62,7 @@ class PublicationFactory:
 		return created_keywords
 
 	def resolve_authors(self, authors: list) -> [Author]:
+		print (authors)
 		created_authors = []
 		for author in authors:
 			new_author = self.author.create({"first_name": author["first_name"], "last_name": author["last_name"]})
@@ -111,7 +111,23 @@ class PublicationFactory:
 
 		new_publication.save()
 		return new_publication
-
+def create_fulltext(decoded, t, extension, pub) -> None:
+	for text in decoded:
+		try:
+			print ("starting download")
+			response = requests.get(text)
+			if response.ok:
+				with open(f"media/full_text/paper_{pub.id}.{extension}", "wb") as resource:
+					resource.write(response.content)
+					full_text = FullText(url=text, address=f"paper_{pub.id}.{extension}", type=t, publication=pub)
+					full_text.save()
+				print ("download went well")
+			else:
+				full_text = FullText(url=text, address="", type=t, publication=pub)
+				full_text.save()
+				print("download failed")
+		except:
+			continue
 
 def create_publication(data: dict) -> Publication:
 
@@ -132,22 +148,17 @@ def create_publication(data: dict) -> Publication:
 	else:
 		event = Event()
 		for direct_item in ["type", "name", "volume", "acronym", "number"]:
-			if  data["event"][direct_item]:
+			if data["event"][direct_item]:
 				event.__dict__[direct_item] = data["event"][direct_item]
 		event.save()
 
 	publication.event = event
 	publication.save()
-
 	for author_data in data["authors"]:
-		def_author = Author.objects.filter(ORCID=author_data["ORCID"])
 		p_author = Author.objects.filter(last_name=author_data["last_name"]).filter(first_name=author_data["first_name"])
 
-		if def_author or p_author:
-			if def_author:
-				author = def_author[0]
-			else:
-				author = p_author[0]
+		if p_author:
+			author = p_author[0]
 		else:
 			author = Author(first_name=author_data["first_name"], last_name=author_data["last_name"], ORCID=author_data["ORCID"])
 			if "affiliation" in author_data and author_data["affiliation"]:
@@ -158,7 +169,7 @@ def create_publication(data: dict) -> Publication:
 				else:
 					if len(affiliation_text) > 1:
 						affiliation = Affiliation(institute=affiliation_text[0])
-						countries = Country.objects.filter(affiliation_text[-1])
+						countries = Country.objects.filter(name=affiliation_text[-1])
 						if countries:
 							country = countries[0]
 						else:
@@ -172,21 +183,10 @@ def create_publication(data: dict) -> Publication:
 			publication.authors.add(author)
 			publication.save()
 
-	def create_fulltext(code, t, extension) -> None:
-		for text in data["full_text"][code]:
-			response = requests.get(text)
-			if response.ok:
-				with open(f"media/full_text/paper_{publication.id}.{extension}", "wb") as resource:
-					resource.write(response.content)
-					full_text = FullText(url=text, resource=resource, type=t, publication=publication)
-					full_text.save()
-			else:
-				full_text = FullText(url=text, type=t, publication=publication)
-				full_text.save()
+	create_fulltext(data["full_text"]["text/html"], "H", "html", publication)
+	create_fulltext(data["full_text"]["application/pdf"], "P", "pdf", publication)
+	create_fulltext(data["full_text"]["text/plain"], "T", "txt", publication)
+	create_fulltext(data["full_text"]["text/xml"], "X", "xml", publication)
 
-	create_fulltext("text/html", "H", "html")
-	create_fulltext("application/pdf", "P", "pdf")
-	create_fulltext("text/plain", "T", "txt")
-	create_fulltext("text/xml", "X", "xml")
 	return publication
 
