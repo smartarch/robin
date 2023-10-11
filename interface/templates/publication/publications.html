@@ -4,8 +4,6 @@
         <div class="list-group">
             {% for publication in page_obj %}
                 <div class="bg-opacity-10 list-group-item list-group-item-action "
-                     onmouseenter="show_popup({{ publication.id }})"
-                     onmouseleave="hide_popup({{ publication.id }})"
                     id="container_{{ publication.id }}" >
                     <div class="row">
                         <div class="col-11">
@@ -122,7 +120,7 @@
         {% with first_author=publication.authors.all|first %}
             <b> {{ first_author.first_name }} {{ first_author.last_name }} et al </b>
             {% if first_author.affiliation %}
-                <p> {{ first_author.affiliation.insitute }}</p>
+                <p> {{ first_author.affiliation.institute }}</p>
                 <p> {{ first_author.affiliation.country }}</p>
             {% endif %}
         {% endwith %}
