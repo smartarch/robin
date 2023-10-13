@@ -7,10 +7,13 @@ from typing import Any
 
 ARTICLE_TYPES = {
     "article": "Journal Article",
+    "Early Access Articles": "Article",
     "book": "(Whole) Book",
+    "Book": "(Whole) Book",
     "Book Series": "(Whole) Book",
     "booklet": "(Whole) Booklet",
     "conference": "Conference Paper",
+    "Conferences": "Conference Paper",
     "conference-proceeding": "Conference Paper",
     "Conference Proceeding": "Conference Paper",
     "proceedings-article": "Conference Paper",
@@ -28,6 +31,7 @@ ARTICLE_TYPES = {
     "proceedings": "(Whole) Conference Proceeding",
     "techreport": "Technical Report",
     "unpublished": "Unpublished",
+    "other": "other",
     None: None,
 }
 
