@@ -3,12 +3,12 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="bibTextModalLabel">Add Publication by DOI</h1>
+        <h1 class="modal-title fs-5" id="bibTextModalLabel">Add Publication by BiBText</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
         <form action="{% url 'add_publication_by_bib_text' %}" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <input type="hidden" name="next" value="{% url 'dashboard_mapping_list' mapping_id=mapping.id list_id=publication_list.id %}" />
+            <input type="hidden" name="next" value="{% url 'publication_list' mapping_id=mapping.id list_id=publication_list.id %}" />
             <input type="hidden" name="list_id" value="{{publication_list.id}}">
             <div class="modal-body">
                 <label for="bibText" class="form-label">Copy bib text file content here: </label>

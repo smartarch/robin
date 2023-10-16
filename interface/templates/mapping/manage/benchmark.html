@@ -1,0 +1,93 @@
+<p class="text-secondary"> By benchmarking the filtered list against any other lists, a comparison is made between the filtered list and other lists,
+                where the results indicate how accurate the filtering is. </p>
+<form>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">List Name</th>
+                <th scope="col">User</th>
+                <th scope="col">Publications</th>
+                <th scope="col">Shared with '{{ publication_list.name }}'</th>
+                <th scope="col">Shared with filtered list</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pub_list in available_publication_lists %}
+                {% with pub_list_id=pub_list.id %}
+                    {% if pub_list != publication_list and pub_list.publications.all|length > 0 %}
+                        <tr>
+                            <td>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="compare{{ pub_list_id }}" value="{{ pub_list_id }}"
+                                     {% if compared %}
+                                        {% if pub_list_id in compared %}
+                                            checked
+                                        {% endif %}
+                                     {% endif %}
+                                     name="compare_to">
+                                    <label class="form-check-label" for="compare{{ pub_list_id }}">
+                                        {{ pub_list.name}}
+                                    </label>
+                                </div>
+                            </td>
+
+                            <td>
+                                {% if pub_list.user %}
+                                    {{ pub_list.user }}
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {{pub_list.publications.all|length}}
+                            </td>
+
+                            <td>
+                                {% if overall_results %}
+                                    {% if overall_results.all %}
+                                        {% for  key, results in overall_results.all.items %}
+                                            {% if key == pub_list_id %}
+                                                <b>{{results.shared}} / {{ results.total }}</b>
+                                                ({{results.shared_rate }})
+                                                <div class="progress">
+                                                  <div class="progress-bar progress-bar-striped" role="progressbar" style="width: {{results.shared_rate}}" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if overall_results %}
+                                    {% if overall_results.filtered %}
+                                        {% for  key, results in overall_results.filtered.items %}
+                                            {% if key == pub_list_id %}
+                                                <b>{{results.shared}} / {{ results.total }}</b>
+                                                ({{results.shared_rate }})
+                                                <div class="progress">
+                                                  <div class="progress-bar progress-bar-striped" role="progressbar" style="width: {{results.shared_rate}}" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+    <input type="hidden" value="{{ filter_text }}" name="filter_text">
+    <button type="submit" class="btn btn-primary mb-3"
+    {% if not filter_text %}
+            disabled
+    {% endif %}
+    >Compare To Filtered List </button> <i class="mx-2"> {{ filter_text }}</i>
+</form>
+{% if detailed_results %}
+    <div class="container-fluid">
+        {% include "mapping/mapping_list/compare.html" %}
+    </div>
+{% endif %}

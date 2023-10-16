@@ -1,4 +1,4 @@
-<form name="MappingEditForm" action="{% url 'dashboard_mapping_new' %}" method="POST">
+<form name="MappingEditForm" action="{% url 'mapping_new' %}" method="POST">
     {% csrf_token %}
     <p class="text-secondary"> Any name will do, for example "mapping-study", "test", "my work" </p>
       <div class="form-floating mb-2">
@@ -22,9 +22,9 @@
                     <select class="form-select" id="leaderSelect">
                         {% for reviewer in mapping.reviewers.all %}
                             {% if user.id == reviewer.id %}
-                                <option selected> {{reviewer.username}} </option>
+                                <option selected> {{reviewer.email}} </option>
                             {% else %}
-                                <option value="{{reviewer.id}}"  > {{reviewer.username}} </option>
+                                <option value="{{reviewer.id}}"  > {{reviewer.email}} </option>
                             {% endif %}
                         {% endfor %}
                     </select>
@@ -45,6 +45,6 @@
   <!-- Submit button -->
     <div class="d-flex flex-row-reverse">
         <button type="submit" class="btn btn-success btn-block m-3" name="mapping_edited">Save the mapping</button>
-        <a class="btn btn-primary btn-block m-3" href="{% url 'dashboard_mapping_list' mapping_id=mapping.id list_id=publication_list.id %}">Go to Publications</a>
+        <a class="btn btn-primary btn-block m-3" href="{% url 'publication_list' mapping_id=mapping.id list_id=publication_list.id %}">Go to Publications</a>
     </div>
 </form>

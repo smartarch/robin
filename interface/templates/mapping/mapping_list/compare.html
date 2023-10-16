@@ -1,0 +1,64 @@
+<h5 class="text-center"> Detailed Compare </h5>
+<div class="accordion " id="detailedResultsAccording">
+{% for pub_list , results in detailed_results.items %}
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="header{{ pub_list.id }}">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ pub_list.id }}" aria-expanded="false" aria-controls="collapse{{ pub_list.id }}">
+          <span class="badge bg-success mx-3"> accuracy: {{ results.shared_rate }} </span>
+          Filter Results vs <b class="text-primary mx-1"> ' {{ pub_list.name}} '</b>
+      </button>
+    </h2>
+    <div id="collapse{{ pub_list.id }}" class="accordion-collapse collapse" aria-labelledby="header{{ pub_list.id }}" data-bs-parent="#detailedResultsAccording">
+      <div class="accordion-body">
+        <div class="row">
+            <div class="col-4">
+                <b class="text-success text-center"> Found in Both </b>
+                <div class="list-group">
+                    {% for publication in results.found %}
+                        <button type="button" class="list-group-item list-group-item-action"  data-bs-toggle="collapse" data-bs-target="#collapse{{ pub_list.id }}_{{ publication.id }}" aria-expanded="false" aria-controls="collapse{{ pub_list.id }}_{{ publication.id }}">
+                            {{publication.title}} <b> {{ publication.year }}</b>
+                        </button>
+                        <div class="collapse" id="collapse{{ pub_list.id }}_{{ publication.id }}">
+                          <div class="card card-body">
+                            {% include "publication/publication_single.html" %}
+                          </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-4">
+                <b class="text-danger text-center"> Found only in Results</b>
+                <div class="list-group">
+                    {% for publication in results.only_in_results %}
+                        <button type="button" class="list-group-item list-group-item-action"  data-bs-toggle="collapse" data-bs-target="#collapse{{ pub_list.id }}_{{ publication.id }}" aria-expanded="false" aria-controls="collapse{{ pub_list.id }}_{{ publication.id }}">
+                            {{publication.title}} <b> {{ publication.year }}</b>
+                        </button>
+                        <div class="collapse" id="collapse{{ pub_list.id }}_{{ publication.id }}">
+                          <div class="card card-body">
+                            {% include "publication/publication_single.html" %}
+                          </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-4">
+                <b class="text-danger text-center"> Found Only in '{{ pub_list.name }}' </b>
+                <div class="list-group">
+                    {% for publication in results.only_in_list %}
+                        <button type="button" class="list-group-item list-group-item-action"  data-bs-toggle="collapse" data-bs-target="#collapse{{ pub_list.id }}_{{ publication.id }}" aria-expanded="false" aria-controls="collapse{{ pub_list.id }}_{{ publication.id }}">
+                            {{publication.title}} <b> {{ publication.year }}</b>
+                        </button>
+                        <div class="collapse" id="collapse{{ pub_list.id }}_{{ publication.id }}">
+                          <div class="card card-body">
+                            {% include "publication/publication_single.html" %}
+                          </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>

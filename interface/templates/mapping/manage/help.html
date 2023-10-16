@@ -1,0 +1,9 @@
+ <ul>
+    <li class="text-secondary">condition format: "(attribute__lookup=value)"</li>
+    <li class="text-secondary">conditional phrase: ((condition1) WHITE_SPACE and/or WHITE_SPACE ((condition2) WHITE_SPACE and/or WHITE_SPACE (condition3)) ... )</li>
+    <li class="text-secondary">not conditions: "(not WHITE_SPACE (condition))"</li>
+    <li class="text-secondary">example 1: ((title__icontains=performance) and (year__gte=2021))</li>
+    <li class="text-secondary">example 2: ((title__icontains=performance) and (authors__last_name=Abdullah)) or (index_keywords__name__iexact=performance analysis)</li>
+    <li class="text-secondary">example 3: ((year__gte=2014) and (not (event__type=Conference Paper)))</li>
+    <li class="text-secondary">For more lookups please check <a href="https://docs.djangoproject.com/en/4.2/ref/models/querysets/#field-lookups" target="_blank"> Django Lookup</a></li>
+</ul>

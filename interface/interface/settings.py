@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'publication',
     'mapping',
     'query',
+    'reviewer',
 
     # for other social accounts please refer to https://django-allauth.readthedocs.io
     'allauth',
@@ -58,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'interface.urls'
@@ -133,6 +135,12 @@ USE_I18N = True
 
 USE_TZ = True
 
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+AUTH_USER_MODEL = "reviewer.Reviewer"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -144,4 +152,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "/"
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

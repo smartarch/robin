@@ -1,0 +1,96 @@
+<div class="container-fluid">
+    <div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+        <div class="btn-group" role="group" aria-label="First group">
+            <button type="button" class="btn btn-outline-primary" id="viewsTabKey" onclick="selectTab('views');"
+                {% if not filter_text %}
+                disabled
+            {% endif %}>
+                Step 1: Create Automatic Views
+            </button>
+
+            <button type="button" class="btn btn-outline-primary" id="benchmarkTabKey"  onclick="selectTab('benchmark');">
+                Step 2: Benchmark Views
+            </button>
+
+            <button type="button" class="btn btn-outline-primary" id="fieldsTabKey"  onclick="selectTab('fields');">
+                Step 3: Manage Reviewer Fields
+            </button>
+
+            <button type="button" class="btn btn-outline-primary" id="reviewTabKey"  onclick="selectTab('review');">
+                Step 4: Synthesis and Review
+            </button>
+        </div>
+        <div class="input-group">
+            <button type="button" class="btn btn-outline-dark" id="helpTabKey" onclick="selectTab('help');">
+                How To Use Filter
+            </button>
+
+            <button type="button" class="btn btn-outline-dark" id="relationsTabKey" onclick="selectTab('relations');"
+                {% if not publication_list.criteria %}
+                        disabled
+                {% endif %}         >
+                Manage Relations
+            </button>
+        </div>
+    </div>
+
+    <div class="row m-2">
+        <div class="container border border-primary d-none" id="helpTab" >
+           {% include "mapping/manage/help.html" %}
+        </div>
+        <div class="container border border-primary d-none" id="relationsTab" >
+            {% include "mapping/manage/relations.html" %}
+        </div>
+        <div class="container border border-primary d-none" id="viewsTab" >
+            {% include "mapping/manage/views.html" %}
+        </div>
+        <div class="container border border-primary
+            {% if not compared %}
+            d-none
+            {% endif %}" id="benchmarkTab" >
+                {% include "mapping/manage/benchmark.html" %}
+        </div>
+        <div class="container border border-primary d-none" id="fieldsTab" >
+            {% include "mapping/manage/fields.html" %}
+        </div>
+        <div class="container border border-primary d-none" id="reviewTab" >
+            {% include "mapping/manage/review.html" %}
+        </div>
+     </div>
+</div>
+ <script>
+     let selectedTabName = "";
+     function selectTab(tabName){
+         const currentTabKey = document.getElementById(`${selectedTabName}TabKey`);
+         const currentTab = document.getElementById(`${selectedTabName}Tab`);
+
+         if (currentTabKey && currentTab){
+             currentTabKey.classList.remove("btn-primary");
+             currentTabKey.classList.add("btn-outline-primary");
+             currentTab.classList.add("d-none");
+             location.hash = "";
+         }
+         if (selectedTabName !== tabName){
+             const selectedTabKey = document.getElementById(`${tabName}TabKey`);
+             const selectedTab = document.getElementById(`${tabName}Tab`);
+
+             if (selectedTabKey.attributes.getNamedItem("disabled")){
+                location.hash = "";
+                return;
+            }
+             selectedTabKey.classList.add("btn-primary");
+             selectedTabKey.classList.remove("btn-outline-primary");
+             selectedTab.classList.remove("d-none");
+             selectedTabName = tabName;
+             location.hash = "#" + tabName;
+         }
+         else{
+             selectedTabName = "";
+         }
+
+
+     }
+     if (location.hash) {
+         selectTab(location.hash.replace("#",""));
+     }
+ </script>

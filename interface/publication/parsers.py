@@ -1,4 +1,7 @@
-import json
+import requests
+import re
+from xml.parsers.expat import ExpatError
+import xmltodict
 import re
 from typing import Any
 
@@ -181,7 +184,6 @@ class ParseBibText (Parser):
                 "authors": self.parse_authors(parsed_dict["author"]),
                 "index_keywords": self.parse_keywords(Parser.try_get(msg=parsed_dict, key="keywords")),
                 "author_keywords": [],
-                "citations": None,
 
             }
             results.append(entity)
@@ -230,7 +232,6 @@ class IEEEXploreParser(Parser):
                 "clean_title": re.sub('[^a-zA-Z0-9]+', '', str(entry["title"])).lower(),
                 "id": i,
                 "doi": self.try_get(msg=entry, key='doi'),
-                "url": self.try_get(msg=entry, key='html_url'),
                 "event": {
                     "name": entry["publication_title"].replace('\'',''),
                     "article_type": ARTICLE_TYPES[self.try_get(msg=entry, key="content_type")],
@@ -275,3 +276,127 @@ class ScopusParser(Parser):
         return publications
 
 
+def get_publication_by_doi(doi: str) -> dict | int:
+    url = f"https://dx.doi.org/{doi}"
+    req = requests.get(url, headers={"Accept": "application/vnd.crossref.unixsd+xml"})
+    if req.ok:
+        try:
+            xml_dict = xmltodict.parse(req.content)
+        except ExpatError:
+            return 0
+
+        if "crossref_result" in xml_dict \
+                and "query_result" in xml_dict["crossref_result"] \
+                and "body" in xml_dict["crossref_result"]["query_result"] \
+                and "query" in xml_dict["crossref_result"]["query_result"]["body"] \
+                and xml_dict["crossref_result"]["query_result"]["body"]["query"]["@status"] == "resolved" \
+                and "doi_record" in xml_dict["crossref_result"]["query_result"]["body"]["query"] \
+                and "crossref" in xml_dict["crossref_result"]["query_result"]["body"]["query"]["doi_record"]:
+
+            record = xml_dict["crossref_result"]["query_result"]["body"]["query"]["doi_record"]["crossref"]
+
+            publication_types = [k for k in record.keys() if re.match("[jounral|conferance|book]", k)]
+            if not publication_types or len(publication_types) > 1:
+                return 1
+
+            publication_venue_type = publication_types[0]
+
+            publication = [k for k in record[publication_venue_type].keys() if
+                           re.match("conference_paper|journal_article|content_item", k)]
+
+            if not publication or len(publication) > 1:
+                return 2
+
+            current_publication = record[publication_venue_type][publication[0]]
+            contributors_dict = current_publication["contributors"]
+            publication_date_dict = current_publication["publication_date"]
+            collection = current_publication["doi_data"]['collection']
+            abstract = current_publication["jats:abstract"][
+                "jats:p"] if "jats:abstract" in current_publication else ""
+            title = current_publication["titles"]["title"]
+
+            authors = []
+            if isinstance(contributors_dict["person_name"], dict):
+                contributors_list = [contributors_dict["person_name"]]
+            else:
+                contributors_list = contributors_dict["person_name"]
+            for contributor in contributors_list:
+                authors.append({
+                    "first_name": contributor["given_name"],
+                    "last_name": contributor["surname"],
+                    "affiliation": contributor["affiliation"] if "affiliation" in contributor else None,
+                    "ORCID": contributor["ORCID"] if "ORCID" in contributor else None,
+                })
+
+            def to_list(_data, _key):
+                if isinstance(_data, dict):
+                    return [_data[_key]]
+                else:
+                    return [d[_key] for d in _data]
+
+            year = min([int(year) for year in to_list(publication_date_dict, "year")])
+
+            items = to_list(collection, 'item')
+            resources = []
+            for item in items:
+                resources.extend(to_list(item, "resource"))
+
+            full_text = {
+                'text/html': [],
+                'application/pdf': [],
+                'text/xml': [],
+                'text/plain': [],
+            }
+
+            for resource in resources:
+                if '@mime_type' in resource and resource['@mime_type'] in full_text:
+                    full_text[resource['@mime_type']].append(resource['#text'])
+                else:
+                    full_text['application/pdf'].append(resource)
+
+            event = record[publication_venue_type]
+            if publication_venue_type == "journal":
+                journal = event["journal_metadata"]
+                event_type = "Journal Article"
+                event_name = journal["full_title"]
+                event_acronym = journal["abbrev_title"] if "abbrev_title" in journal else ""
+                event_number = journal["issue"] if "issue" in journal else None
+                event_volume = journal["journal_volume"]["volume"] if "journal_volume" in journal else None
+                publisher = journal["publisher"]["publisher_name"] if "publisher" in journal else ""
+
+            elif publication_venue_type == "conference":
+                proceedings = event["proceedings_metadata"]
+                event_type = "Conference Proceedings"
+                event_name = proceedings["proceedings_title"]
+                publisher = proceedings["publisher"]["publisher_name"]
+                event_acronym = ""
+                event_number = None
+                event_volume = None
+            else:
+                book_section = event["book_series_metadata"]
+                event_type = "Book Section"
+                event_name = book_section["titles"]['title']
+                publisher = book_section["series_metadata"]["titles"]['title']
+                event_acronym = None
+                event_number = None
+                event_volume = book_section["volume"]
+
+            return {
+                "authors": authors,
+                "event": {
+                    "type": event_type,
+                    "name": event_name,
+                    "acronym": event_acronym,
+                    "number": event_number,
+                    "volume": event_volume,
+                    "publisher": publisher,
+                },
+
+                "full_text": full_text,
+                "title": title,
+                "year": year,
+                "doi": doi,
+                "abstract": abstract
+            }
+        return 3
+    return req.status_code

@@ -1,0 +1,57 @@
+{% if publication %}
+    {% if publication.event %}
+        {% if publication.event.type %}
+
+            {% if publication.event.type == "Journal Article" %}
+                <i class="bi bi-journal-richtext"></i>
+            {% endif %}
+
+            {% if publication.event.type == "(Whole) Book" %}
+                <i class="bi bi-book-fill"></i>
+            {% endif %}
+
+            {% if publication.event.type == "(Whole) Booklet" %}
+                <i class="bi bi-book"></i>
+            {% endif %}
+
+            {% if publication.event.type == "Book Section" %}
+                <i class="bi bi-book-half"></i>
+            {% endif %}
+
+            {% if publication.event.type == "Conference Paper" %}
+                <i class="bi bi-people"></i>
+            {% endif %}
+
+            {% if publication.event.type == "Technical Manual" %}
+                <i class="bi bi-journal-album"></i>
+            {% endif %}
+
+            {% if publication.event.type == "Technical Report" %}
+                <i class="bi bi-journal-code"></i>
+            {% endif %}
+
+            {% if publication.event.type == "Master Thesis" %}
+                <i class="bi bi-file-code"></i>
+            {% endif %}
+
+            {% if publication.event.type == "Ph.D Thesis" %}
+                <i class="bi bi-file-diff"></i>
+            {% endif %}
+
+            {% if publication.event.type == "(Whole) Conference Proceeding" %}
+                <i class="bi bi-journals"></i>
+            {% endif %}
+
+            {% if publication.event.type == "Miscellaneous" %}
+                <i class="bi bi-motherboard"></i>
+            {% endif %}
+
+            {% if publication.event.type == "Unpublished" %}
+                <i class="bi bi-archive"></i>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endif %}
+
+
+

@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Q
-from .models import Source, Country, Affiliation, Author, Event, Publication, Keywords
+from .models import Source, Country, Affiliation, Author, Event, Publication, Keywords, FullText
+import requests
 
 
 class Factory:
@@ -50,6 +51,7 @@ class PublicationFactory:
 		self.event = Factory(Event, {"name__icontains": "name", "publisher__iexact": "publisher"}, union=False)
 		self.keywords = Factory(Keywords, {"name__iexact": "name"})
 		self.publication = Factory(Publication, {"clean_title__iexact": "clean_title"})
+		self.publication = Factory(Publication, {"clean_title__iexact": "clean_title"})
 
 	def resolve_keywords(self, keywords: list) -> [Keywords]:
 		created_keywords = []
@@ -60,6 +62,7 @@ class PublicationFactory:
 		return created_keywords
 
 	def resolve_authors(self, authors: list) -> [Author]:
+		print (authors)
 		created_authors = []
 		for author in authors:
 			new_author = self.author.create({"first_name": author["first_name"], "last_name": author["last_name"]})
@@ -108,18 +111,82 @@ class PublicationFactory:
 
 		new_publication.save()
 		return new_publication
+def create_fulltext(decoded, t, extension, pub) -> None:
+	for text in decoded:
+		try:
+			print ("starting download")
+			response = requests.get(text)
+			if response.ok:
+				with open(f"media/full_text/paper_{pub.id}.{extension}", "wb") as resource:
+					resource.write(response.content)
+					full_text = FullText(url=text, address=f"paper_{pub.id}.{extension}", type=t, publication=pub)
+					full_text.save()
+				print ("download went well")
+			else:
+				full_text = FullText(url=text, address="", type=t, publication=pub)
+				full_text.save()
+				print("download failed")
+		except:
+			continue
 
+def create_publication(data: dict) -> Publication:
 
+	sources = Source.objects.filter(name="CrossRef")
+	if sources:
+		source = sources[0]
+	else:
+		source = Source(name="CrossRef")
+		source.save()
 
+	publication = Publication(source=source)
+	for direct_item in ["doi", "title", "abstract", "year"]:
+		publication.__dict__[direct_item] = data[direct_item]
 
+	events = Event.objects.filter(name=data["event"]["name"])
+	if events:
+		event = events[0]
+	else:
+		event = Event()
+		for direct_item in ["type", "name", "volume", "acronym", "number"]:
+			if data["event"][direct_item]:
+				event.__dict__[direct_item] = data["event"][direct_item]
+		event.save()
 
+	publication.event = event
+	publication.save()
+	for author_data in data["authors"]:
+		p_author = Author.objects.filter(last_name=author_data["last_name"]).filter(first_name=author_data["first_name"])
 
+		if p_author:
+			author = p_author[0]
+		else:
+			author = Author(first_name=author_data["first_name"], last_name=author_data["last_name"], ORCID=author_data["ORCID"])
+			if "affiliation" in author_data and author_data["affiliation"]:
+				affiliation_text = author_data["affiliation"].split(',')
+				affiliations = Affiliation.objects.filter(institute=affiliation_text[0])
+				if affiliations:
+					author.affiliation = affiliations[0]
+				else:
+					if len(affiliation_text) > 1:
+						affiliation = Affiliation(institute=affiliation_text[0])
+						countries = Country.objects.filter(name=affiliation_text[-1])
+						if countries:
+							country = countries[0]
+						else:
+							country = Country(name=affiliation_text[-1])
+							country.save()
+						affiliation.country = country
+						affiliation.save()
+						author.affiliation = affiliation
+			author.save()
+		if author not in publication.authors.all():
+			publication.authors.add(author)
+			publication.save()
 
+	create_fulltext(data["full_text"]["text/html"], "H", "html", publication)
+	create_fulltext(data["full_text"]["application/pdf"], "P", "pdf", publication)
+	create_fulltext(data["full_text"]["text/plain"], "T", "txt", publication)
+	create_fulltext(data["full_text"]["text/xml"], "X", "xml", publication)
 
-
-
-
-
-
-
+	return publication
 

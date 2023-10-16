@@ -75,7 +75,7 @@ class AllMappingsView(LoginRequiredMixin, TemplateView ):
 				user_preference.default_list = get_object_or_404(PublicationList, id=request.POST.get("list_id"))
 			user_preference.save()
 
-		return redirect("dashboard_all_mappings")
+		return redirect("mapping_all")
 
 class NewMappingView(LoginRequiredMixin, TemplateView, CreateUserPreference):
 	template_name = "dashboard/index.html"
@@ -106,13 +106,13 @@ class NewMappingView(LoginRequiredMixin, TemplateView, CreateUserPreference):
 			new_mapping.secret_key = cryptocode.encrypt(str(new_mapping.id), "mapping_id_this_is_for_encryption")
 			new_mapping.save()
 
-			new_publication_list = PublicationList(name="default", mapping=new_mapping)
+			new_publication_list = PublicationList(name="default", mapping=new_mapping, reviewer=request.user)
 			new_publication_list.save()
 
 			_ = self.find_user_preference(request.user, new_mapping, new_publication_list)
-			return redirect("dashboard_mapping", mapping_id=new_mapping.id)
+			return redirect("mapping", mapping_id=new_mapping.id)
 
-		return redirect("dashboard_all_mappings")
+		return redirect("mapping_all")
 
 
 class JoinMappingView(LoginRequiredMixin, TemplateView, CreateUserPreference):
@@ -149,7 +149,7 @@ class JoinMappingView(LoginRequiredMixin, TemplateView, CreateUserPreference):
 				user_preference.default_list = publication_list
 				user_preference.save()
 
-			return redirect("dashboard_mapping", mapping_id=mapping.id)
+			return redirect("mapping", mapping_id=mapping.id)
 
 		return redirect("dashboard")
 
@@ -167,7 +167,7 @@ class MappingView(LoginRequiredMixin, TemplateView):
 		"""
 		context = super().get_context_data(**kwargs)
 		if 'mapping_id' not in kwargs:
-			return redirect("dashboard_all_mappings")
+			return redirect("mapping_all")
 
 		authorized_mappings = Mapping.objects.filter(reviewers__in=[request.user])
 		mapping = get_object_or_404(authorized_mappings, id=kwargs['mapping_id'])
@@ -192,7 +192,7 @@ class MappingView(LoginRequiredMixin, TemplateView):
 		"""
 		context = super().get_context_data(**kwargs)
 		if 'mapping' not in kwargs:
-			return redirect("dashboard_all_mappings")
+			return redirect("mapping_all")
 
 		mapping = get_object_or_404(Mapping, id=kwargs['id'])
 		context['mapping'] = mapping
@@ -204,7 +204,7 @@ class MappingDeleteView(LoginRequiredMixin, DeleteView):
 
 	def post(self, request, *args, **kwargs) -> {}:
 		if 'mapping_id' not in kwargs:
-			return redirect("dashboard_all_mappings")
+			return redirect("mapping_all")
 
 		fully_authorized_mappings = Mapping.objects.filter(leader=request.user)
 		mapping = get_object_or_404(fully_authorized_mappings, id=kwargs["mapping_id"])
@@ -212,4 +212,4 @@ class MappingDeleteView(LoginRequiredMixin, DeleteView):
 		if request.POST.__contains__("mapping_deleted"):
 			mapping.delete()
 
-		return redirect("dashboard_all_mappings")
+		return redirect("mapping_all")

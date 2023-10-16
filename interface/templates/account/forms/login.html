@@ -1,8 +1,8 @@
 <form name="LoginForm" action="{% url 'account_login' %}" method="POST">
     {% csrf_token %}
       <div class="form-floating mb-2">
-        <input type="text" id="userInput" name="login" class="form-control" placeholder="username" required />
-        <label for="userInput">Username</label>
+        <input type="email" id="userInput" name="login" class="form-control" placeholder="username" required />
+        <label for="userInput">Email</label>
       </div>
 
       <!-- Password input -->

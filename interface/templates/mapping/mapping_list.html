@@ -33,9 +33,23 @@
 
             <div class="col-11">
             <div class="row shadow-sm p-3 mb-3 bg-body rounded">
-                <h4 > Add publications to <b>{{ mapping.name }} </b> by
-                </h4>
-                <i class="text-secondary">{{ mapping.description }}</i>
+                <h4 class="text-center"> Mapping of '<b>{{ mapping.name }}</b>'</h4>
+                <i class="text-secondary text-center">{{ mapping.description }} the reviewers of this mapping:
+                    {% for reviewer in mapping.reviewers.all %}
+                        {% if reviewer == mapping.leader %}
+                        <b> {{ reviewer }} </b>
+                        {% else %}
+                        {{ reviewer }}
+                        {% endif %}
+                        {% if not forloop.last %}
+                            ,
+                        {% endif %}
+                    {% endfor %}
+                </i>
+                <h5 > Add publications to list: <b> '{{ publication_list.name }}'</b> by </h5>
+                {% if  publication_list.user %}
+                    <i class="text-secondary"> This list is created by {{ publication_list.user }}</i>
+                {% endif %}
                     <div class="d-flex justify-content-center">
                         <div class="btn-group" role="group" aria-label="Add Publication example">
 
@@ -43,15 +57,12 @@
                                 Entering DOI</button>
                             {% include "publication/modals/doi.html" %}
 
-                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bibTextModal">
-                                Uploading .bib
+                            <a class="btn btn-outline-primary" href="{% url 'add_publication_by_web' list_id=publication_list.id %}">Searching the Web</a>
 
-                            </button>
-                            {% include "publication/modals/bib_text.html" %}
 
-                            <form action="{% url 'dashboard_mapping_list' mapping_id=mapping.id list_id=publication_list.id %}" name="import_form" method="POST">
+                            <form action="{% url 'publication_list' mapping_id=mapping.id list_id=publication_list.id %}" name="import_form" method="POST">
                                 {% csrf_token %}
-                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Import from other Lists/Mappings</button>
+                                <button type="button" class="btn btn-outline-primary mx-1" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Import from other Lists/Mappings</button>
                                 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
                                     <div class="offcanvas-header">
                                     <h5 class="offcanvas-title" id="offcanvasRightLabel">Import from Publication Lists</h5>
@@ -64,8 +75,6 @@
                                 </div>
                             </form>
 
-
-                            <a class="btn btn-outline-primary" href="{% url 'add_publication_by_web' list_id=publication_list.id %}">Searching the Web</a>
                         </div>
                     </div>
             </div>
@@ -100,78 +109,14 @@
                         </div>
                         <div class="col-12">
                             {% include "mapping/forms/filter.html" %}
+                            {% include "mapping/manage.html" %}
                         </div>
                         <hr>
                         <div class="col-12">
-                            <form action="{% url 'dashboard_mapping_list' mapping_id=mapping.id list_id=publication_list.id %}" name="manage_publications" method="POST">
+                            <form action="{% url 'publication_list' mapping_id=mapping.id list_id=publication_list.id %}" name="manage_publications" method="POST">
                                 {% csrf_token %}
-                                <div class="row">
-                                    <div class="col-3">
-                                        <div class="form-check m-2">
-                                            <input class="form-check-input" type="checkbox" name="selectAllPublications"  id="selectAllPublications">
-                                            <h5><label class="form-check-label" for="selectAllPublications"> Select All (only on this page) </label></h5>
-                                        </div>
-                                    </div>
-                                    <div class="col-3">
-                                        <div class="m-2">
-                                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"  id="changePageSize">
-                                                    Page Size:
-                                                {% if user_preference.default_page_size > 0 %}
-                                                    {{ user_preference.default_page_size }}
-                                                {% else %}
-                                                    unlimited
-                                                {% endif %}
-                                            </button>
-                                              <ul class="dropdown-menu dropdown-menu-end">
-                                                {% for available_page_size in available_page_sizes %}
-                                                  {% if user_preference.default_page_size != available_page_size %}
-                                                    <li>
-                                                        <input class="dropdown-item" name="change_page_size_to_{{available_page_size}}" type="submit" value="{{available_page_size}}">
-                                                    </li>
-                                                  {% endif %}
-                                                {% endfor %}
-                                                  <li><hr class="dropdown-divider"></li>
-                                                  <li>
-                                                        <input class="dropdown-item" name="change_page_size_to_0" type="submit" value="unlimited">
-                                                    </li>
-                                              </ul>
-                                        </div>
+                                {% include "publication/select.html" %}
 
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="d-flex flex-row-reverse">
-                                            <button type="submit" class="btn btn-outline-danger" id="deleteFromCurrentList" disabled name="delete_from_current_list" onclick="alert('Are you sure to remove these publications from {{ publication_list.name }}?')">Remove Selected Publications</button>
-                                            <div>
-                                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled id="copyToOtherList">
-                                                    Copy To
-                                                </button>
-                                                  <ul class="dropdown-menu dropdown-menu-end">
-                                                    {% for other_publication_list in available_publication_lists %}
-                                                      {% if other_publication_list.id != publication_list.id %}
-                                                        <li>
-                                                            <input class="dropdown-item" name="copy_to_{{other_publication_list.id }}" type="submit" value="{{ other_publication_list.name}}">
-                                                        </li>
-                                                      {% endif %}
-                                                    {% endfor %}
-                                                  </ul>
-                                            </div>
-                                            <div >
-                                                <button class="btn btn-outline-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled id="moveToOtherList">
-                                                    Move To
-                                                </button>
-                                                   <ul class="dropdown-menu dropdown-menu-end">
-                                                    {% for other_publication_list in available_publication_lists %}
-                                                      {% if other_publication_list.id != publication_list.id %}
-                                                        <li>
-                                                            <input class="dropdown-item" name="move_to_{{other_publication_list.id }}" type="submit" value="{{ other_publication_list.name}}">
-                                                        </li>
-                                                      {% endif %}
-                                                    {% endfor %}
-                                                  </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                                 <hr>
                                 <div class="row">
                                     {% include "publication/publications.html" %}
@@ -179,7 +124,6 @@
                             </form>
                         </div>
                      <script>
-
                         function checkAtLeastOnePaper(){
                             let all_checkboxes = document.getElementsByName("selected_publications");
                             for (let i =0 ; i < all_checkboxes.length; i++) {
@@ -205,12 +149,10 @@
                         document.getElementsByName("selected_publications").forEach( function (element){
                             element.addEventListener("change",checkAtLeastOnePaper)});
 
-
-
                     </script>
                     </div>
                     {% else %}
-                    <h5> The <b> {{ publication_list.name }}</b> list is empty. </h5>
+                    <h5> The <b> '{{ publication_list.name }}'</b> list is empty. </h5>
                 {% endif %}
             </div>
         </div>
