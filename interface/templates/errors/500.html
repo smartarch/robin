@@ -1,8 +1,5 @@
 {% extends "dashboard/base.html" %}
 {% block dashboard %}
     <h3 class="text-center p-5">The requested action cannot be done.</h3>
-    <ul>
-        <li> the entered DOI is incorrect </li>
-        <li> the entered bibText is incorrect </li>
-    </ul>
+    {{error}}
 {% endblock %}

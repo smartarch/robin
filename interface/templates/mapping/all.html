@@ -10,7 +10,7 @@
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="heading{{mapping.id}}">
                             <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{mapping.id}}" aria-expanded="true" aria-controls="collapse{{mapping.id}}">
-                                {{ mapping.name }} by {{ mapping.leader.first_name }}
+                                {{ mapping.name }} by {{ mapping.leader.short_name }}
                                 {% if user_preference.default_mapping == mapping %}
                                     <span class="badge bg-dark mx-4">default mapping</span>
                                 {% endif %}
@@ -26,7 +26,7 @@
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="heading{{mapping.id}}">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{mapping.id}}" aria-expanded="false" aria-controls="collapse{{mapping.id}}">
-                                {{ mapping.name }} by {{ mapping.leader.first_name }}
+                                {{ mapping.name }} by {{ mapping.leader.short_name }}
                                 {% if user_preference.default_mapping == mapping %}
                                     <span class="badge bg-dark mx-4">default mapping</span>
                                 {% endif %}
