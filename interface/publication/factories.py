@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import Q
 from .models import Source, Country, Affiliation, Author, Event, Publication, Keywords, FullText
 import requests
+import os
 
 
 class Factory:
@@ -119,6 +120,7 @@ def create_fulltext(decoded, t, extension, pub) -> None:
 			print ("starting download")
 			response = requests.get(text)
 			if response.ok:
+				os.makedirs("media/full_text", exist_ok=True)
 				with open(f"media/full_text/paper_{pub.id}.{extension}", "wb") as resource:
 					resource.write(response.content)
 					full_text = FullText(url=text, address=f"paper_{pub.id}.{extension}", type=t, publication=pub)
