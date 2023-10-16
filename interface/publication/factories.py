@@ -20,6 +20,8 @@ class Factory:
 		if self._lookup:
 			query = None
 			for key, value in self._lookup.items():
+				if not value:
+					continue
 				assert value in data, f"The (given) data is missing '{value}' key."
 				new_query = Q(**{key: data[value]})
 				if query:
@@ -29,8 +31,8 @@ class Factory:
 						query = query & new_query
 				else:
 					query = new_query
-
-			instances = self._model.objects.filter(query)
+			if query:
+				instances = self._model.objects.filter(query)
 
 		instance = self._model() if not instances else instances[0]
 		for key, value in data.items():
@@ -183,10 +185,10 @@ def create_publication(data: dict) -> Publication:
 			publication.authors.add(author)
 			publication.save()
 
-	create_fulltext(data["full_text"]["text/html"], "H", "html", publication)
-	create_fulltext(data["full_text"]["application/pdf"], "P", "pdf", publication)
-	create_fulltext(data["full_text"]["text/plain"], "T", "txt", publication)
-	create_fulltext(data["full_text"]["text/xml"], "X", "xml", publication)
+	# create_fulltext(data["full_text"]["text/html"], "H", "html", publication)
+	# create_fulltext(data["full_text"]["application/pdf"], "P", "pdf", publication)
+	# create_fulltext(data["full_text"]["text/plain"], "T", "txt", publication)
+	# create_fulltext(data["full_text"]["text/xml"], "X", "xml", publication)
 
 	return publication
 
