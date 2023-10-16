@@ -25,9 +25,9 @@ SECRET_KEY = "Did shy say mention eaweiua weiawhediauw 23812283901283091 2809@!(
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['robin.smartarch.cz']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'publication',
     'mapping',
     'query',
+    'reviewer',
 
     # for other social accounts please refer to https://django-allauth.readthedocs.io
     'allauth',
@@ -59,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'interface.urls'
@@ -85,7 +87,8 @@ SITE_ID = 3
 SOCIALACCOUNT_PROVIDERS = {
     'github': {
         'SCOPE': [
-            'read:user',
+            'user',
+            'email',
         ],
     }
 }
@@ -133,6 +136,11 @@ TIME_ZONE = 'Europe/Prague'
 USE_I18N = True
 
 USE_TZ = True
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+AUTH_USER_MODEL = "reviewer.Reviewer"
 
 
 # Static files (CSS, JavaScript, Images)
