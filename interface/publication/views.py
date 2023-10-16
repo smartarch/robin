@@ -82,22 +82,19 @@ class AddPublicationsByWeb(LoginRequiredMixin, TemplateView):
         cleaned_params = query_platform.params.replace("%key%", f"\"{query_platform.key}\"")
         cleaned_params = cleaned_params.replace("%query%", f"\"{query}\"")
         cleaned_params = cleaned_params.replace("%max_results%", str(max_results))
-        try:
-            params = dict(json.loads(cleaned_params))
-            respond = requests.get(query_platform.url, **params)
-            if query_platform.source == "IEEEXplore":
-                parser = IEEEXploreParser()
-            elif query_platform.source == "Scopus":
+        params = dict(json.loads(cleaned_params))
+        respond = requests.get(query_platform.url, **params)
 
-                parser = ScopusParser()
+        if query_platform.source == "IEEEXplore":
+            parser = IEEEXploreParser()
+        elif query_platform.source == "Scopus":
 
-            else:
-                # for other parsers, please add the Parser class in parser.py
-                raise NotImplemented
-            publications = parser.parse(respond.json())
+            parser = ScopusParser()
 
-        except:
-            publications = []
+        else:
+            # for other parsers, please add the Parser class in parser.py
+            raise NotImplemented
+        publications = parser.parse(respond.json())
 
         if len(publications) > 0:
             # at this moment Scopus manages its own paginator, but we have limited it
@@ -117,7 +114,8 @@ class AddPublicationsByWeb(LoginRequiredMixin, TemplateView):
             "desired_list": kwargs['list_id'],
             "max_results": max_results,
             "mappings": self.get_mappings(request),
-            "query": query.replace("\\\"", "\"")
+            "query": query.replace("\\\"", "\""),
+            "no_review": True,
         }
 
         return self.render_to_response(context)
@@ -131,7 +129,7 @@ class AddPublicationsByWeb(LoginRequiredMixin, TemplateView):
         query_text = request.POST.get("queried_text").replace("\"", "\\\"")
         query_platform = get_object_or_404(QueryPlatform.objects.all(), id=source)
         query = None
-
+        print (publications)
         json_reader = json.loads(publications.replace('\'','\"').replace(': None', ': \"None\"'))
         publication_creator = PublicationFactory()
         already_added = []
