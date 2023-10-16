@@ -32,9 +32,15 @@ ARTICLE_TYPES = {
     "techreport": "Technical Report",
     "unpublished": "Unpublished",
     "other": "other",
+    "Magazines": "Magazines",
     None: None,
 }
 
+def find_article_type(key):
+    if key in ARTICLE_TYPES:
+        return ARTICLE_TYPES[key]
+    else:
+        return "other"
 
 class Parser:   # generic parser
     def parse_authors(self, text: Any) -> Any:
@@ -106,7 +112,7 @@ class DOIParser (Parser):
             "source": Parser.try_get(msg=txt, key="source"),
             "event": {
                 "name": txt["container-title"] if "container-title" in txt else "NO_EVENT",
-                "type": ARTICLE_TYPES[Parser.try_lower(Parser.try_get(msg=txt, key="type"))],
+                "type": find_article_type(Parser.try_lower(Parser.try_get(msg=txt, key="type"))),
                 "publisher": txt["publisher"],
                 "acronym": Parser.try_get(msg=txt, key="short-container-title"),
                 "volume": Parser.try_get(msg=txt, key="volume"),
@@ -175,7 +181,7 @@ class ParseBibText (Parser):
                 "clean_title": re.sub('[^a-zA-Z0-9]+', '', str(parsed_dict["title"])).lower(),
                 "year": parsed_dict["year"] if "year" in parsed_dict else re.findall("(\d{4})", parsed_dict["date"])[0],
                 "event": {
-                    "type": ARTICLE_TYPES[article_type.lower()],
+                    "type": find_article_type(article_type.lower()),
                     "name": parsed_dict["journaltitle"] if "journaltitle" in parsed_dict else parsed_dict["booktitle"]
                     if "booktitle" in parsed_dict else f"OTHER -> {self.try_get(msg=parsed_dict, key='isbn')}",
                     "acronym": self.try_get(msg=parsed_dict, key="shortjournal"),
@@ -238,7 +244,7 @@ class IEEEXploreParser(Parser):
                 "doi": self.try_get(msg=entry, key='doi'),
                 "event": {
                     "name": entry["publication_title"].replace('\'',''),
-                    "article_type": ARTICLE_TYPES[self.try_get(msg=entry, key="content_type")],
+                    "article_type": find_article_type(self.try_get(msg=entry, key="content_type")),
                     "volume": self.try_get(msg=entry, key="volume"),
                     "number": self.try_get(msg=entry, key="issue"),
                     "publisher": self.try_get(msg=entry, key="publisher"),
@@ -274,7 +280,7 @@ class ScopusParser(Parser):
                 "id": i,
                 "doi": self.try_get(msg=entry, key='prism:doi'),
                 "url": f"http://doi.org/{self.try_get(msg=entry, key='prism:doi')}",
-                "article_type": ARTICLE_TYPES[self.try_get(msg=entry, key='prism:aggregationType')],
+                "article_type": find_article_type(self.try_get(msg=entry, key='prism:aggregationType')),
                 "year": int(re.findall(".*(\d\d\d\d).*", self.try_get(msg=entry, key="prism:coverDate"))[0]),
             })
         return publications
