@@ -35,6 +35,11 @@
                 </div>
                     <div class="d-none container-fluid bg-info bg-opacity-10 border border-info border-start-0 rounded-end p-2" id="containerDetails_{{ publication.id }}">
                         <div class="row">
+                            {% if no_review %}
+                                <div class="col-12">
+                                    {% include "publication/publication_single.html" %}
+                                </div>
+                            {% else %}
                             <div class="col-8">
                                 {% include "publication/publication_single.html" %}
                             </div>
@@ -52,7 +57,7 @@
                                     <div class="row mb-1">
                                         <h5 class="text-center"> Other Reviewers Review </h5>
                                         {% include "mapping_review/publication_reviews.html" %}
-                                    </div>
+                                     </div>
                                 <div class="row">
                                     {% with publication_id=publication.id %}
                                         {% if publication_id in other_lists %}
@@ -64,6 +69,7 @@
                                     {% endwith %}
                                 </div>
                             </div>
+                            {% endif %}
                         </div>
                     </div>
             {% endfor %}

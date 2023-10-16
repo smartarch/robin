@@ -6,7 +6,7 @@
                  <option value="#" selected>{{ mapping.name }}</option>
                 {% for authorized_mapping in authorized_mappings %}
                     {% if authorized_mapping != mapping %}
-                         <option value="{% url 'dashboard_mapping_all_lists' mapping_id=authorized_mapping.id %}">{{ authorized_mapping.name }}</option>
+                         <option value="{% url 'mapping' mapping_id=authorized_mapping.id %}">{{ authorized_mapping.name }}</option>
                     {% endif %}
                 {% endfor %}
 
