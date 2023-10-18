@@ -113,15 +113,15 @@
                         </div>
                         <hr>
                         <div class="col-12">
-                            <form action="{% url 'publication_list' mapping_id=mapping.id list_id=publication_list.id %}" name="manage_publications" method="POST">
+                            <form action="{% url 'publication_list' mapping_id=mapping.id list_id=publication_list.id %}" name="manage_publications" id="manage_publications" method="POST">
                                 {% csrf_token %}
                                 {% include "publication/select.html" %}
-
-                                <hr>
-                                <div class="row">
-                                    {% include "publication/publications.html" %}
-                                </div>
                             </form>
+
+                            <hr>
+                            <div class="row">
+                                {% include "publication/publications.html" %}
+                            </div>
                         </div>
                      <script>
                         function checkAtLeastOnePaper(){

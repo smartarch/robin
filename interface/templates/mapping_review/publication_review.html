@@ -1,4 +1,6 @@
 <div class="container-fluid">
+    <form action="{% url 'field_review' mapping_id=mapping.id list_id=publication_list.id %}" name="field_reviews" id="field_reviews" method="POST">
+    {% csrf_token %}
     <div class="row">
         <table>
             <thead class="table">
@@ -60,4 +62,5 @@
 
         </div>
     </div>
+    </form>
 </div>
