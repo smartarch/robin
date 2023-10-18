@@ -34,26 +34,26 @@
         </div>
     </div>
 
-    <div class="row m-2">
-        <div class="container border border-primary d-none" id="helpTab" >
+    <div class="row my-2 py-2 border border-primary">
+        <div class="container d-none" id="helpTab" >
            {% include "mapping/manage/help.html" %}
         </div>
-        <div class="container border border-primary d-none" id="relationsTab" >
+        <div class="container d-none" id="relationsTab" >
             {% include "mapping/manage/relations.html" %}
         </div>
-        <div class="container border border-primary d-none" id="viewsTab" >
+        <div class="container d-none" id="viewsTab" >
             {% include "mapping/manage/views.html" %}
         </div>
-        <div class="container border border-primary
+        <div class="container
             {% if not compared %}
             d-none
             {% endif %}" id="benchmarkTab" >
                 {% include "mapping/manage/benchmark.html" %}
         </div>
-        <div class="container border border-primary d-none" id="fieldsTab" >
+        <div class="container d-none" id="fieldsTab" >
             {% include "mapping/manage/fields.html" %}
         </div>
-        <div class="container border border-primary d-none" id="reviewTab" >
+        <div class="container d-none" id="reviewTab" >
             {% include "mapping/manage/review.html" %}
         </div>
      </div>
