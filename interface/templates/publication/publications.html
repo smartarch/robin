@@ -44,20 +44,12 @@
                                 {% include "publication/publication_single.html" %}
                             </div>
                             <div class="col-4">
-                                    {% if my_review %}
-                                        <div class="row mb-1">
-                                            <h5 class="text-center"> Your Review: {{ review.name }} </h5>
-                                            <div class="container-fluid">
-                                                {% include "mapping_review/publication_review.html" %}
-                                            </div>
-                                        </div>
-                                    {% else %}
-                                        Add a review using the "Step 4: Synthesis and Review" Section
-                                    {% endif %}
-                                    <div class="row mb-1">
-                                        <h5 class="text-center"> Other Reviewers Review </h5>
-                                        {% include "mapping_review/publication_reviews.html" %}
-                                     </div>
+                                <div class="row mb-1">
+                                    <h5 class="text-center">Review</h5>
+                                    <div class="container-fluid">
+                                        {% include "mapping_review/publication_review.html" %}
+                                    </div>
+                                </div>
                                 <div class="row">
                                     {% with publication_id=publication.id %}
                                         {% if publication_id in other_lists %}

@@ -1,73 +1,35 @@
-<h5 class="text-center mb-1"> Reviewer Fields </h5>
-{% if reviewer_fields %}
+<h5 class="text-center mb-1">Review Fields</h5>
+{% if review_fields %}
     <form method="POST" action="{% url 'field_edit' mapping_id=mapping.id list_id=publication_list.id %}">
     {% csrf_token %}
-        <button class="btn btn-outline-success mx-1"  type="submit" name="edit_fields"> Update Changes </button>
         <table class="table">
             <thead>
                 <tr>
-                    <th scope="col"> Caption </th>
-                    <th scope="col"> Value </th>
-                    <th scope="col"> Type </th>
-                    <th scope="col"> Reviewer </th>
-                    <th scope="col"> Delete </th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Delete</th>
                 </tr>
             </thead>
             <tbody>
-                {% for field in reviewer_fields %}
+                {% for field in review_fields %}
                     <tr>
                         <td>
-                            {% if field.reviewer == request.user %}
-                                <div class="input-group">
-                                  <span class="input-group-text" id="basic-addon1"></span>
-                                  <input type="text" class="form-control" id="fieldCaptionInput" placeholder="caption" name="field_captions" value="{{ field.caption }}" aria-label="caption" aria-describedby="captionAddOn">
-                                    <input type="hidden" name="field_ids" value="{{ field.id }}">
-                                </div>
-
-
-                            {% else %}
-                                {{ field.caption }}
-                            {% endif %}
+                            <input type="text" class="form-control" placeholder="Name" name="field_names" value="{{ field.name }}" aria-label="name">
+                            <input type="hidden" name="field_ids" value="{{ field.id }}">
                         </td>
                         <td>
-                            {% if field.reviewer == request.user %}
-                                <div class="input-group">
-                                    <span class="input-group-text" id="basic-addon1"></span>
-                                  <input type="text" class="form-control" id="fieldValueInput" placeholder="value" name="field_values" value="{{ field.value }}" aria-label="value" aria-describedby="valueAddOn">
-                                </div>
-                            {% else %}
-                                {% if field.type == "List" %}
-                                    {% for field_value  in field.data %}
-                                        <span class="badge bg-info">
-                                            {{ field_value }}
-                                        </span>
-                                    {% endfor %}
-                                {% else %}
-                                    {{ field.data }}
-                                {% endif %}
-                            {% endif %}
+                            <div class="form-control-plaintext">{{ field.get_type_display }}</div>
                         </td>
                         <td>
-                            {{ field.get_type_display }}
-                        </td>
-                        <td>
-                            {{ field.reviewer.short_name }}
-                        </td>
-                        <td>
-                            {% if field.reviewer == request.user %}
-
-                                <div class="btn-toolbar btn-group-sm" role="toolbar" aria-label="Field Toolbar with button groups">
-                                    <button class="btn btn-outline-danger mx-1" type="submit" name="delete_field" value="{{ field.id }}"> Delete </button>
-                                </div>
-                            {% else %}
-                                <i> This field is managed by  <a href="mailto:{{ field.reviewer.email }}">{{ field.reviewer.short_name }}</a> </i>
-                            {% endif %}
-
+                            <div class="btn-toolbar btn-group-sm" role="toolbar" aria-label="Field Toolbar with button groups">
+                                <button class="btn btn-outline-danger mx-1" type="submit" name="delete_field" value="{{ field.id }}">Delete</button>
+                            </div>
                         </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
+        <button class="btn btn-outline-success mx-1" type="submit" name="edit_fields">Save Changes</button>
     </form>
 {% endif %}
 <div class="container-fluid bg-success bg-opacity-10 align-middle">

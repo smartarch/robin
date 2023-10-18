@@ -1,133 +1,100 @@
-from typing import Any
+from typing import Any, Optional
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
 from django.views import View
 from django.views.generic import DeleteView, UpdateView
+from django.http import HttpRequest
 
 # from current app
-from .models import UserField, Mapping, PublicationList, UserFieldReview, Review
+from .models import ReviewField, Mapping, PublicationList, ReviewFieldValue
 
 
-class NewFieldView(LoginRequiredMixin, View):
+class NewReviewFieldView(LoginRequiredMixin, View):
 
-	def post(self, request: Any, *args: Any, **kwargs: Any) -> Any:
+    def post(self, request: Any, *args: Any, **kwargs: Any) -> Any:
 
-		if "mapping_id" not in kwargs or "list_id" not in kwargs:
-			return redirect("publication_list_all")
+        if "mapping_id" not in kwargs or "list_id" not in kwargs:
+            return redirect("publication_list_all")
 
-		authorized_mappings = Mapping.objects.filter(reviewers__in=[request.user])
-		current_mapping = get_object_or_404(authorized_mappings, id=kwargs["mapping_id"])
-		authorized_lists = PublicationList.objects.filter(mapping=current_mapping)
-		current_list = get_object_or_404(authorized_lists, id=kwargs["list_id"])
+        authorized_mappings = Mapping.objects.filter(reviewers__in=[request.user])
+        current_mapping = get_object_or_404(authorized_mappings, id=kwargs["mapping_id"])
+        authorized_lists = PublicationList.objects.filter(mapping=current_mapping)
+        current_list = get_object_or_404(authorized_lists, id=kwargs["list_id"])
+
+        if request.POST.__contains__("add_field"):
+            field_name = request.POST.get("field_name")
+            field_type = request.POST.get("field_type")
+            new_field = ReviewField(name=field_name, type=field_type, publication_list=current_list)
+            new_field.save()
+
+        return redirect(reverse("publication_list", kwargs={
+            "mapping_id": current_mapping.id,
+            "list_id": current_list.id}) + "#fields")
 
 
-		if request.POST.__contains__("add_field"):
-			field_caption = request.POST.get("field_caption")
-			field_value = request.POST.get("field_value")
-			field_type = request.POST.get("field_type")
-			new_field = UserField(caption=field_caption)
-			new_field.type = field_type
-			new_field.data = field_value
-			try:
-				_ = new_field.data
-			except ValueError:
-				new_field.type = "T"
-				new_field.data = field_value
+class EditFieldsView(LoginRequiredMixin, UpdateView, DeleteView):
+    model = ReviewField
 
-			new_field.reviewer = request.user
-			new_field.publication_list = current_list
-			new_field.save()
+    def post(self, request: Any, *args: Any, **kwargs: Any) -> Any:
 
-		return redirect(reverse("publication_list", kwargs={
-				"mapping_id": current_mapping.id,
-				"list_id": current_list.id}) + "#fields")
+        if "mapping_id" not in kwargs or "list_id" not in kwargs:
+            return redirect("publication_list_all")
 
-class EditFieldsView(LoginRequiredMixin,UpdateView, DeleteView):
-	model = UserField
+        authorized_mappings = Mapping.objects.filter(reviewers__in=[request.user])
+        current_mapping = get_object_or_404(authorized_mappings, id=kwargs["mapping_id"])
+        authorized_lists = PublicationList.objects.filter(mapping=current_mapping)
+        current_list = get_object_or_404(authorized_lists, id=kwargs["list_id"])
+        authorized_fields = ReviewField.objects.filter(publication_list=current_list)
 
-	def post(self, request: Any, *args: Any, **kwargs: Any) -> Any:
+        if request.POST.__contains__("edit_fields"):
+            field_ids = request.POST.getlist("field_ids")
+            field_names = request.POST.getlist("field_names")
 
-		if "mapping_id" not in kwargs or "list_id" not in kwargs:
-			return redirect("publication_list_all")
+            for field_id, field_name in zip(field_ids, field_names):
+                field = get_object_or_404(authorized_fields, id=field_id)
+                field.name = field_name
+                field.save()
 
-		authorized_mappings = Mapping.objects.filter(reviewers__in=[request.user])
-		current_mapping = get_object_or_404(authorized_mappings, id=kwargs["mapping_id"])
-		authorized_lists = PublicationList.objects.filter(mapping=current_mapping)
-		current_list = get_object_or_404(authorized_lists, id=kwargs["list_id"])
-		authorized_fields = UserField.objects.filter(publication_list=current_list)
+        if request.POST.__contains__("delete_field"):
+            field_id = request.POST.getlist("delete_field")[0]
+            field = get_object_or_404(authorized_fields, id=field_id)
+            field.delete()
 
-		if request.POST.__contains__("edit_fields"):
-			field_ids = request.POST.getlist("field_ids")
-			field_captions = request.POST.getlist("field_captions")
-			field_values = request.POST.getlist("field_values")
-
-			for field_id, field_caption, field_value in zip(field_ids, field_captions, field_values):
-				field = get_object_or_404(authorized_fields, id=field_id)
-				field.caption = field_caption
-				field.data = field_value
-				try:
-					_ = field.data
-				except ValueError:
-					field.type = "Text"
-					field.data = field_value
-				field.save()
-
-		if request.POST.__contains__("delete_field"):
-			field_id = request.POST.getlist("delete_field")[0]
-			field = get_object_or_404(authorized_fields, id=field_id)
-			field.delete()
-
-		return redirect(reverse("publication_list", kwargs={
-				"mapping_id": current_mapping.id,
-				"list_id": current_list.id}) + "#fields")
+        return redirect(reverse("publication_list", kwargs={
+            "mapping_id": current_mapping.id,
+            "list_id": current_list.id}) + "#fields")
 
 
 class FieldReviewView(LoginRequiredMixin, View):
 
-	def post(self, request: Any, *args: Any, **kwargs: Any) -> Any:
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
 
-		if "mapping_id" not in kwargs or "list_id" not in kwargs:
-			return redirect("dashboard")
+        if "mapping_id" not in kwargs or "list_id" not in kwargs:
+            return redirect("dashboard")
 
-		authorized_mappings = Mapping.objects.filter(reviewers__in=[request.user])
-		current_mapping = get_object_or_404(authorized_mappings, id=kwargs["mapping_id"])
-		authorized_lists = PublicationList.objects.filter(mapping=current_mapping)
-		current_list = get_object_or_404(authorized_lists, id=kwargs["list_id"])
+        authorized_mappings = Mapping.objects.filter(reviewers__in=[request.user])
+        current_mapping = get_object_or_404(authorized_mappings, id=kwargs["mapping_id"])
+        authorized_lists = PublicationList.objects.filter(mapping=current_mapping)
+        current_list = get_object_or_404(authorized_lists, id=kwargs["list_id"])
 
-		reviews = Review.objects.filter(publication_list=current_list)
-		review = get_object_or_404(reviews, reviewer=request.user)
+        publication_id = request.POST.get("publication_id")
+        publication = get_object_or_404(current_list.publications, id=publication_id)
 
-		publication_id = request.POST.getlist("save_field_reviews")[0]
-		publication = get_object_or_404(current_list.publications, id=publication_id)
+        review_fields = ReviewField.objects.filter(publication_list=current_list)
 
-		all_fields = UserField.objects.filter(publication_list=current_list)
-		verified_field = [int(x) for x in request.POST.getlist(f"verify_checkbox_{publication_id}")]
+        for field in review_fields:
+            value: Optional[ReviewFieldValue] = ReviewFieldValue.objects.filter(publication=publication).filter(review_field=field).first()
+            new_value = request.POST.get(f"review_field_{field.id}")
 
-		print (verified_field)
-		for field in all_fields:
-			user_fields = UserFieldReview.objects.filter(
-				publication=publication).filter(review=review).filter(reviewer_field=field)
+            if value:
+                value.value = new_value
+                value.save()
+            else:
+                value = ReviewFieldValue(review_field=field, publication=publication, value=new_value)
+                value.save()
 
-			if user_fields:
-				user_field = user_fields[0]
-				if user_field.reviewer_field.id in verified_field:
-					user_field.checked = True
-				else:
-					user_field.checked = False
-				user_field.save()
-			else:
-				user_field = UserFieldReview()
-				user_field.reviewer_field = field
-				user_field.review = review
-				user_field.publication = publication
-				user_field.save()
-
-				if user_field.reviewer_field.id in verified_field:
-					user_field.checked = True
-					user_field.save()
-
-		return redirect(reverse("publication_list", kwargs={
-				"mapping_id": current_mapping.id,
-				"list_id": current_list.id}))
+        return redirect(reverse("publication_list", kwargs={
+            "mapping_id": current_mapping.id,
+            "list_id": current_list.id}))

@@ -1,66 +1,35 @@
+{% load django_helpers %}
 <div class="container-fluid">
-    <form action="{% url 'field_review' mapping_id=mapping.id list_id=publication_list.id %}" name="field_reviews" id="field_reviews" method="POST">
-    {% csrf_token %}
-    <div class="row">
-        <table>
-            <thead class="table">
+    <form action="{% url 'field_review' mapping_id=mapping.id list_id=publication_list.id %}" name="review" id="review" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="publication_id" value="{{ publication.id }}">
+        <div class="row">
+            <table>
+                <thead class="table">
                 <tr class="border-bottom border-danger border-opacity-50">
-                    <th> Caption </th>
+                    <th> Field </th>
                     <th> Value </th>
-                    <th> Review </th>
                 </tr>
-            </thead>
-            <tbody>
-                {% for field in reviewer_fields %}
+                </thead>
+                <tbody>
+                {% for field in review_fields %}
                     <tr class="border-bottom border-danger border-opacity-50">
-                    <td> {{ field.caption }}
-                    </td>
-                    <td> {{ field.value }}</td>
-                    <td>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="{{ field.id }}" id="verifyCheckBox{{ field.id }}_{{ publication.id }}" name="verify_checkbox_{{ publication.id }}">
-                          <label class="form-check-label" for="verifyCheckBox{{ field.id }}_{{ publication.id }}">
-                            Verify
-                          </label>
-                          {% for reviewed_field, reviewed_reviews in user_field_reviews.items %}
-                                {% if reviewed_field == field %}
-                                    {% for reviewed_review, reviewed_publications  in  reviewed_reviews.items %}
-                                        {% if reviewed_review == my_review %}
-                                            {% for reviewed_publication, checked_fields in reviewed_publications.items %}
-                                                {% if reviewed_publication == publication %}
-                                                    {% if checked_fields %}
-                                                        <script>
-                                                            {% with first=checked_fields|first %}
-                                                                {% if first.checked  %}
-                                                                    document.getElementById("verifyCheckBox{{ field.id }}_{{ publication.id }}").checked = true;
-                                                                {% else %}
-                                                                    document.getElementById("verifyCheckBox{{ field.id }}_{{ publication.id }}").checked = false;
-                                                                {% endif %}
-                                                            {% endwith %}
-                                                        </script>
-                                                    {% else %}
-                                                        <script>
-                                                             document.getElementById("verifyCheckBox{{ field.id }}_{{ publication.id }}") .indeterminate = true;
-                                                        </script>
-                                                    {% endif %}
-                                                {% endif %}
-                                            {% endfor %}
-                                        {% endif %}
-                                    {% endfor %}
-                              {% endif %}
-                          {% endfor %}
-                    </div>
-                    </td>
+                        <td><label class="form-check-label" for="review_field_{{ field.id }}">
+                            {{ field.name }}
+                        </label></td>
+                        <td>
+                            <input class="form-input" type="text" value="{% get_field_value review_field_values publication.id field.id %}" id="review_field_{{ field.id }}" name="review_field_{{ field.id }}">
+                        </td>
                     </tr>
                 {% endfor %}
-            </tbody>
-        </table>
-        <button type="submit" class="btn btn-outline-success mt-1" value="{{ publication.id }}" name="save_field_reviews"> Save </button>
-        <hr>
-        <b> Comments </b>
-        <div class="container">
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-outline-success mt-1">Save</button>
+            <hr>
+            <b>Comments</b>
+            <div class="container">
 
+            </div>
         </div>
-    </div>
     </form>
 </div>

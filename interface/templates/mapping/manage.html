@@ -13,11 +13,7 @@
             </button>
 
             <button type="button" class="btn btn-outline-primary" id="fieldsTabKey"  onclick="selectTab('fields');">
-                Step 3: Manage Reviewer Fields
-            </button>
-
-            <button type="button" class="btn btn-outline-primary" id="reviewTabKey"  onclick="selectTab('review');">
-                Step 4: Synthesis and Review
+                Step 3: Review Publications
             </button>
         </div>
         <div class="input-group">
@@ -52,9 +48,6 @@
         </div>
         <div class="container d-none" id="fieldsTab" >
             {% include "mapping/manage/fields.html" %}
-        </div>
-        <div class="container d-none" id="reviewTab" >
-            {% include "mapping/manage/review.html" %}
         </div>
      </div>
 </div>
