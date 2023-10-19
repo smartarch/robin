@@ -8,7 +8,7 @@ from django.views.generic import DeleteView, UpdateView
 from django.http import HttpRequest
 
 # from current app
-from .models import ReviewField, Mapping, PublicationList, ReviewFieldValue
+from .models import ReviewField, Mapping, PublicationList, ReviewFieldValue, ReviewFieldValueCoding
 
 
 class NewReviewFieldView(LoginRequiredMixin, View):
@@ -61,6 +61,13 @@ class EditFieldsView(LoginRequiredMixin, UpdateView, DeleteView):
             field_id = request.POST.getlist("delete_field")[0]
             field = get_object_or_404(authorized_fields, id=field_id)
             field.delete()
+
+        if request.POST.__contains__("rename_code"):
+            original_code = request.POST.get("original_code")
+            new_code = request.POST.get("code")
+            field_id = request.POST.get("field_id")
+            field = get_object_or_404(authorized_fields, id=field_id)
+            ReviewFieldValueCoding.rename_code(field, original_code, new_code)
 
         return redirect(reverse("publication_list", kwargs={
             "mapping_id": current_mapping.id,

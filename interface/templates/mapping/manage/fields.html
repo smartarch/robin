@@ -1,36 +1,85 @@
+{% load django_helpers %}
 <h5 class="text-center mb-1">Review Fields</h5>
 {% if review_fields %}
-    <form method="POST" action="{% url 'field_edit' mapping_id=mapping.id list_id=publication_list.id %}">
+    <form method="POST" action="{% url 'field_edit' mapping_id=mapping.id list_id=publication_list.id %}" id="fields">
     {% csrf_token %}
-        <table class="table">
-            <thead>
-                <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Delete</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for field in review_fields %}
-                    <tr>
-                        <td>
-                            <input type="text" class="form-control" placeholder="Name" name="field_names" value="{{ field.name }}" aria-label="name">
-                            <input type="hidden" name="field_ids" value="{{ field.id }}">
-                        </td>
-                        <td>
-                            <div class="form-control-plaintext">{{ field.get_type_display }}</div>
-                        </td>
-                        <td>
-                            <div class="btn-toolbar btn-group-sm" role="toolbar" aria-label="Field Toolbar with button groups">
-                                <button class="btn btn-outline-danger mx-1" type="submit" name="delete_field" value="{{ field.id }}">Delete</button>
-                            </div>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <button class="btn btn-outline-success mx-1" type="submit" name="edit_fields">Save Changes</button>
     </form>
+    <script>
+    function showCodingDetails(fieldId) {
+        document.getElementById(`coding_details_${fieldId}`).classList.remove("d-none");
+        document.getElementById(`shower_coding_${fieldId}`).classList.add("d-none");
+        document.getElementById(`hider_coding_${fieldId}`).classList.remove("d-none");
+    }
+    function hideCodingDetails(fieldId) {
+        document.getElementById(`coding_details_${fieldId}`).classList.add("d-none");
+        document.getElementById(`shower_coding_${fieldId}`).classList.remove("d-none");
+        document.getElementById(`hider_coding_${fieldId}`).classList.add("d-none");
+    }
+    function editCode(fieldId, codeId) {
+        const input = document.getElementById(`code_${fieldId}_${codeId}`);
+        document.getElementById(`code_edit_${fieldId}_${codeId}`).classList.add("d-none");
+        document.getElementById(`code_submit_${fieldId}_${codeId}`).classList.remove("d-none");
+        document.getElementById(`code_cancel_${fieldId}_${codeId}`).classList.remove("d-none");
+        input.disabled = false;
+    }
+    function cancelEditCode(fieldId, codeId) {
+        const input = document.getElementById(`code_${fieldId}_${codeId}`);
+        document.getElementById(`code_edit_${fieldId}_${codeId}`).classList.remove("d-none");
+        document.getElementById(`code_submit_${fieldId}_${codeId}`).classList.add("d-none");
+        document.getElementById(`code_cancel_${fieldId}_${codeId}`).classList.add("d-none");
+        input.disabled = true;
+    }
+    </script>
+    <div class="row mb-2">
+        <div class="col-6 fw-bold">Name</div>
+        <div class="col-4 fw-bold">Type</div>
+        <div class="col-2 fw-bold">Tools</div>
+    </div>
+
+    {% for field in review_fields %}
+        <div class="row mb-2">
+            <div class="col-6">
+                <input type="text" class="form-control" placeholder="Name" name="field_names" value="{{ field.name }}" aria-label="name" form="fields">
+                <input type="hidden" name="field_ids" value="{{ field.id }}" form="fields">
+            </div>
+            <div class="col-4">
+                {{ field.get_type_display }}
+                {% if field.type == "C" %}
+                    <button class="btn btn-small btn-outline-dark" type="button" onclick="showCodingDetails({{ field.id }})" id="shower_coding_{{ field.id }}">
+                        <i class="bi bi-arrows-expand"></i> Show values
+                    </button>
+                    <button class="btn btn-small btn-info d-none" type="button" onclick="hideCodingDetails({{ field.id }})" id="hider_coding_{{ field.id }}">
+                        <i class="bi bi-arrows-collapse"></i> Hide values
+                    </button>
+                {% endif %}
+            </div>
+            <div class="col-2">
+                <div class="btn-toolbar btn-group-sm" role="toolbar" aria-label="Field Toolbar with button groups">
+                    <button class="btn btn-outline-danger mx-1" type="submit" name="delete_field" value="{{ field.id }}" form="fields">Delete</button>
+                </div>
+            </div>
+        </div>
+        {% if field.type == "C" %}
+            <div id="coding_details_{{ field.id }}" class="row mt-2 d-none">
+                {% for code in coding_codes|lookup:field %}
+                    <div class="col-2">
+                        <form method="POST" action="{% url 'field_edit' mapping_id=mapping.id list_id=publication_list.id %}">
+                        <input type="hidden" name="original_code" value="{{ code }}">
+                        <input type="hidden" name="field_id" value="{{ field.id }}">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" aria-label="Code" disabled value="{{ code }}" id="code_{{ field.id }}_{{ forloop.counter }}" name="code">
+                            <button class="btn btn-outline-success d-none" type="submit" id="code_submit_{{ field.id }}_{{ forloop.counter }}" name="rename_code">Rename</button>
+                            <button class="btn btn-outline-danger d-none" type="button" id="code_cancel_{{ field.id }}_{{ forloop.counter }}" onclick="cancelEditCode({{ field.id }}, {{ forloop.counter }})">Cancel</button>
+                            <button class="btn btn-outline-secondary" type="button" id="code_edit_{{ field.id }}_{{ forloop.counter }}" onclick="editCode({{ field.id }}, {{ forloop.counter }})"><i class="bi bi-pencil-square"></i></button>
+                        </div>
+                        {% csrf_token %}
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endfor %}
+    <button class="btn btn-outline-success mt-2" type="submit" name="edit_fields" form="fields">Save Changes</button>
 {% endif %}
 <div class="container-fluid bg-success bg-opacity-10 align-middle">
     {% include "mapping/mapping_list/user_fields/new.html" %}

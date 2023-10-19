@@ -8,7 +8,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.core.paginator import Paginator
 
 # local packages
-from .models import Mapping, PublicationList, UserPreferences, ReviewField, ReviewFieldValue
+from .models import Mapping, PublicationList, UserPreferences, ReviewField, ReviewFieldValue, ReviewFieldValueCoding
 from .criteria import create_advanced_query
 from .field_views import FieldReviewView
 
@@ -269,6 +269,10 @@ class MappingListView(LoginRequiredMixin, TemplateView):
         page_obj = paginator.get_page(page_number)
 
         review_fields = ReviewField.objects.filter(publication_list=publication_list)
+        coding_codes = {
+            field: ReviewFieldValueCoding.get_all_codes(field)
+            for field in review_fields if field.type == "C"
+        }
 
         context = {
             **super().get_context_data(**kwargs),
@@ -281,6 +285,7 @@ class MappingListView(LoginRequiredMixin, TemplateView):
             "detailed_results": detailed_results,
             "original_size": original_size,
             "review_fields": review_fields,
+            "coding_codes": coding_codes,
             "filtered_size": filtered_size,
             "filter_text": filter_text,
             "filter_errors": filter_errors,

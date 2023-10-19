@@ -162,6 +162,13 @@ class ReviewFieldValueCoding(ReviewFieldValue):
         codes = set(code_object.value for code_object in code_objects)
         return codes
 
+    @staticmethod
+    def rename_code(field: ReviewField, old_code: str, new_code: str):
+        code_objects = ReviewFieldValueCoding.objects.filter(review_field=field).filter(value=old_code).all()
+        for code_object in code_objects:
+            code_object.value = new_code
+            code_object.save()
+
 
 class Comment(models.Model):
     reviewer = models.ForeignKey(Reviewer, on_delete=models.CASCADE)
