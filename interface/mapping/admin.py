@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Mapping, PublicationList, UserPreferences, ReviewField, ReviewFieldValue
+from .models import Mapping, PublicationList, UserPreferences, ReviewField, ReviewFieldValueText, ReviewFieldValueNumber
 
 
 @admin.register(Mapping)
@@ -26,7 +26,13 @@ class ReviewFieldAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
 
-@admin.register(ReviewFieldValue)
-class ReviewFieldValueAdmin(admin.ModelAdmin):
+@admin.register(ReviewFieldValueText)
+class ReviewFieldValueTextAdmin(admin.ModelAdmin):
+    list_display = ("review_field", "publication", "value")
+    search_fields = ("id",)
+
+
+@admin.register(ReviewFieldValueNumber)
+class ReviewFieldValueNumberAdmin(admin.ModelAdmin):
     list_display = ("review_field", "publication", "value")
     search_fields = ("id",)

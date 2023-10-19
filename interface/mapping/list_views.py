@@ -271,7 +271,7 @@ class MappingListView(LoginRequiredMixin, TemplateView):
         review_fields = ReviewField.objects.filter(publication_list=publication_list)
         review_field_values = {
             publication.id: {
-                review_field.id: ReviewFieldValue.objects.filter(review_field=review_field).filter(publication=publication)
+                review_field.id: review_field.get_value_class().objects.filter(review_field=review_field).filter(publication=publication)
                 for review_field in review_fields
             }
             for publication in publications

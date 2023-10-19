@@ -3,33 +3,29 @@
     <form action="{% url 'field_review' mapping_id=mapping.id list_id=publication_list.id %}" name="review" id="review" method="POST">
         {% csrf_token %}
         <input type="hidden" name="publication_id" value="{{ publication.id }}">
-        <div class="row">
-            <table>
-                <thead class="table">
-                <tr class="border-bottom border-danger border-opacity-50">
-                    <th> Field </th>
-                    <th> Value </th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for field in review_fields %}
-                    <tr class="border-bottom border-danger border-opacity-50">
-                        <td><label class="form-check-label" for="review_field_{{ field.id }}">
-                            {{ field.name }}
-                        </label></td>
-                        <td>
-                            <input class="form-input" type="text" value="{% get_field_value review_field_values publication.id field.id %}" id="review_field_{{ field.id }}" name="review_field_{{ field.id }}">
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            <button type="submit" class="btn btn-outline-success mt-1">Save</button>
-            <hr>
-            <b>Comments</b>
-            <div class="container">
-
+        <div class="row mb-2">
+            <div class="col-6 fw-bold">Field</div>
+            <div class="col-6 fw-bold">Value</div>
+        </div>
+        {% for field in review_fields %}
+            <div class="row mb-2">
+                <label class="col-form-label col-6" for="review_field_{{ field.id }}">
+                    {{ field.name }}
+                </label>
+                <div class="col-6">
+                    {% if field.type == "T" %}
+                        <input class="form-control" type="text" value="{% get_field_value review_field_values publication.id field.id %}" id="review_field_{{ field.id }}" name="review_field_{{ field.id }}">
+                    {% elif field.type == "N" %}
+                        <input class="form-control" type="number" value="{% get_field_value review_field_values publication.id field.id %}" id="review_field_{{ field.id }}" name="review_field_{{ field.id }}">
+                    {% endif %}
+                </div>
             </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-outline-success mt-1 w-100">Save</button>
+        <hr>
+        <b>Comments</b>
+        <div class="container">
+
         </div>
     </form>
 </div>

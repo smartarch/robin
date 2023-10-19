@@ -1,3 +1,5 @@
+from typing import Type
+
 from django.db import models
 
 # from local app
@@ -55,19 +57,48 @@ class ReviewField(models.Model):
     type = models.CharField(max_length=1, choices=[("T", "Text"), ("N", "Number"), ("B", "Boolean"), ("L", "List"), ("S", "Select One"), ("O", "Multi-Select"), ("C", "Coding")])
     publication_list = models.ForeignKey(PublicationList, on_delete=models.CASCADE)
 
+    def get_value_class(self) -> Type['ReviewFieldValue']:
+        if self.type == "T":
+            return ReviewFieldValueText
+        elif self.type == "N":
+            return ReviewFieldValueNumber
+        raise NotImplementedError(f'ReviewField type {self.type} is not yet implemented')
+
     def __str__(self):
         return self.name
 
 
 class ReviewFieldValue(models.Model):
+    """Abstract class for all review field values. The concrete classes are defined below."""
+
+    class Meta:
+        abstract = True
+
     review_field = models.ForeignKey(ReviewField, on_delete=models.CASCADE)
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
-    value = models.CharField(max_length=1024)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    value = ...  # to be defined in the concrete subclass
+
+    def set_value(self, new_value):
+        raise NotImplementedError()  # to be implemented in the concrete subclass
 
     def __str__(self):
         return f'{self.review_field.name}: "{self.value}" for {self.publication.title}'
+
+
+class ReviewFieldValueText(ReviewFieldValue):
+    value = models.TextField()
+
+    def set_value(self, new_value):
+        self.value = new_value
+
+
+class ReviewFieldValueNumber(ReviewFieldValue):
+    value = models.FloatField()
+
+    def set_value(self, new_value):
+        self.value = float(new_value)
 
 
 class Comment(models.Model):

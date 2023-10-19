@@ -82,17 +82,21 @@ class FieldReviewView(LoginRequiredMixin, View):
         publication_id = request.POST.get("publication_id")
         publication = get_object_or_404(current_list.publications, id=publication_id)
 
-        review_fields = ReviewField.objects.filter(publication_list=current_list)
+        review_fields: list[ReviewField] = ReviewField.objects.filter(publication_list=current_list)
 
         for field in review_fields:
-            value: Optional[ReviewFieldValue] = ReviewFieldValue.objects.filter(publication=publication).filter(review_field=field).first()
+            value: Optional[ReviewFieldValue] = field.get_value_class().objects.filter(publication=publication).filter(review_field=field).first()
             new_value = request.POST.get(f"review_field_{field.id}")
 
             if value:
-                value.value = new_value
-                value.save()
-            else:
-                value = ReviewFieldValue(review_field=field, publication=publication, value=new_value)
+                if new_value == "":  # new value is empty -> remove previous value object
+                    value.delete()
+                else:  # update previous value object
+                    value.set_value(new_value)
+                    value.save()
+            else:  # create new value object
+                value = field.get_value_class()(review_field=field, publication=publication)
+                value.set_value(new_value)
                 value.save()
 
         return redirect(reverse("publication_list", kwargs={
