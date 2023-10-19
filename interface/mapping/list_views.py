@@ -269,13 +269,6 @@ class MappingListView(LoginRequiredMixin, TemplateView):
         page_obj = paginator.get_page(page_number)
 
         review_fields = ReviewField.objects.filter(publication_list=publication_list)
-        review_field_values = {
-            publication.id: {
-                review_field.id: review_field.get_value_class().objects.filter(review_field=review_field).filter(publication=publication)
-                for review_field in review_fields
-            }
-            for publication in publications
-        }
 
         context = {
             **super().get_context_data(**kwargs),
@@ -288,7 +281,6 @@ class MappingListView(LoginRequiredMixin, TemplateView):
             "detailed_results": detailed_results,
             "original_size": original_size,
             "review_fields": review_fields,
-            "review_field_values": review_field_values,
             "filtered_size": filtered_size,
             "filter_text": filter_text,
             "filter_errors": filter_errors,

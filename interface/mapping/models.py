@@ -1,4 +1,5 @@
-from typing import Type
+import json
+from typing import Type, Optional
 
 from django.db import models
 
@@ -63,7 +64,7 @@ class ReviewField(models.Model):
         elif self.type == "N":
             return ReviewFieldValueNumber
         elif self.type == "C":
-            return ReviewFieldValueText  # TODO
+            return ReviewFieldValueCoding
         raise NotImplementedError(f'ReviewField type {self.get_type_display()} is not yet implemented')
 
     def __str__(self):
@@ -81,6 +82,29 @@ class ReviewFieldValue(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     value = ...  # to be defined in the concrete subclass
+
+    @staticmethod
+    def save_value(field: ReviewField, publication: Publication, new_value):
+        # find previous value object in the database
+        value_object: Optional[ReviewFieldValue] = field.get_value_class().objects.filter(publication=publication).filter(review_field=field).first()
+
+        if value_object:
+            if new_value == "":  # new value is empty -> remove previous value object
+                value_object.delete()
+            else:  # update previous value object
+                value_object.set_value(new_value)
+                value_object.save()
+        elif new_value != "":  # create new value object
+            value_object = field.get_value_class()(review_field=field, publication=publication)
+            value_object.set_value(new_value)
+            value_object.save()
+
+    @staticmethod
+    def get_value(field: ReviewField, publication: Publication):
+        value_object: Optional[ReviewFieldValue] = field.get_value_class().objects.filter(publication=publication).filter(review_field=field).first()
+        if value_object:
+            return value_object.value
+        return None
 
     def set_value(self, new_value):
         raise NotImplementedError()  # to be implemented in the concrete subclass
@@ -101,6 +125,36 @@ class ReviewFieldValueNumber(ReviewFieldValue):
 
     def set_value(self, new_value):
         self.value = float(new_value)
+
+
+class ReviewFieldValueCoding(ReviewFieldValue):
+    value = models.TextField()
+
+    @staticmethod
+    def save_value(field: ReviewField, publication: Publication, new_value):
+        if new_value == "":
+            new_codes = []
+        else:
+            new_codes = set(tag["value"] for tag in json.loads(new_value))
+        current_code_objects: dict[str, ReviewFieldValueCoding] = {
+            code_object.value: code_object
+            for code_object in ReviewFieldValueCoding.objects.filter(publication=publication).filter(review_field=field).all()
+        }
+        current_codes = set(current_code_objects.keys())
+
+        removed_codes = current_codes - new_codes
+        added_codes = new_codes - current_codes
+
+        for code in removed_codes:
+            current_code_objects[code].delete()
+        for code in added_codes:
+            new_code_object = ReviewFieldValueCoding(review_field=field, publication=publication, value=code)
+            new_code_object.save()
+
+    @staticmethod
+    def get_value(field: ReviewField, publication: Publication):
+        code_objects = ReviewFieldValueCoding.objects.filter(publication=publication).filter(review_field=field).all()
+        return json.dumps([{"value": code_object.value} for code_object in code_objects])
 
 
 class Comment(models.Model):

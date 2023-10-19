@@ -14,11 +14,11 @@
                 </label>
                 <div class="col-6">
                     {% if field.type == "T" %}
-                        <input class="form-control" type="text" value="{% get_field_value review_field_values publication.id field.id %}" id="review_field_{{ field.id }}_{{ publication.id }}" name="review_field_{{ field.id }}">
+                        <input class="form-control" type="text" value="{% get_field_value field publication %}" id="review_field_{{ field.id }}_{{ publication.id }}" name="review_field_{{ field.id }}">
                     {% elif field.type == "N" %}
-                        <input class="form-control" type="number" value="{% get_field_value review_field_values publication.id field.id %}" id="review_field_{{ field.id }}_{{ publication.id }}" name="review_field_{{ field.id }}">
+                        <input class="form-control" type="number" value="{% get_field_value field publication %}" id="review_field_{{ field.id }}_{{ publication.id }}" name="review_field_{{ field.id }}">
                     {% elif field.type == "C" %}
-                        <input class="form-control" type="text" value="{% get_field_value review_field_values publication.id field.id %}" id="review_field_{{ field.id }}_{{ publication.id }}" name="review_field_{{ field.id }}">
+                        <input class="form-control" type="text" value='{% get_field_value field publication %}' id="review_field_{{ field.id }}_{{ publication.id }}" name="review_field_{{ field.id }}">
                         <!--suppress JSUnresolvedReference (Tagify is imported in publication_review_common.html)-->
                         <script>
                         createTagsInput(document.getElementById("review_field_{{ field.id }}_{{ publication.id }}"));

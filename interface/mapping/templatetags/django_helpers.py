@@ -1,5 +1,7 @@
 from django.template import Library
 
+from mapping.models import ReviewField
+from publication.models import Publication
 
 register = Library()
 
@@ -10,8 +12,8 @@ def lookup(dictionary: dict, key):
 
 
 @register.simple_tag(name='get_field_value')
-def get_field_value(review_field_values, publication_id, field_id):
-    field_value = review_field_values.get(publication_id, {}).get(field_id, "").first()
-    if field_value:
-        return field_value.value
+def get_field_value(field: ReviewField, publication: Publication):
+    value = field.get_value_class().get_value(field, publication)
+    if value:
+        return value
     return ""
