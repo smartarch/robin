@@ -97,4 +97,4 @@ class FieldReviewView(LoginRequiredMixin, View):
 
         return redirect(reverse("publication_list", kwargs={
             "mapping_id": current_mapping.id,
-            "list_id": current_list.id}))
+            "list_id": current_list.id}) + "#fields")

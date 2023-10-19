@@ -27,7 +27,20 @@
         document.getElementById(`code_edit_${fieldId}_${codeId}`).classList.remove("d-none");
         document.getElementById(`code_submit_${fieldId}_${codeId}`).classList.add("d-none");
         document.getElementById(`code_cancel_${fieldId}_${codeId}`).classList.add("d-none");
+        document.getElementById(`code_merge_${fieldId}_${codeId}`).classList.add("d-none");
+        input.value = document.getElementById(`code_original_${fieldId}_${codeId}`).value;
         input.disabled = true;
+    }
+    function checkEditCode(fieldId, codeId) {
+        const value = document.getElementById(`code_${fieldId}_${codeId}`).value;
+        const originalValue = document.getElementById(`code_original_${fieldId}_${codeId}`).value;
+        if (value === originalValue)
+            return;
+        const allCodes = existing_codes[fieldId]; // the existing_codes are defined in publication_review_common.html
+        if (allCodes.includes(value))
+            document.getElementById(`code_merge_${fieldId}_${codeId}`).classList.remove("d-none");
+        else
+            document.getElementById(`code_merge_${fieldId}_${codeId}`).classList.add("d-none");
     }
     </script>
     <div class="row mb-2">
@@ -64,15 +77,16 @@
                 {% for code in coding_codes|lookup:field %}
                     <div class="col-2">
                         <form method="POST" action="{% url 'field_edit' mapping_id=mapping.id list_id=publication_list.id %}">
-                        <input type="hidden" name="original_code" value="{{ code }}">
-                        <input type="hidden" name="field_id" value="{{ field.id }}">
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" aria-label="Code" disabled value="{{ code }}" id="code_{{ field.id }}_{{ forloop.counter }}" name="code">
-                            <button class="btn btn-outline-success d-none" type="submit" id="code_submit_{{ field.id }}_{{ forloop.counter }}" name="rename_code">Rename</button>
-                            <button class="btn btn-outline-danger d-none" type="button" id="code_cancel_{{ field.id }}_{{ forloop.counter }}" onclick="cancelEditCode({{ field.id }}, {{ forloop.counter }})">Cancel</button>
-                            <button class="btn btn-outline-secondary" type="button" id="code_edit_{{ field.id }}_{{ forloop.counter }}" onclick="editCode({{ field.id }}, {{ forloop.counter }})"><i class="bi bi-pencil-square"></i></button>
-                        </div>
-                        {% csrf_token %}
+                            {% csrf_token %}
+                            <input type="hidden" name="original_code" value="{{ code }}" id="code_original_{{ field.id }}_{{ forloop.counter }}">
+                            <input type="hidden" name="field_id" value="{{ field.id }}">
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" aria-label="Code" disabled value="{{ code }}" id="code_{{ field.id }}_{{ forloop.counter }}" name="code" oninput="checkEditCode({{ field.id }}, {{ forloop.counter }})" autocomplete="off" required>
+                                <button class="btn btn-outline-success d-none" type="submit" id="code_submit_{{ field.id }}_{{ forloop.counter }}" name="rename_code">Rename</button>
+                                <button class="btn btn-outline-danger d-none" type="button" id="code_cancel_{{ field.id }}_{{ forloop.counter }}" onclick="cancelEditCode({{ field.id }}, {{ forloop.counter }})">Cancel</button>
+                                <button class="btn btn-outline-secondary" type="button" id="code_edit_{{ field.id }}_{{ forloop.counter }}" onclick="editCode({{ field.id }}, {{ forloop.counter }})"><i class="bi bi-pencil-square"></i></button>
+                            </div>
+                            <div class="alert alert-warning d-none" role="alert" id="code_merge_{{ field.id }}_{{ forloop.counter }}">The value is the same as a different value. Renaming will merge these values.</div>
                         </form>
                     </div>
                 {% endfor %}
