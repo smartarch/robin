@@ -1,0 +1,22 @@
+<!-- This file contains code which is common for all publication reviews. The purpose of this file is to load that code only once and not repeatedly for each publication in the list -->
+
+<!-- Import Tagify (https://github.com/yairEO/tagify) for implementing "coding" review field -->
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
+<!--suppress JSUnresolvedReference (Tagify is loaded from CDN, see above) -->
+<script>
+let existing_codes = ["aaa", "bbbb", "ccccc", "aabbb"];
+// TODO: download from server
+
+function createTagsInput(input) {
+    const tagify = new Tagify(input, {
+        whitelist: existing_codes,
+        delimiters: null, // save tag on enter (allow commas in tags)
+        dropdown: {
+            maxItems: 10, // maximum allowed rendered suggestions
+            enabled: 1, // show suggestions when 1 character is entered in the input
+        }
+    })
+}
+</script>

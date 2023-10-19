@@ -94,7 +94,7 @@ class FieldReviewView(LoginRequiredMixin, View):
                 else:  # update previous value object
                     value.set_value(new_value)
                     value.save()
-            else:  # create new value object
+            elif new_value != "":  # create new value object
                 value = field.get_value_class()(review_field=field, publication=publication)
                 value.set_value(new_value)
                 value.save()

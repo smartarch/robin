@@ -62,7 +62,9 @@ class ReviewField(models.Model):
             return ReviewFieldValueText
         elif self.type == "N":
             return ReviewFieldValueNumber
-        raise NotImplementedError(f'ReviewField type {self.type} is not yet implemented')
+        elif self.type == "C":
+            return ReviewFieldValueText  # TODO
+        raise NotImplementedError(f'ReviewField type {self.get_type_display()} is not yet implemented')
 
     def __str__(self):
         return self.name
