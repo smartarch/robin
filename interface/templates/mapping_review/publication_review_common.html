@@ -1,4 +1,5 @@
 <!-- This file contains code which is common for all publication reviews. The purpose of this file is to load that code only once and not repeatedly for each publication in the list -->
+{% load django_helpers %}
 
 <!-- Import Tagify (https://github.com/yairEO/tagify) for implementing "coding" review field -->
 <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
@@ -6,12 +7,16 @@
 <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
 <!--suppress JSUnresolvedReference (Tagify is loaded from CDN, see above) -->
 <script>
-let existing_codes = ["aaa", "bbbb", "ccccc", "aabbb"];
-// TODO: download from server
+const existing_codes = {}
+{% for field in review_fields %}
+    {% if field.type == "C" %}
+        existing_codes[{{ field.id }}] = {% coding_codes_list field %}
+    {% endif %}
+{% endfor %}
 
-function createTagsInput(input) {
+function createTagsInput(input, field_id) {
     const tagify = new Tagify(input, {
-        whitelist: existing_codes,
+        whitelist: existing_codes[field_id],
         delimiters: null, // save tag on enter (allow commas in tags)
         dropdown: {
             maxItems: 10, // maximum allowed rendered suggestions

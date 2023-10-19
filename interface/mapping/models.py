@@ -156,6 +156,12 @@ class ReviewFieldValueCoding(ReviewFieldValue):
         code_objects = ReviewFieldValueCoding.objects.filter(publication=publication).filter(review_field=field).all()
         return json.dumps([{"value": code_object.value} for code_object in code_objects])
 
+    @staticmethod
+    def get_all_codes(field: ReviewField):
+        code_objects = ReviewFieldValueCoding.objects.filter(review_field=field).all()
+        codes = set(code_object.value for code_object in code_objects)
+        return codes
+
 
 class Comment(models.Model):
     reviewer = models.ForeignKey(Reviewer, on_delete=models.CASCADE)

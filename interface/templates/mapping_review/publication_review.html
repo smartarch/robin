@@ -21,7 +21,7 @@
                         <input class="form-control" type="text" value='{% get_field_value field publication %}' id="review_field_{{ field.id }}_{{ publication.id }}" name="review_field_{{ field.id }}">
                         <!--suppress JSUnresolvedReference (Tagify is imported in publication_review_common.html)-->
                         <script>
-                        createTagsInput(document.getElementById("review_field_{{ field.id }}_{{ publication.id }}"));
+                        createTagsInput(document.getElementById("review_field_{{ field.id }}_{{ publication.id }}"), {{ field.id }});
                         </script>
                     {% endif %}
                 </div>
