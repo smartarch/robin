@@ -67,6 +67,22 @@ class ReviewField(models.Model):
             return ReviewFieldValueCoding
         raise NotImplementedError(f'ReviewField type {self.get_type_display()} is not yet implemented')
 
+    def duplicate(self):
+        old_pk = self.pk
+        # duplicate this ReviewField (see https://docs.djangoproject.com/en/4.2/topics/db/queries/#copying-model-instances)
+        self.pk = None
+        self._state.adding = True
+        self.save()
+
+        # duplicate all `ReviewFieldValue`s of this ReviewField
+        old_field = ReviewField.objects.get(pk=old_pk)
+        value_object: ReviewFieldValue
+        for value_object in self.get_value_class().objects.filter(review_field=old_field).all():
+            value_object.pk = None
+            value_object._state.adding = True
+            value_object.review_field = self
+            value_object.save()
+
     def __str__(self):
         return self.name
 
@@ -133,7 +149,7 @@ class ReviewFieldValueCoding(ReviewFieldValue):
     @staticmethod
     def save_value(field: ReviewField, publication: Publication, new_value):
         if new_value == "":
-            new_codes = []
+            new_codes = set()
         else:
             new_codes = set(tag["value"] for tag in json.loads(new_value))
         current_code_objects: dict[str, ReviewFieldValueCoding] = {

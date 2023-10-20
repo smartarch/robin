@@ -37,7 +37,7 @@ class NewReviewFieldView(LoginRequiredMixin, View):
 class EditFieldsView(LoginRequiredMixin, UpdateView, DeleteView):
     model = ReviewField
 
-    def post(self, request: Any, *args: Any, **kwargs: Any) -> Any:
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
 
         if "mapping_id" not in kwargs or "list_id" not in kwargs:
             return redirect("publication_list_all")
@@ -48,7 +48,7 @@ class EditFieldsView(LoginRequiredMixin, UpdateView, DeleteView):
         current_list = get_object_or_404(authorized_lists, id=kwargs["list_id"])
         authorized_fields = ReviewField.objects.filter(publication_list=current_list)
 
-        if request.POST.__contains__("edit_fields"):
+        if "edit_fields" in request.POST:
             field_ids = request.POST.getlist("field_ids")
             field_names = request.POST.getlist("field_names")
 
@@ -57,12 +57,17 @@ class EditFieldsView(LoginRequiredMixin, UpdateView, DeleteView):
                 field.name = field_name
                 field.save()
 
-        if request.POST.__contains__("delete_field"):
-            field_id = request.POST.getlist("delete_field")[0]
+        if "delete_field" in request.POST:
+            field_id = request.POST.get("delete_field")
             field = get_object_or_404(authorized_fields, id=field_id)
             field.delete()
 
-        if request.POST.__contains__("rename_code"):
+        if "duplicate_field" in request.POST:
+            field_id = request.POST.get("duplicate_field")
+            field = get_object_or_404(authorized_fields, id=field_id)
+            field.duplicate()
+
+        if "rename_code" in request.POST:
             original_code = request.POST.get("original_code")
             new_code = request.POST.get("code")
             field_id = request.POST.get("field_id")
