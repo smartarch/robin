@@ -26,7 +26,7 @@ class NewReviewFieldView(LoginRequiredMixin, View):
         if request.POST.__contains__("add_field"):
             field_name = request.POST.get("field_name")
             field_type = request.POST.get("field_type")
-            new_field = ReviewField(name=field_name, type=field_type, publication_list=current_list)
+            new_field = ReviewField(name=field_name, type=field_type, mapping=current_mapping)
             new_field.save()
 
         return redirect(reverse("publication_list", kwargs={
@@ -46,7 +46,7 @@ class EditFieldsView(LoginRequiredMixin, UpdateView, DeleteView):
         current_mapping = get_object_or_404(authorized_mappings, id=kwargs["mapping_id"])
         authorized_lists = PublicationList.objects.filter(mapping=current_mapping)
         current_list = get_object_or_404(authorized_lists, id=kwargs["list_id"])
-        authorized_fields = ReviewField.objects.filter(publication_list=current_list)
+        authorized_fields = ReviewField.objects.filter(mapping=current_mapping)
 
         if "edit_fields" in request.POST:
             field_ids = request.POST.getlist("field_ids")
@@ -94,7 +94,7 @@ class FieldReviewView(LoginRequiredMixin, View):
         publication_id = request.POST.get("publication_id")
         publication = get_object_or_404(current_list.publications, id=publication_id)
 
-        review_fields: list[ReviewField] = ReviewField.objects.filter(publication_list=current_list)
+        review_fields: list[ReviewField] = ReviewField.objects.filter(mapping=current_mapping)
 
         for field in review_fields:
             new_value = request.POST.get(f"review_field_{field.id}")

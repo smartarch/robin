@@ -268,7 +268,7 @@ class MappingListView(LoginRequiredMixin, TemplateView):
         page_number = request.GET.get("page")
         page_obj = paginator.get_page(page_number)
 
-        review_fields = ReviewField.objects.filter(publication_list=publication_list)
+        review_fields = ReviewField.objects.filter(mapping=mapping)
         coding_codes = {
             field: ReviewFieldValueCoding.get_all_codes(field)
             for field in review_fields if field.type == "C"

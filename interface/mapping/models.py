@@ -56,7 +56,7 @@ class PublicationList(models.Model):
 class ReviewField(models.Model):
     name = models.CharField(max_length=64)
     type = models.CharField(max_length=1, choices=[("T", "Text"), ("N", "Number"), ("B", "Boolean"), ("L", "List"), ("S", "Select One"), ("O", "Multi-Select"), ("C", "Coding")])
-    publication_list = models.ForeignKey(PublicationList, on_delete=models.CASCADE)
+    mapping = models.ForeignKey(Mapping, on_delete=models.CASCADE)
 
     def get_value_class(self) -> Type['ReviewFieldValue']:
         if self.type == "T":
