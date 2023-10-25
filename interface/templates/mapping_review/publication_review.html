@@ -9,10 +9,10 @@
         </div>
         {% for field in review_fields %}
             <div class="row mb-2">
-                <label class="col-form-label col-6" for="review_field_{{ field.id }}_{{ publication.id }}">
+                <label class="col-form-label col-4 col-lg-5 col-xl-4" for="review_field_{{ field.id }}_{{ publication.id }}">
                     {{ field.name }}
                 </label>
-                <div class="col-6">
+                <div class="col-8 col-lg-7 col-xl-8">
                     {% if field.type == "T" %}
                         <input class="form-control" type="text" value="{% get_field_value field publication %}" id="review_field_{{ field.id }}_{{ publication.id }}" name="review_field_{{ field.id }}">
                     {% elif field.type == "N" %}
