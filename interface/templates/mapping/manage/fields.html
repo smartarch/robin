@@ -55,7 +55,7 @@
                 <input type="text" class="form-control" placeholder="Name" name="field_names" value="{{ field.name }}" aria-label="name" form="fields">
                 <input type="hidden" name="field_ids" value="{{ field.id }}" form="fields">
             </div>
-            <div class="col-4">
+            <div class="col-3">
                 {{ field.get_type_display }}
                 {% if field.type == "C" %}
                     <button class="btn btn-small btn-outline-dark" type="button" onclick="showCodingDetails({{ field.id }})" id="shower_coding_{{ field.id }}">
@@ -66,7 +66,7 @@
                     </button>
                 {% endif %}
             </div>
-            <div class="col-2">
+            <div class="col-3">
                 <div class="btn-toolbar btn-group-sm" role="toolbar" aria-label="Field Toolbar with button groups">
                     <button class="btn btn-outline-danger mx-1" type="submit" name="delete_field" value="{{ field.id }}" form="fields">Delete</button>
                     <button class="btn btn-outline-info mx-1" type="submit" name="duplicate_field" value="{{ field.id }}" form="fields">Duplicate</button>
@@ -76,7 +76,7 @@
         {% if field.type == "C" %}
             <div id="coding_details_{{ field.id }}" class="row mt-2 d-none">
                 {% for code in coding_codes|lookup:field %}
-                    <div class="col-2">
+                    <div class="col-12 col-md-6 col-xl-4">
                         <form method="POST" action="{% url 'field_edit' mapping_id=mapping.id list_id=publication_list.id %}">
                             {% csrf_token %}
                             <input type="hidden" name="original_code" value="{{ code }}" id="code_original_{{ field.id }}_{{ forloop.counter }}">
