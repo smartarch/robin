@@ -3,8 +3,7 @@ from typing import Type, Optional
 
 from django.db import models
 
-# from local app
-from .criteria import create_advanced_query
+
 
 # from other apps
 from publication.models import Publication
@@ -38,8 +37,10 @@ class PublicationList(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if self.id:
+            # from local app
+            from .criteria import create_advanced_query
             for follower in self.followers.all():
-                query = create_advanced_query(follower.criteria)
+                query = create_advanced_query(self.mapping, self, follower.criteria)
                 filtered_publications = self.publications.filter(query)
                 if filtered_publications:
                     for pub in filtered_publications:
