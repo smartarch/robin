@@ -1,5 +1,7 @@
 from django.db.models import Q
 from typing import Any
+from .models import Mapping, ReviewField, PublicationList
+from publication.models import Publication
 
 def create_parser(text: str) -> list:
 	"""
@@ -55,7 +57,28 @@ def create_parser(text: str) -> list:
 	return stack[0]
 
 
-def create_advanced_query(text: str) -> Q:
+def create_user_q(mapping: Mapping, publication_list: PublicationList,  key: str, value: Any) -> Q | None:
+	try:
+		mapping_fields = ReviewField.objects.filter(mapping=mapping)
+		key_spliter = key.split('__')
+
+		if len(key_spliter) == 1:
+			filtered = ""  # default filter
+		else:
+			filtered = "__" + key_spliter[1]  # default filter
+		field_name = key_spliter[0]
+
+		target_field = mapping_fields.get(name=field_name)
+		query = Q(**{f"value{filtered}": value})
+
+		target_objects = target_field.get_value_class().objects.all()
+		publications = publication_list.publications.filter(id__in=[t.publication.id for t in target_objects.filter(query)])
+
+		return Q(id__in=[p.id for p in publications])
+	except:
+		return None
+
+def create_advanced_query(mapping: Mapping, publication_list: PublicationList, text: str) -> Q:
 	"""
 	Converts the string filter to django.db.Q model
 	:param text: filter text
@@ -88,7 +111,17 @@ def create_advanced_query(text: str) -> Q:
 		stack = []
 		for token in tokens:
 			if isinstance(token, dict):
-				token = Q(**token)
+				user_q = None
+				for key, value in token.items():
+					if key in [f.name for f in Publication._meta.fields]:
+						break
+					user_q = create_user_q(mapping, publication_list, key, value)
+
+				if user_q:
+					token = user_q
+				else:
+					token = Q(**token)
+
 				stack = manage_stack(stack, token)
 
 			elif isinstance(token, list):
