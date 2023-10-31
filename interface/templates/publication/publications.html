@@ -155,6 +155,9 @@
         document.getElementById(`container_${publicationId}`).classList.add("text-dark");
         document.getElementById(`shower_${publicationId}`).classList.add("d-none");
         document.getElementById(`hider_${publicationId}`).classList.remove("d-none");
+        // to modify the all button
+        document.getElementById("showerAll").classList.add("d-none");
+        document.getElementById("hiderAll").classList.remove("d-none");
     }
     function hideDetails(publicationId){
         document.getElementById(`containerDetails_${publicationId}`).classList.add("d-none");
@@ -162,5 +165,11 @@
         document.getElementById(`container_${publicationId}`).classList.remove("text-dark");
         document.getElementById(`shower_${publicationId}`).classList.remove("d-none");
         document.getElementById(`hider_${publicationId}`).classList.add("d-none");
+
+        // to modify the all button
+        document.getElementById("showerAll").classList.remove("d-none");
+        document.getElementById("hiderAll").classList.add("d-none");
     }
+
+
 </script>

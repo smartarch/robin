@@ -4,7 +4,7 @@
         <label class="form-check-label" for="selectAllPublications"> Select All (only on this page) </label>
     </div>
 
-    <div class="col-8" >
+    <div class="col-7" >
         <div class="pagination justify-content-end" >
             <div class="d-flex ">
                <div class="mx-3">
@@ -85,9 +85,19 @@
                            </li>
                       </ul>
                 </div>
+
+
                 <button type="submit" class="btn btn-outline-danger" id="deleteFromCurrentList" disabled name="delete_from_current_list" onclick="alert('Are you sure to remove these publications from {{ publication_list.name }}?')">Remove Selected Publications</button>
             </div>
         </div>
+    </div>
+    <div class="col-1">
+    <button class="btn btn-small btn-outline-dark" type="button" onclick="showDetailsAll()" id="showerAll">
+            <i class="bi bi-arrows-expand"></i>
+        </button>
+        <button class="btn btn-small btn-info d-none" type="button" onclick="hideDetailsAll()" id="hiderAll">
+            <i class="bi bi-arrows-collapse"></i>
+        </button>
     </div>
 </div>
 <script>
@@ -102,5 +112,16 @@
             button.setAttribute("disabled", "disabled");
         }
 
+    }
+
+    function showDetailsAll(){
+        {% for publication in page_obj %}
+            showDetails({{ publication.id }});
+        {% endfor %}
+    }
+    function hideDetailsAll(){
+        {% for publication in page_obj %}
+            hideDetails({{ publication.id }});
+        {% endfor %}
     }
 </script>
