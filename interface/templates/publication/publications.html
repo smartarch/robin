@@ -4,34 +4,51 @@
 <div class="row">
     <div class="p-1 w-75 flex-fill">
         <div class="list-group">
-            {% for publication in page_obj %}
+            {% for publication, full_text_access  in page_obj.items %}
                 <div class="bg-opacity-10 list-group-item list-group-item-action "
                     id="container_{{ publication.id }}" >
                     <div class="row">
-                        <div class="col-11">
+                        <div class="col-10">
                             <div class="form-check">
                               <input class="form-check-input" form="manage_publications" type="checkbox" value="{{ publication.id }}" id="select_{{ publication.id }}"
                               name="selected_publications">
                               <label class="form-check-label d-block" for="select_{{ publication.id }}">
                                   {% include "publication/publication_types.html" %}{{ publication.title}} <b> ({{ publication.year }}) </b>
-                                  <span class="me-auto">
-                                      {% with pdf=publication.get_full_text %}
-                                          {% if pdf %}
-                                            <a href="{{ pdf }}" target="_blank" class="btn btn-outline-success"> View Full Text </a>
-                                          {% endif     %}
-                                      {% endwith %}
-                                  </span>
+
                               </label>
 
                             </div>
                         </div>
-                        <div class="col-1">
+                        <div class="col-2">
+                            <form class="d-flex justify-content-end" action="{% url 'get_full_access' mapping_id=mapping.id list_id=publication_list.id %}" method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <span class="px-3">
+                                <input type="hidden" value="{{ full_text_access.id }}" name="fullTextAccessID">
+                                  {% if full_text_access.full_text.type == "P" %}
+                                        {% if full_text_access.status == "E" %}
+                                            {% if full_text_access.full_text.url %}
+                                                <button class="btn btn-sm btn-warning" type="submit" name="get_full_text_access" onclick="showLoading()" > Get Full Access Text </button>
+                                            {% else %}
+                                                <label for="uploader"> Select PDF</label>
+                                                <input type="file" id="uploader" class="btn btn-sm btn-success" accept="application/pdf"  name="uploaded_file" required>
+                                                <button class="btn btn-sm btn-warning" type="submit"  name="upload_file_text_access"  > Upload </button>
+                                            {% endif %}
+                                        {% else %}
+                                            <a href="{{ full_text_access.file.url }}"  target="_blank" class="btn btn-sm btn-primary" > View PDF </a>
+                                        {% endif %}
+                                    {% else %}
+                                      <label for="uploader"> Select PDF</label>
+                                      <input type="file" id="uploader" class="btn btn-sm btn-success" accept="application/pdf"  name="uploaded_file" required >
+                                      <button class="btn btn-sm btn-warning" type="submit" name="upload_file_text_access" > Upload </button>
+                                  {% endif %}
+                            </span>
                             <button class="btn btn-small btn-outline-dark" type="button" onclick="showDetails({{ publication.id }})" id="shower_{{ publication.id }}">
                                 <i class="bi bi-arrows-expand"></i>
                             </button>
                             <button class="btn btn-small btn-info d-none" type="button" onclick="hideDetails({{ publication.id }})" id="hider_{{ publication.id }}">
                                 <i class="bi bi-arrows-collapse"></i>
                             </button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -113,6 +130,9 @@
     </div>
 
 </div>
+<div  class=" position-absolute spinner-border top-50 start-50 d-none" style="height: 10rem; width: 10rem;" role="status" id="spinnerPage">
+  <span class="visually-hidden ">Loading...</span>
+</div>
 <div class="position-fixed bottom-0 mb-5 end-0 w-50" style="z-index: 99999;" >
     {% for publication in  page_obj %}
     <div class="d-none bg-dark text-light w-100 shadow p-3 mb-5 rounded" id="publicationPopup_{{ publication.id }}">
@@ -169,6 +189,11 @@
         // to modify the all button
         document.getElementById("showerAll").classList.remove("d-none");
         document.getElementById("hiderAll").classList.add("d-none");
+    }
+
+    function showLoading(){
+        document.getElementsByTagName("body")[0].setAttribute("style", "filter: blur(4px);");
+        document.getElementById("spinnerPage").classList.remove("d-none");
     }
 
 
