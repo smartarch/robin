@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Affiliation, Author, Country, Keywords, Publication, Event, Source, FullText
+from .models import Affiliation, Author, Country, Keywords, Publication, Event, Source, FullText, FullTextAccess
 
 @admin.register(Affiliation)
 class AffiliationAdmin(admin.ModelAdmin):
@@ -41,3 +41,8 @@ class EventAdmin(admin.ModelAdmin):
 class FullTextAdmin(admin.ModelAdmin):
     list_display = ("type", "url")
     search_fields = ("url",)
+
+@admin.register(FullTextAccess)
+class FullTextAccessAdmin(admin.ModelAdmin):
+    list_display = ("mapping", "full_text", "status")
+    search_fields = ("status",)

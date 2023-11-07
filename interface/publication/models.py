@@ -107,27 +107,35 @@ class Publication(models.Model):
     def __str__(self) -> str:
         return f"{self.title}"
 
-    def get_full_text(self):
-        all_full_texts = FullText.objects.filter(publication=self)
-        pdf_text = all_full_texts.filter(type="P")
-        if pdf_text:
-            if pdf_text[0].address:
-                return f"/full_text/{pdf_text[0].address}"
-            else:
-                return pdf_text[0].url
-        if all_full_texts:
-            return all_full_texts[0].url
-
-        return None
+    # def get_full_text(self):
+    #     all_full_texts = FullText.objects.filter(publication=self)
+    #     pdf_text = all_full_texts.filter(type="P")
+    #     if pdf_text:
+    #         if pdf_text[0].address:
+    #             return f"/full_text/{pdf_text[0].address}"
+    #         else:
+    #             return pdf_text[0].url
+    #     if all_full_texts:
+    #         return all_full_texts[0].url
+    #
+    #     return None
 
 
 class FullText(models.Model):
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
     type = models.CharField(max_length=1, default="T",
             choices=[("H", "text/html"), ("P", "application/pdf"), ("X", "text/xml"), ("T", "text/plain")])
-    address = models.CharField(max_length=128)
-    url = models.URLField(max_length=1024)
+
+    url = models.URLField(max_length=1024, blank=True)
+
+
+class FullTextAccess(models.Model):
+    full_text = models.ForeignKey(FullText, on_delete=models.CASCADE)
+    mapping = models.ForeignKey("mapping.Mapping", on_delete=models.CASCADE)
+    file = models.FileField(upload_to="full_text", blank=True)
+    status = models.CharField(max_length=1, default="E",
+                              choices=[("E", "Empty"), ("A", "Available"), ("D", "Downloaded"), ("U", "Uploaded")])
 
     def delete(self, using=None, keep_parents=False):
-        os.remove(self.address)
+        self.file.delete()
         super().delete(using=using, keep_parents=keep_parents)
