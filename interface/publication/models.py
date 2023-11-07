@@ -134,7 +134,7 @@ class FullTextAccess(models.Model):
     mapping = models.ForeignKey("mapping.Mapping", on_delete=models.CASCADE)
     file = models.FileField(upload_to="full_text", blank=True)
     status = models.CharField(max_length=1, default="E",
-                              choices=[("E", "Empty"), ("A", "Available"), ("D", "Downloaded"), ("U", "Uploaded")])
+                              choices=[("E", "Empty"), ("N", "Not Found"), ("D", "Downloaded"), ("U", "Uploaded")])
 
     def delete(self, using=None, keep_parents=False):
         self.file.delete()
