@@ -1,4 +1,6 @@
 import json
+import re
+
 import requests
 from typing import Any
 
@@ -53,23 +55,24 @@ class AddPublicationByDOI(LoginRequiredMixin, CreateView, AddPublicationToListMi
             next_url = request.POST.get("next")
         else:
             next_url = "/dashboard"
+        # add by bulk
+        doi_collection = re.split(' |\n|,|;',request.POST.get("doi"))
+        for doi in doi_collection:
+            new_publication = None
+            already_added_publications = Publication.objects.filter(doi=doi)
+            if len(already_added_publications) > 0:
+                new_publication = already_added_publications[0]
+            else:
+                request_data = get_publication_by_doi(doi)
+                if isinstance(request_data, dict):
+                    new_publication = create_publication(request_data)
 
-        doi = request.POST.get("doi")
-        new_publication = None
-        already_added_publications = Publication.objects.filter(doi=doi)
-        if len(already_added_publications) > 0:
-            new_publication = already_added_publications[0]
-        else:
-            request_data = get_publication_by_doi(doi)
-            if isinstance(request_data, dict):
-                new_publication = create_publication(request_data)
+            if request.POST.__contains__("list_id"):
+                list_id = int(request.POST.get("list_id"))
+                publication_list = get_object_or_404(PublicationList, id=list_id)
 
-        if request.POST.__contains__("list_id"):
-            list_id = int(request.POST.get("list_id"))
-            publication_list = get_object_or_404(PublicationList, id=list_id)
-
-            if request.user in publication_list.mapping.reviewers.all():
-                self.add_publication_to_list(new_publication, publication_list)
+                if request.user in publication_list.mapping.reviewers.all():
+                    self.add_publication_to_list(new_publication, publication_list)
 
         return redirect(next_url)
 
