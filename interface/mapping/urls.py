@@ -3,7 +3,7 @@ from django.urls import path
 
 # local app
 from .field_views import NewReviewFieldView, EditFieldsView, FieldReviewView
-from .list_views import MappingAllListView, NewListView, MappingListView, ListDeleteView
+from .list_views import MappingAllListView, NewListView, MappingListView, ListDeleteView, GetAccessForListView
 from .views import AllMappingsView, NewMappingView, JoinMappingView, MappingView, MappingDeleteView
 
 
@@ -13,6 +13,8 @@ urlpatterns = [
     path('join/', JoinMappingView.as_view(), name="mapping_join"),
     path('view/<int:mapping_id>/', MappingView.as_view(), name="mapping"),
     path('delete_mapping/<int:mapping_id>/', MappingDeleteView.as_view(), name="mapping_delete"),
+
+    path("access/<int:mapping_id>/lists/view/<int:list_id>/", GetAccessForListView.as_view(), name="get_full_access"),
 
     path('view/<int:mapping_id>/lists/all', MappingAllListView.as_view(),name="publication_list_all"),
     path('view/<int:mapping_id>/lists/new', NewListView.as_view(), name="publication_list_new"),
