@@ -1,17 +1,25 @@
 # typing packages
+import os
 import re
 from typing import Any
 
+import requests
+from django.core.files.storage import FileSystemStorage
 from django.views.generic import TemplateView, View, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, get_object_or_404
 from django.core.paginator import Paginator
+
+from pypdf import PdfReader
+from pypdf.errors import PdfReadError
 
 # local packages
 from .models import Mapping, PublicationList, UserPreferences, ReviewField, ReviewFieldValue, ReviewFieldValueCoding
 from .criteria import create_advanced_query
 from .field_views import FieldReviewView
 
+# from external packages
+from publication.models import FullText, FullTextAccess
 
 def copy_publication_lists(request: Any, authorized_mappings: Any, publication_list: Any) -> None:
     if request.POST.__contains__("copy_from"):
@@ -274,6 +282,10 @@ class MappingListView(LoginRequiredMixin, TemplateView):
             for field in review_fields if field.type == "C"
         }
 
+        # full access only PDF for now
+        full_accesses = FullTextAccess.objects.filter(mapping=mapping).filter(full_text__type="P")
+        # in case we do not have one item at least, the `get` should be changed to `filter`
+        page_obj = {p: full_accesses.filter(full_text__publication=p.id)[0] for p in page_obj}
         context = {
             **super().get_context_data(**kwargs),
             "user": request.user,
@@ -340,3 +352,56 @@ class ListDeleteView(LoginRequiredMixin, DeleteView):
                 publication_list.delete()
 
         return redirect("publication_list_all", mapping_id=kwargs["mapping_id"])
+
+
+class GetAccessForListView(LoginRequiredMixin, View):
+    def post(self, request: Any, *args: Any, **kwargs: Any) -> Any:
+        if "mapping_id" not in kwargs or "list_id" not in kwargs:
+            return redirect("mapping_all")
+
+        authorized_mapping = Mapping.objects.filter(reviewers__in=[request.user])
+        mapping = get_object_or_404(authorized_mapping, id=kwargs["mapping_id"])
+
+        if "fullTextAccessID" in request.POST:
+            full_text_access_id = request.POST.get("fullTextAccessID")
+            full_text_access = get_object_or_404(FullTextAccess, id=full_text_access_id)
+            if "get_full_text_access" in request.POST:
+                if full_text_access.full_text.url and full_text_access.full_text.type == "P":
+                    url = full_text_access.full_text.url
+                    response = requests.get(url)
+
+                    if response.ok:
+                        filename = f"full_text/m-{mapping.__hash__()}/" \
+                                    + f"p-{full_text_access.full_text.publication.__hash__()}.pdf"
+                        os.makedirs(f"media/full_text/m-{mapping.__hash__()}/", exist_ok=True)
+
+                        with open(f"media/{filename}", "wb") as resource:
+                            resource.write(response.content)
+
+                        try:
+                            PdfReader(f"media/{filename}")
+                            full_text_access.status = "D"
+                            full_text_access.file = filename
+                            full_text_access.save()
+
+                        except PdfReadError:
+                            # not valid PDF here
+                            full_text_access.full_text.url = ""
+                            full_text_access.full_text.save()
+                        else:
+                            pass
+
+            elif "upload_file_text_access" in request.POST:
+                full_text_access_id = request.POST.get("fullTextAccessID")
+                uploaded_file = request.FILES['uploaded_file']
+                fs = FileSystemStorage()
+                filename = f"full_text/m-{mapping.__hash__()}/" \
+                           + f"p-{full_text_access.full_text.publication.__hash__()}.pdf"
+                os.makedirs(f"media/full_text/m-{mapping.__hash__()}/", exist_ok=True)
+                filename = fs.save(filename, uploaded_file)
+                full_text_access = get_object_or_404(FullTextAccess, id=full_text_access_id)
+                full_text_access.status = "U"
+                full_text_access.file = filename
+                full_text_access.save()
+
+        return redirect("publication_list", mapping_id=kwargs["mapping_id"], list_id=kwargs["list_id"])
