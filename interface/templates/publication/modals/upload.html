@@ -1,0 +1,28 @@
+<div class="modal fade" id="uploaderModal" tabindex="-1" aria-labelledby="uploaderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploaderModalLabel">Upload</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form class="d-flex justify-content-end"
+                  action="{% url 'get_full_access' mapping_id=mapping.id list_id=publication_list.id %}" method="POST"
+                  enctype="multipart/form-data">
+                <input type="hidden" name="fullTextAccessID" id="fullTextAccessID">
+                {% csrf_token %}
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="formFile" class="form-label">Upload new PDF</label>
+                        <input type="file" id="uploader{{ full_text_access.id }}" class="form-control"
+                               accept="application/pdf" name="uploaded_file" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success" name="upload_file_text_access">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
