@@ -374,7 +374,10 @@ class GetAccessForListView(LoginRequiredMixin, View):
                         filename = f"full_text/m-{mapping.__hash__()}/" \
                                     + f"p-{full_text_access.full_text.publication.__hash__()}.pdf"
                         os.makedirs(f"media/full_text/m-{mapping.__hash__()}/", exist_ok=True)
-
+                        try:
+                            os.remove(f"media/{filename}")
+                        except:
+                            pass
                         with open(f"media/{filename}", "wb") as resource:
                             resource.write(response.content)
 
@@ -398,9 +401,16 @@ class GetAccessForListView(LoginRequiredMixin, View):
                 filename = f"full_text/m-{mapping.__hash__()}/" \
                            + f"p-{full_text_access.full_text.publication.__hash__()}.pdf"
                 os.makedirs(f"media/full_text/m-{mapping.__hash__()}/", exist_ok=True)
+
+                try:
+                    os.remove(f"media/{filename}")
+                except:
+                    pass
+
                 filename = fs.save(filename, uploaded_file)
                 full_text_access = get_object_or_404(FullTextAccess, id=full_text_access_id)
                 full_text_access.status = "U"
+
                 full_text_access.file = filename
                 full_text_access.save()
 
