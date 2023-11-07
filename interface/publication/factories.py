@@ -114,24 +114,31 @@ class PublicationFactory:
 
 		new_publication.save()
 		return new_publication
-def create_fulltext(decoded, t, extension, pub) -> None:
+# def create_fulltext(decoded, t, extension, pub) -> None:
+# 	for text in decoded:
+# 		try:
+# 			response = requests.get(text)
+# 			if response.ok:
+# 				os.makedirs("media/full_text", exist_ok=True)
+# 				with open(f"media/full_text/paper_{pub.id}.{extension}", "wb") as resource:
+# 					resource.write(response.content)
+# 					full_text = FullText(url=text, address=f"paper_{pub.id}.{extension}", type=t, publication=pub)
+# 					full_text.save()
+# 				print ("download went well")
+# 			else:
+# 				full_text = FullText(url=text, address="", type=t, publication=pub)
+# 				full_text.save()
+# 				print("download failed")
+# 		except:
+# 			continue
+
+
+def create_full_text(decoded: str, full_text_type: str, publication: Publication) -> None:
+
 	for text in decoded:
-		try:
-			print ("starting download")
-			response = requests.get(text)
-			if response.ok:
-				os.makedirs("media/full_text", exist_ok=True)
-				with open(f"media/full_text/paper_{pub.id}.{extension}", "wb") as resource:
-					resource.write(response.content)
-					full_text = FullText(url=text, address=f"paper_{pub.id}.{extension}", type=t, publication=pub)
-					full_text.save()
-				print ("download went well")
-			else:
-				full_text = FullText(url=text, address="", type=t, publication=pub)
-				full_text.save()
-				print("download failed")
-		except:
-			continue
+		full_text = FullText(url=text, type=full_text_type, publication=publication)
+		full_text.save()
+
 
 def create_publication(data: dict) -> Publication:
 
@@ -187,10 +194,10 @@ def create_publication(data: dict) -> Publication:
 			publication.authors.add(author)
 			publication.save()
 
-	# create_fulltext(data["full_text"]["text/html"], "H", "html", publication)
-	# create_fulltext(data["full_text"]["application/pdf"], "P", "pdf", publication)
-	# create_fulltext(data["full_text"]["text/plain"], "T", "txt", publication)
-	# create_fulltext(data["full_text"]["text/xml"], "X", "xml", publication)
+	create_full_text(data["full_text"]["text/html"], "H",  publication)
+	create_full_text(data["full_text"]["application/pdf"], "P", publication)
+	create_full_text(data["full_text"]["text/plain"], "T",  publication)
+	create_full_text(data["full_text"]["text/xml"], "X",  publication)
 
 	return publication
 
