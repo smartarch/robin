@@ -284,8 +284,19 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 
         # full access only PDF for now
         full_accesses = FullTextAccess.objects.filter(mapping=mapping).filter(full_text__type="P")
+        # check for failed downloads
+        user_errors = ""
+        for full_access in full_accesses:
+
+            if full_access.status == "N":
+                user_errors += f"Cannot download {full_access.full_text.publication.title}, access denied, try to upload manually.\n"
+                if full_access.file:
+                    full_access.status = "U"
+                else:
+                    full_access.status = "E"
+                full_access.save()
         # in case we do not have one item at least, the `get` should be changed to `filter`
-        page_obj = {p: full_accesses.filter(full_text__publication=p.id)[0] for p in page_obj}
+        publication_full_texts = {p: full_accesses.filter(full_text__publication=p.id)[0] for p in page_obj}
         context = {
             **super().get_context_data(**kwargs),
             "user": request.user,
@@ -306,7 +317,9 @@ class MappingListView(LoginRequiredMixin, TemplateView):
             "publication_list": publication_list,
             "user_preference": user_preference,
             "available_page_sizes": [x for x in range(25, min(201, original_size + 1), 25)],
+            "publication_full_texts": publication_full_texts,
             "page_obj": page_obj,
+            "user_errors": user_errors if user_errors else None,
         }
 
         return self.render_to_response(context)
@@ -368,31 +381,45 @@ class GetAccessForListView(LoginRequiredMixin, View):
             if "get_full_text_access" in request.POST:
                 if full_text_access.full_text.url and full_text_access.full_text.type == "P":
                     url = full_text_access.full_text.url
-                    response = requests.get(url)
+                    try:
+                        response = requests.get(url)
+                        if response.ok:
+                            filename = f"full_text/m-{mapping.__hash__()}/" \
+                                        + f"p-{full_text_access.full_text.publication.__hash__()}_original.pdf"
+                            os.makedirs(settings.BASE_DIR / f"media/full_text/m-{mapping.__hash__()}/", exist_ok=True)
+                            try:
+                                os.remove(settings.BASE_DIR / f"media/{filename}")
+                            except:
+                                pass
 
-                    if response.ok:
-                        filename = f"full_text/m-{mapping.__hash__()}/" \
-                                    + f"p-{full_text_access.full_text.publication.__hash__()}.pdf"
-                        os.makedirs(settings.BASE_DIR / f"media/full_text/m-{mapping.__hash__()}/", exist_ok=True)
-                        try:
-                            os.remove(settings.BASE_DIR / f"media/{filename}")
-                        except:
-                            pass
-                        with open(settings.BASE_DIR /f"media/{filename}", "wb") as resource:
-                            resource.write(response.content)
+                            with open(settings.BASE_DIR /f"media/{filename}", "wb") as resource:
+                                resource.write(response.content)
 
-                        try:
-                            PdfReader(settings.BASE_DIR / f"media/{filename}")
-                            full_text_access.status = "D"
-                            full_text_access.file = filename
-                            full_text_access.save()
+                            try:
+                                PdfReader(settings.BASE_DIR / f"media/{filename}")
+                                full_text_access.status = "D"
+                                full_text_access.file = filename
+                                full_text_access.save()
 
-                        except PdfReadError:
-                            # not valid PDF here
-                            full_text_access.full_text.url = ""
-                            full_text_access.full_text.save()
+                            except PdfReadError:
+                                # not valid PDF here
+                                full_text_access.status = "N"
+                                full_text_access.save()
+                                full_text_access.full_text.url = ""
+                                full_text_access.full_text.save()
+                                try:
+                                    os.remove(settings.BASE_DIR / f"media/{filename}")
+                                except:
+                                    pass
+                            else:
+                                pass
                         else:
-                            pass
+                            raise
+                    except:
+                        full_text_access.status = "N"
+                        full_text_access.save()
+                        full_text_access.full_text.url = ""
+                        full_text_access.full_text.save()
 
             elif "upload_file_text_access" in request.POST:
                 full_text_access_id = request.POST.get("fullTextAccessID")
@@ -413,5 +440,37 @@ class GetAccessForListView(LoginRequiredMixin, View):
 
                 full_text_access.file = filename
                 full_text_access.save()
+
+            elif "delete_full_text_access" in request.POST:
+                full_text_access_id = request.POST.get("fullTextAccessID")
+                full_text_access = get_object_or_404(FullTextAccess, id=full_text_access_id)
+                try:
+                    os.remove(settings.BASE_DIR / f"media/{full_text_access.file}")
+                except:
+                    pass
+                if full_text_access.status == "D":
+                    previous_filename = f"full_text/m-{mapping.__hash__()}/" \
+                               + f"p-{full_text_access.full_text.publication.__hash__()}.pdf"
+                    print (previous_filename, (settings.BASE_DIR / f"media/{previous_filename}").exists())
+                    if (settings.BASE_DIR / f"media/{previous_filename}").exists():
+                        full_text_access.status = "U"
+                        full_text_access.file = previous_filename
+                    else:
+                        full_text_access.status = "E"
+                        full_text_access.file = ""
+                elif full_text_access.status == "U":
+                    previous_filename = f"full_text/m-{mapping.__hash__()}/" \
+                                        + f"p-{full_text_access.full_text.publication.__hash__()}_original.pdf"
+                    if (settings.BASE_DIR / f"media/{previous_filename}").exists():
+                        full_text_access.status = "D"
+                        full_text_access.file = previous_filename
+                    else:
+                        full_text_access.status = "E"
+                        full_text_access.file = ""
+                else:
+                    full_text_access.status = "E"
+                    full_text_access.file = ""
+                full_text_access.save()
+
 
         return redirect("publication_list", mapping_id=kwargs["mapping_id"], list_id=kwargs["list_id"])
