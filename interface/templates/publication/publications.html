@@ -4,55 +4,132 @@
 <div class="row">
     <div class="p-1 w-75 flex-fill">
         <div class="list-group">
-            {% for publication, full_text_access  in page_obj.items %}
+            {% for publication, full_text_access  in publication_full_texts.items %}
                 <div class="bg-opacity-10 list-group-item list-group-item-action "
-                    id="container_{{ publication.id }}" >
+                     id="container_{{ publication.id }}">
                     <div class="row">
                         <div class="col-9">
                             <div class="form-check">
-                              <input class="form-check-input" form="manage_publications" type="checkbox" value="{{ publication.id }}" id="select_{{ publication.id }}"
-                              name="selected_publications">
-                              <label class="form-check-label d-block" for="select_{{ publication.id }}">
-                                  {% include "publication/publication_types.html" %}{{ publication.title}} <b> ({{ publication.year }}) </b>
-                              </label>
+                                <input class="form-check-input" form="manage_publications" type="checkbox"
+                                       value="{{ publication.id }}" id="select_{{ publication.id }}"
+                                       name="selected_publications">
+                                <label class="form-check-label d-block" for="select_{{ publication.id }}">
+                                    {% include "publication/publication_types.html" %}{{ publication.title }} <b>
+                                    ({{ publication.year }}) </b>
+                                </label>
                             </div>
                         </div>
                         <div class="col-3">
-                            <form class="d-flex justify-content-end" action="{% url 'get_full_access' mapping_id=mapping.id list_id=publication_list.id %}" method="POST" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            <span class="mx-1">
+                            <form class="d-flex justify-content-end"
+                                  action="{% url 'get_full_access' mapping_id=mapping.id list_id=publication_list.id %}"
+                                  method="POST" enctype="multipart/form-data"
+                                  id="fullTextForm{{ full_text_access.id }}">
+                                {% csrf_token %}
+                                <span class="mx-1">
                                 <input type="hidden" value="{{ full_text_access.id }}" name="fullTextAccessID">
-                                  {% if full_text_access.full_text.type == "P" %}
+                                    {% if full_text_access.full_text.type == "P" %}
                                         {% if full_text_access.status == "E" %}
                                             {% if full_text_access.full_text.url %}
-                                                <button class="btn btn-sm btn-info" type="submit" name="get_full_text_access" onclick="showLoading()" > Check Online </button>
+                                                <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button"
+                                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                                    Inspect Full Text
+                                                </button>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-outline-warning dropdown-toggle" type="button"
+                                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                                    Upload Full Text
+                                                </button>
                                             {% endif %}
                                         {% else %}
-                                            <a href="{{ full_text_access.file.url }}"  target="_blank" class="btn btn-sm btn-primary" > View PDF </a>
+                                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button"
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                Modify Full Text
+                                            </button>
                                         {% endif %}
+
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            {% if full_text_access.full_text.url %}
+                                                <li>
+                                                   <div class="dropdown-item d-grid">
+                                                        <button type="submit" class="btn btn-outline-warning btn-sm"
+                                                                name="get_full_text_access" onclick="showLoading()">
+                                                            Check Source PDF
+                                                        </button>
+                                                    </div>
+                                               </li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                            {% endif %}
+                                            {% if full_text_access.status == "D" %}
+                                                <li>
+                                                       <div class="dropdown-item d-grid">
+                                                            <a href="{{ full_text_access.file.url }}" target="_blank"
+                                                               class="btn btn-sm btn-outline-primary"> View Source PDF </a>
+                                                       </div>
+                                                    </li>
+                                                <li>
+                                                       <div class="dropdown-item d-grid">
+                                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                                    name="delete_full_text_access"
+                                                                    onclick="confirmDelete('{{ full_text_access.id }}')">
+                                                                Remove Source PDF
+                                                            </button>
+                                                       </div>
+                                                    </li>
+                                            {% endif %}
+                                            {% if full_text_access.status == "U" %}
+                                                <li>
+                                                   <div class="dropdown-item d-grid">
+                                                        <a href="{{ full_text_access.file.url }}" target="_blank"
+                                                           class="btn btn-sm btn-primary"> View Uploaded PDF </a>
+                                                   </div>
+                                                </li>
+                                                <li>
+                                                   <div class="dropdown-item d-grid">
+                                                        <button type="button" class="btn btn-sm btn-danger"
+                                                                name="delete_full_text_access"
+                                                                onclick="confirmDelete('{{ full_text_access.id }}')">
+                                                            Remove Uploaded PDF
+                                                        </button>
+                                                   </div>
+                                                </li>
+                                            {% endif %}
+                                            <li>
+                                                <div class="dropdown-item d-grid">
+                                                    <button type="button" class="btn btn-outline-success btn-sm"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#uploaderModal"
+                                                            onclick="prepareUpload('{{ full_text_access.id }}')">
+                                                        Upload PDF
+                                                    </button>
+                                                </div>
+                                            </li>
+
+                                        </ul>
                                     {% endif %}
-                                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#uploaderModal" onclick="prepareUpload('{{ full_text_access.id }}')">
-                                Upload PDF
-                            </button>
-                            </span>
-                            <button class="btn btn-small btn-outline-dark" type="button" onclick="showDetails({{ publication.id }})" id="shower_{{ publication.id }}">
-                                <i class="bi bi-arrows-expand"></i>
-                            </button>
-                            <button class="btn btn-small btn-info d-none" type="button" onclick="hideDetails({{ publication.id }})" id="hider_{{ publication.id }}">
-                                <i class="bi bi-arrows-collapse"></i>
-                            </button>
+                                </span>
+                                <button class="btn btn-small btn-outline-dark" type="button"
+                                        onclick="showDetails({{ publication.id }})" id="shower_{{ publication.id }}">
+                                    <i class="bi bi-arrows-expand"></i>
+                                </button>
+                                <button class="btn btn-small btn-info d-none" type="button"
+                                        onclick="hideDetails({{ publication.id }})" id="hider_{{ publication.id }}">
+                                    <i class="bi bi-arrows-collapse"></i>
+                                </button>
 
                             </form>
                         </div>
                     </div>
                 </div>
-                    <div class="d-none container-fluid bg-info bg-opacity-10 border border-info border-start-0 rounded-end p-2" id="containerDetails_{{ publication.id }}">
-                        <div class="row">
-                            {% if no_review %}
-                                <div class="col-12">
-                                    {% include "publication/publication_single.html" %}
-                                </div>
-                            {% else %}
+                <div class="d-none container-fluid bg-info bg-opacity-10 border border-info border-start-0 rounded-end p-2"
+                     id="containerDetails_{{ publication.id }}">
+                    <div class="row">
+                        {% if no_review %}
+                            <div class="col-12">
+                                {% include "publication/publication_single.html" %}
+                            </div>
+                        {% else %}
                             <div class="col-12 col-lg-6">
                                 {% include "publication/publication_single.html" %}
                             </div>
@@ -74,98 +151,69 @@
                                     {% endwith %}
                                 </div>
                             </div>
-                            {% endif %}
-                        </div>
+                        {% endif %}
                     </div>
+                </div>
             {% endfor %}
-        <hr>
-        <nav aria-label="...">
-            <ul class="pagination justify-content-center">
-                <li class="page-item">
-                    <a class="page-link"  href="?page=1{{search_text}}">&laquo; First </a>
-                </li>
-            {% if page_obj.has_previous %}
-            <li class="page-item ">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{search_text}}">Previous</a>
-            </li>
-            {%else%}
-            <li class="page-item disabled">
-                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
-            </li>
-            {%endif%}
-            {% for pg in prev_pages %}
-                <li class="page-item" aria-current="page">
-                    <a class="page-link" href="?page={{pg}}{{search_text}}"> {{pg}}</a>
-                </li>
-            {% endfor %}
-            <li class="page-item active" aria-current="page">
-                <a class="page-link" href="#"> Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</a>
-            </li>
-            {% for pg in next_pages %}
-                <li class="page-item" aria-current="page">
-                    <a class="page-link" href="?page={{pg}}{{search_text}}"> {{pg}}</a>
-                </li>
-            {% endfor %}
-            {% if page_obj.has_next %}
-            <li class="page-item ">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}{{search_text}}">Next</a>
-            </li>
-            {%else%}
-            <li class="page-item disabled">
-                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
-            </li>
-            {%endif%}
-            <li class="page-item ">
-                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{{search_text}}">Last &raquo;</a>
-            </li>
-            </ul>
-        </nav>
+            <hr>
+            <nav aria-label="...">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{{ search_text }}">&laquo; First </a>
+                    </li>
+                    {% if page_obj.has_previous %}
+                        <li class="page-item ">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{ search_text }}">Previous</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                        </li>
+                    {% endif %}
+                    {% for pg in prev_pages %}
+                        <li class="page-item" aria-current="page">
+                            <a class="page-link" href="?page={{ pg }}{{ search_text }}"> {{ pg }}</a>
+                        </li>
+                    {% endfor %}
+                    <li class="page-item active" aria-current="page">
+                        <a class="page-link" href="#"> Page {{ page_obj.number }}
+                            of {{ page_obj.paginator.num_pages }}</a>
+                    </li>
+                    {% for pg in next_pages %}
+                        <li class="page-item" aria-current="page">
+                            <a class="page-link" href="?page={{ pg }}{{ search_text }}"> {{ pg }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                        <li class="page-item ">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{{ search_text }}">Next</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
+                        </li>
+                    {% endif %}
+                    <li class="page-item ">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{{ search_text }}">Last
+                            &raquo;</a>
+                    </li>
+                </ul>
+            </nav>
         </div>
     </div>
 
 </div>
-<div  class=" position-absolute spinner-border top-50 start-50 d-none" style="height: 10rem; width: 10rem;" role="status" id="spinnerPage">
-  <span class="visually-hidden ">Loading...</span>
-</div>
-<div class="position-fixed bottom-0 mb-5 end-0 w-50" style="z-index: 99999;" >
-    {% for publication in  page_obj %}
-    <div class="d-none bg-dark text-light w-100 shadow p-3 mb-5 rounded" id="publicationPopup_{{ publication.id }}">
-        <p>{{ publication.event.name }}</p>
-        {% with first_author=publication.authors.all|first %}
-            <b> {{ first_author.first_name }} {{ first_author.last_name }} et al </b>
-            {% if first_author.affiliation %}
-                <p> {{ first_author.affiliation.institute }}</p>
-                <p> {{ first_author.affiliation.country }}</p>
-            {% endif %}
-        {% endwith %}
-    </div>
-    {% endfor %}
+<div class=" position-absolute spinner-border top-50 start-50 d-none" style="height: 10rem; width: 10rem;" role="status"
+     id="spinnerPage">
+    <span class="visually-hidden ">Loading...</span>
 </div>
 {% include "publication/modals/upload.html" %}
 
 <script>
     let currentPublicationID = -1;
-    function show_popup(publicationId){
-        const currentPublicationDetail = document.getElementById(`publicationPopup_${currentPublicationID}`);
-        const nextPublicationDetail = document.getElementById(`publicationPopup_${publicationId}`);
 
-        if (currentPublicationDetail){
-            currentPublicationDetail.classList.add("d-none");
-            document.getElementById(`container_${currentPublicationID}`).classList.remove("active");
 
-        }
-        nextPublicationDetail.classList.remove("d-none");
-        document.getElementById(`container_${publicationId}`).classList.add("active");
-        currentPublicationID = publicationId;
-    }
-    function hide_popup(publicationId){
-        const nextPublicationDetail = document.getElementById(`publicationPopup_${publicationId}`);
-
-        nextPublicationDetail.classList.add("d-none");
-        document.getElementById(`container_${publicationId}`).classList.remove("active");
-        currentPublicationID = -1;
-    }
-    function showDetails(publicationId){
+    function showDetails(publicationId) {
         document.getElementById(`containerDetails_${publicationId}`).classList.remove("d-none");
         document.getElementById(`container_${publicationId}`).classList.add("bg-info");
         document.getElementById(`container_${publicationId}`).classList.add("text-dark");
@@ -175,7 +223,8 @@
         document.getElementById("showerAll").classList.add("d-none");
         document.getElementById("hiderAll").classList.remove("d-none");
     }
-    function hideDetails(publicationId){
+
+    function hideDetails(publicationId) {
         document.getElementById(`containerDetails_${publicationId}`).classList.add("d-none");
         document.getElementById(`container_${publicationId}`).classList.remove("bg-info");
         document.getElementById(`container_${publicationId}`).classList.remove("text-dark");
@@ -187,14 +236,24 @@
         document.getElementById("hiderAll").classList.add("d-none");
     }
 
-    function showLoading(){
+    function showLoading() {
         document.getElementsByTagName("body")[0].setAttribute("style", "filter: blur(4px);");
         document.getElementById("spinnerPage").classList.remove("d-none");
 
     }
 
-    function prepareUpload(fullTextAccessID){
+    function prepareUpload(fullTextAccessID) {
         document.getElementById("fullTextAccessID").value = fullTextAccessID;
+    }
+
+    function confirmDelete(fullTextAccessID) {
+        if (confirm("Are you sure to delete the file?")) {
+            const hiddenDelete = document.createElement("input");
+            hiddenDelete.name = "delete_full_text_access";
+
+            document.getElementById(`fullTextForm${fullTextAccessID}`).appendChild(hiddenDelete);
+            document.getElementById(`fullTextForm${fullTextAccessID}`).submit();
+        }
     }
 
 
