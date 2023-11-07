@@ -35,7 +35,9 @@ urlpatterns = [
     path('publications/add/web/<int:list_id>/', AddPublicationsByWeb.as_view(), name="add_publication_by_web"),
     path('publications/add/doi/', AddPublicationByDOI.as_view(), name="add_publication_by_doi"),
 
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+if settings.DEBUG:
+   urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler404 = "interface.views.not_found"
 handler500 = "interface.views.server_error"
