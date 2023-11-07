@@ -364,6 +364,10 @@ def get_publication_by_doi(doi: str) -> dict | int:
                 else:
                     full_text['application/pdf'].append(resource)
 
+            # at least one element should be created
+            if not full_text["application/pdf"]:
+                full_text["application/pdf"].append("")
+
             event = record[publication_venue_type]
             if publication_venue_type == "journal":
                 journal = event["journal_metadata"]
