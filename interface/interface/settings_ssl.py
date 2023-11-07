@@ -25,7 +25,7 @@ SECRET_KEY = "Did shy say mention eaweiua weiawhediauw 23812283901283091 2809@!(
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -147,6 +147,9 @@ AUTH_USER_MODEL = "reviewer.Reviewer"
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
+MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "/media/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

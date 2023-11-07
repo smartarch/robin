@@ -9,7 +9,7 @@ from django.views.generic import TemplateView, View, CreateView, UpdateView, Del
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, get_object_or_404
 from django.core.paginator import Paginator
-
+from django.conf import settings
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
 
@@ -373,16 +373,16 @@ class GetAccessForListView(LoginRequiredMixin, View):
                     if response.ok:
                         filename = f"full_text/m-{mapping.__hash__()}/" \
                                     + f"p-{full_text_access.full_text.publication.__hash__()}.pdf"
-                        os.makedirs(f"media/full_text/m-{mapping.__hash__()}/", exist_ok=True)
+                        os.makedirs(settings.BASE_DIR / f"media/full_text/m-{mapping.__hash__()}/", exist_ok=True)
                         try:
-                            os.remove(f"media/{filename}")
+                            os.remove(settings.BASE_DIR / f"media/{filename}")
                         except:
                             pass
-                        with open(f"media/{filename}", "wb") as resource:
+                        with open(settings.BASE_DIR /f"media/{filename}", "wb") as resource:
                             resource.write(response.content)
 
                         try:
-                            PdfReader(f"media/{filename}")
+                            PdfReader(settings.BASE_DIR / f"media/{filename}")
                             full_text_access.status = "D"
                             full_text_access.file = filename
                             full_text_access.save()
@@ -400,10 +400,10 @@ class GetAccessForListView(LoginRequiredMixin, View):
                 fs = FileSystemStorage()
                 filename = f"full_text/m-{mapping.__hash__()}/" \
                            + f"p-{full_text_access.full_text.publication.__hash__()}.pdf"
-                os.makedirs(f"media/full_text/m-{mapping.__hash__()}/", exist_ok=True)
+                os.makedirs(settings.BASE_DIR / f"media/full_text/m-{mapping.__hash__()}/", exist_ok=True)
 
                 try:
-                    os.remove(f"media/{filename}")
+                    os.remove(settings.BASE_DIR / f"media/{filename}")
                 except:
                     pass
 
