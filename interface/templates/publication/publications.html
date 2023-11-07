@@ -8,39 +8,32 @@
                 <div class="bg-opacity-10 list-group-item list-group-item-action "
                     id="container_{{ publication.id }}" >
                     <div class="row">
-                        <div class="col-10">
+                        <div class="col-9">
                             <div class="form-check">
                               <input class="form-check-input" form="manage_publications" type="checkbox" value="{{ publication.id }}" id="select_{{ publication.id }}"
                               name="selected_publications">
                               <label class="form-check-label d-block" for="select_{{ publication.id }}">
                                   {% include "publication/publication_types.html" %}{{ publication.title}} <b> ({{ publication.year }}) </b>
-
                               </label>
-
                             </div>
                         </div>
-                        <div class="col-2">
+                        <div class="col-3">
                             <form class="d-flex justify-content-end" action="{% url 'get_full_access' mapping_id=mapping.id list_id=publication_list.id %}" method="POST" enctype="multipart/form-data">
                             {% csrf_token %}
-                            <span class="px-3">
+                            <span class="mx-1">
                                 <input type="hidden" value="{{ full_text_access.id }}" name="fullTextAccessID">
                                   {% if full_text_access.full_text.type == "P" %}
                                         {% if full_text_access.status == "E" %}
                                             {% if full_text_access.full_text.url %}
-                                                <button class="btn btn-sm btn-warning" type="submit" name="get_full_text_access" onclick="showLoading()" > Get Full Access Text </button>
-                                            {% else %}
-                                                <label for="uploader"> Select PDF</label>
-                                                <input type="file" id="uploader" class="btn btn-sm btn-success" accept="application/pdf"  name="uploaded_file" required>
-                                                <button class="btn btn-sm btn-warning" type="submit"  name="upload_file_text_access"  > Upload </button>
+                                                <button class="btn btn-sm btn-info" type="submit" name="get_full_text_access" onclick="showLoading()" > Check Online </button>
                                             {% endif %}
                                         {% else %}
                                             <a href="{{ full_text_access.file.url }}"  target="_blank" class="btn btn-sm btn-primary" > View PDF </a>
                                         {% endif %}
-                                    {% else %}
-                                      <label for="uploader"> Select PDF</label>
-                                      <input type="file" id="uploader" class="btn btn-sm btn-success" accept="application/pdf"  name="uploaded_file" required >
-                                      <button class="btn btn-sm btn-warning" type="submit" name="upload_file_text_access" > Upload </button>
-                                  {% endif %}
+                                    {% endif %}
+                                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#uploaderModal" onclick="prepareUpload('{{ full_text_access.id }}')">
+                                Upload PDF
+                            </button>
                             </span>
                             <button class="btn btn-small btn-outline-dark" type="button" onclick="showDetails({{ publication.id }})" id="shower_{{ publication.id }}">
                                 <i class="bi bi-arrows-expand"></i>
@@ -48,6 +41,7 @@
                             <button class="btn btn-small btn-info d-none" type="button" onclick="hideDetails({{ publication.id }})" id="hider_{{ publication.id }}">
                                 <i class="bi bi-arrows-collapse"></i>
                             </button>
+
                             </form>
                         </div>
                     </div>
@@ -147,6 +141,8 @@
     </div>
     {% endfor %}
 </div>
+{% include "publication/modals/upload.html" %}
+
 <script>
     let currentPublicationID = -1;
     function show_popup(publicationId){
@@ -194,6 +190,11 @@
     function showLoading(){
         document.getElementsByTagName("body")[0].setAttribute("style", "filter: blur(4px);");
         document.getElementById("spinnerPage").classList.remove("d-none");
+
+    }
+
+    function prepareUpload(fullTextAccessID){
+        document.getElementById("fullTextAccessID").value = fullTextAccessID;
     }
 
 
