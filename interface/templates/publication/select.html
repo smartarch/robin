@@ -1,98 +1,118 @@
 <div class="row">
     <div class="col-4">
-        <input class="form-check-input" type="checkbox" name="selectAllPublications"  id="selectAllPublications">
+        <input class="form-check-input" type="checkbox" name="selectAllPublications" id="selectAllPublications">
         <label class="form-check-label" for="selectAllPublications"> Select All (only on this page) </label>
     </div>
 
-    <div class="col-7" >
-        <div class="pagination justify-content-end" >
+    <div class="col-7">
+        <div class="pagination justify-content-end">
             <div class="d-flex ">
-               <div class="mx-3">
-                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"  id="changePageSize">
-                            Page Size:
+                <div class="mx-3">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false" id="changePageSize">
+                        Page Size:
                         {% if user_preference.default_page_size > 0 %}
                             {{ user_preference.default_page_size }}
                         {% else %}
                             unlimited
                         {% endif %}
                     </button>
-                  <ul class="dropdown-menu dropdown-menu-end">
-                    {% for available_page_size in available_page_sizes %}
-                      {% if user_preference.default_page_size != available_page_size %}
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        {% for available_page_size in available_page_sizes %}
+                            {% if user_preference.default_page_size != available_page_size %}
+                                <li>
+                                    <input class="dropdown-item" name="change_page_size_to_{{ available_page_size }}"
+                                           type="submit" value="{{ available_page_size }}">
+                                </li>
+                            {% endif %}
+                        {% endfor %}
                         <li>
-                            <input class="dropdown-item" name="change_page_size_to_{{available_page_size}}" type="submit" value="{{available_page_size}}">
+                            <hr class="dropdown-divider">
                         </li>
-                      {% endif %}
-                    {% endfor %}
-                      <li><hr class="dropdown-divider"></li>
-                      <li>
+                        <li>
                             <input class="dropdown-item" name="change_page_size_to_0" type="submit" value="unlimited">
                         </li>
-                  </ul>
+                    </ul>
                 </div>
                 <div>
-                    <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled id="copyToOtherList">
+                    <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false" disabled id="copyToOtherList">
                         Copy To
                     </button>
-                      <ul class="dropdown-menu dropdown-menu-end">
+                    <ul class="dropdown-menu dropdown-menu-end">
                         {% for other_publication_list in available_publication_lists %}
-                          {% if other_publication_list.id != publication_list.id %}
-                            <li>
-                                <input class="dropdown-item" name="copy_to_{{other_publication_list.id }}" type="submit" value="{{ other_publication_list.name}}">
-                            </li>
-                          {% endif %}
+                            {% if other_publication_list.id != publication_list.id %}
+                                <li>
+                                    <input class="dropdown-item" name="copy_to_{{ other_publication_list.id }}"
+                                           type="submit" value="{{ other_publication_list.name }}">
+                                </li>
+                            {% endif %}
                         {% endfor %}
                         <li>
-                           <hr class="dropdown-divider">
-                       </li>
-                       <li>
-                          <div class="dropdown-item">
-                              <div class="input-group mb-1">
-                                  <input type="text" class="form-control" placeholder="New List Name" aria-label="newListName" aria-describedby="copyToNewList" id="copyText" name="new_list_name_copy"
-                                  oninput="enableButton('copy')">
-                                  <button class="btn btn-outline-success" type="submit" id="copyToNewList" name="copy_to_new_list" disabled>New List</button>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <div class="dropdown-item">
+                                <div class="input-group mb-1">
+                                    <input type="text" class="form-control" placeholder="New List Name"
+                                           aria-label="newListName" aria-describedby="copyToNewList" id="copyText"
+                                           name="new_list_name_copy"
+                                           oninput="enableButton('copy')">
+                                    <button class="btn btn-outline-success" type="submit" id="copyToNewList"
+                                            name="copy_to_new_list" disabled>New List
+                                    </button>
                                 </div>
 
-                          </div>
-                       </li>
-                      </ul>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
-                <div >
-                    <button class="btn btn-outline-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled id="moveToOtherList">
+                <div>
+                    <button class="btn btn-outline-warning dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false" disabled id="moveToOtherList">
                         Move To
                     </button>
-                       <ul class="dropdown-menu dropdown-menu-end">
+                    <ul class="dropdown-menu dropdown-menu-end">
                         {% for other_publication_list in available_publication_lists %}
-                          {% if other_publication_list.id != publication_list.id %}
-                            <li>
-                                <input class="dropdown-item" name="move_to_{{other_publication_list.id }}" type="submit" value="{{ other_publication_list.name}}">
-                            </li>
-                          {% endif %}
+                            {% if other_publication_list.id != publication_list.id %}
+                                <li>
+                                    <input class="dropdown-item" name="move_to_{{ other_publication_list.id }}"
+                                           type="submit" value="{{ other_publication_list.name }}">
+                                </li>
+                            {% endif %}
 
                         {% endfor %}
-                           <li>
-                               <hr class="dropdown-divider">
-                           </li>
-                           <li>
-                              <div class="dropdown-item">
-                                  <div class="input-group mb-1">
-                                      <input type="text" class="form-control" placeholder="New List Name" aria-label="newListName" aria-describedby="moveToNewList" id="moveText" name="new_list_name_move"
-                                      oninput="enableButton('move')">
-                                      <button class="btn btn-outline-success" type="submit" id="moveToNewList" name="move_to_new_list" disabled>New List</button>
-                                    </div>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <div class="dropdown-item">
+                                <div class="input-group mb-1">
+                                    <input type="text" class="form-control" placeholder="New List Name"
+                                           aria-label="newListName" aria-describedby="moveToNewList" id="moveText"
+                                           name="new_list_name_move"
+                                           oninput="enableButton('move')">
+                                    <button class="btn btn-outline-success" type="submit" id="moveToNewList"
+                                            name="move_to_new_list" disabled>New List
+                                    </button>
+                                </div>
 
-                              </div>
-                           </li>
-                      </ul>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
 
 
-                <button type="submit" class="btn btn-outline-danger" id="deleteFromCurrentList" disabled name="delete_from_current_list" onclick="alert('Are you sure to remove these publications from {{ publication_list.name }}?')">Remove Selected Publications</button>
+                <button type="submit" class="btn btn-outline-danger" id="deleteFromCurrentList" disabled
+                        name="delete_from_current_list"
+                        onclick="alert('Are you sure to remove these publications from {{ publication_list.name }}?')">
+                    Remove Selected Publications
+                </button>
             </div>
         </div>
     </div>
     <div class="col-1">
-    <button class="btn btn-small btn-outline-dark" type="button" onclick="showDetailsAll()" id="showerAll">
+        <button class="btn btn-small btn-outline-dark" type="button" onclick="showDetailsAll()" id="showerAll">
             <i class="bi bi-arrows-expand"></i>
         </button>
         <button class="btn btn-small btn-info d-none" type="button" onclick="hideDetailsAll()" id="hiderAll">
@@ -101,25 +121,25 @@
     </div>
 </div>
 <script>
-    function enableButton(id){
+    function enableButton(id) {
         const inputter = document.getElementById(`${id}Text`);
         const button = document.getElementById(`${id}ToNewList`);
         console.log(inputter.value)
-        if (inputter.value.length > 0 ){
+        if (inputter.value.length > 0) {
             button.removeAttribute("disabled");
-        }
-        else{
+        } else {
             button.setAttribute("disabled", "disabled");
         }
 
     }
 
-    function showDetailsAll(){
+    function showDetailsAll() {
         {% for publication in page_obj %}
             showDetails({{ publication.id }});
         {% endfor %}
     }
-    function hideDetailsAll(){
+
+    function hideDetailsAll() {
         {% for publication in page_obj %}
             hideDetails({{ publication.id }});
         {% endfor %}
