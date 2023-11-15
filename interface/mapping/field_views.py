@@ -5,7 +5,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
 from django.views import View
 from django.views.generic import DeleteView, UpdateView
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 
 # from current app
 from .models import ReviewField, Mapping, PublicationList, ReviewFieldValue, ReviewFieldValueCoding
@@ -100,6 +100,4 @@ class FieldReviewView(LoginRequiredMixin, View):
             new_value = request.POST.get(f"review_field_{field.id}")
             field.get_value_class().save_value(field, publication, new_value)
 
-        return redirect(reverse("publication_list", kwargs={
-            "mapping_id": current_mapping.id,
-            "list_id": current_list.id}) + "#fields")
+        return HttpResponse("fields_saved")

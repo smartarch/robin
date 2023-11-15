@@ -30,4 +30,41 @@ function createTagsInput(input, field_id) {
         }
     })
 }
+
+
+// Review form submission
+function submitForm(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok)
+            saved(form.id);
+        else
+            savingFailed(form.id);
+    })
+    .catch(error => {
+        console.log("Error", error);
+        savingFailed(form.id);
+    });
+}
+
+function saved(formId) {
+    const saved = document.getElementById(`${formId}_saved`);
+    saved.classList.remove("d-none");
+    const failed = document.getElementById(`${formId}_failed`);
+    failed.classList.add("d-none");
+
+    setTimeout(() => saved?.classList?.add("d-none"), 3000);
+}
+
+function savingFailed(formId) {
+    const failed = document.getElementById(`${formId}_failed`);
+    failed.classList.remove("d-none");
+}
 </script>

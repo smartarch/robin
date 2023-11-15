@@ -1,6 +1,6 @@
 {% load django_helpers %}
 <div class="container-fluid">
-    <form action="{% url 'field_review' mapping_id=mapping.id list_id=publication_list.id %}" name="review" id="review" method="POST">
+    <form action="{% url 'field_review' mapping_id=mapping.id list_id=publication_list.id %}" name="review" id="review_{{ publication.id }}" onsubmit="submitForm(event)">
         {% csrf_token %}
         <input type="hidden" name="publication_id" value="{{ publication.id }}">
         <div class="row mb-2">
@@ -14,11 +14,11 @@
                 </label>
                 <div class="col-8 col-lg-7 col-xl-8">
                     {% if field.type == "T" %}
-                        <input class="form-control" type="text" value="{% get_field_value field publication %}" id="review_field_{{ field.id }}_{{ publication.id }}" name="review_field_{{ field.id }}">
+                        <input class="form-control" type="text" value="{% get_field_value field publication %}" id="review_field_{{ field.id }}_{{ publication.id }}" name="review_field_{{ field.id }}" autocomplete="off">
                     {% elif field.type == "N" %}
-                        <input class="form-control" type="number" value="{% get_field_value field publication %}" id="review_field_{{ field.id }}_{{ publication.id }}" name="review_field_{{ field.id }}">
+                        <input class="form-control" type="number" value="{% get_field_value field publication %}" id="review_field_{{ field.id }}_{{ publication.id }}" name="review_field_{{ field.id }}" autocomplete="off">
                     {% elif field.type == "C" %}
-                        <input class="form-control" type="text" value='{% get_field_value field publication %}' id="review_field_{{ field.id }}_{{ publication.id }}" name="review_field_{{ field.id }}">
+                        <input class="form-control" type="text" value='{% get_field_value field publication %}' id="review_field_{{ field.id }}_{{ publication.id }}" name="review_field_{{ field.id }}" autocomplete="off">
                         <!--suppress JSUnresolvedReference (Tagify is imported in publication_review_common.html)-->
                         <script>
                         createTagsInput(document.getElementById("review_field_{{ field.id }}_{{ publication.id }}"), {{ field.id }});
@@ -27,6 +27,12 @@
                 </div>
             </div>
         {% endfor %}
+        <div class="row mb-2 text-success d-none" id="review_{{ publication.id }}_saved"><div class="col">
+            Review saved.
+        </div></div>
+        <div class="row mb-2 px-3 text-danger d-none" id="review_{{ publication.id }}_failed"><div class="col">
+            Saving failed. Try again later.
+        </div></div>
         <button type="submit" class="btn btn-outline-success mt-1 w-100">Save</button>
         <hr>
         <b>Comments</b>
