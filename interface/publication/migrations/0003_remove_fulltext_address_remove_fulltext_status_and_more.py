@@ -12,18 +12,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='fulltext',
-            name='address',
-        ),
-        migrations.RemoveField(
-            model_name='fulltext',
-            name='status',
-        ),
-        migrations.RemoveField(
-            model_name='fulltext',
-            name='user',
-        ),
         migrations.CreateModel(
             name='FullTextAccess',
             fields=[

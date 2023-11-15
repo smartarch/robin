@@ -13,22 +13,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='fulltext',
-            name='status',
-            field=models.CharField(choices=[('E', 'EMPTY'), ('A', 'AVAILABLE'), ('D', 'DOWNLOADED'), ('U', 'UPLOADED')], default='E', max_length=1),
-        ),
-        migrations.AddField(
-            model_name='fulltext',
-            name='user',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
-            preserve_default=False,
-        ),
-        migrations.AlterField(
-            model_name='fulltext',
-            name='address',
-            field=models.CharField(blank=True, max_length=128),
-        ),
         migrations.AlterField(
             model_name='fulltext',
             name='url',
