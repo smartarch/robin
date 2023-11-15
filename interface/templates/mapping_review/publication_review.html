@@ -28,7 +28,12 @@
             </div>
         {% endfor %}
         <div class="row mb-2 text-success d-none" id="review_{{ publication.id }}_saved"><div class="col">
-            Review saved.
+            Saving Review ...
+            <div class="clearfix">
+              <div class="spinner-border float-end" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
         </div></div>
         <div class="row mb-2 px-3 text-danger d-none" id="review_{{ publication.id }}_failed"><div class="col">
             Saving failed. Try again later.
