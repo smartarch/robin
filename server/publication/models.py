@@ -1,5 +1,5 @@
 from django.db import models
-from constants import VENUE_TYPES, FULL_TEXT_TYPES, FULL_TEXT_STATUS
+from .constants import VENUE_TYPES, FULL_TEXT_TYPES, FULL_TEXT_STATUS
 
 
 class Source(models.Model):
