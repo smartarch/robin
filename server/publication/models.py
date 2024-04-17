@@ -2,34 +2,35 @@ from django.db import models
 from .constants import VENUE_TYPES, FULL_TEXT_TYPES, FULL_TEXT_STATUS
 
 
-class TimeAwareModel(models.Model):
-	first_created = models.DateTimeField(auto_now_add=True)
-	last_update = models.DateTimeField(auto_now=True)
-
-
-class Source(TimeAwareModel):
+class Source(models.Model):
 	"""
 		the source of the publication such as ACM, IEEE, ... etc.
 	"""
 	name = models.CharField(max_length=128)
+	first_created = models.DateTimeField(auto_now_add=True)
+	last_update = models.DateTimeField(auto_now=True)
 
 
-class Country(TimeAwareModel):
+class Country(models.Model):
 	"""
 		Country of origin (in time of publication) for authors' affiliations
 	"""
 	name = models.CharField(max_length=128, unique=True)
+	first_created = models.DateTimeField(auto_now_add=True)
+	last_update = models.DateTimeField(auto_now=True)
 
 
-class Affiliation(TimeAwareModel):
+class Affiliation(models.Model):
 	"""
 		Affiliation of the authors
 	"""
 	institute = models.CharField(max_length=256)
 	country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True, related_name='institutes')
+	first_created = models.DateTimeField(auto_now_add=True)
+	last_update = models.DateTimeField(auto_now=True)
 
 
-class Author(TimeAwareModel):
+class Author(models.Model):
 	"""
 		Represents the author of the publications.
 	"""
@@ -39,9 +40,11 @@ class Author(TimeAwareModel):
 	# optional fields
 	affiliation = models.ForeignKey(Affiliation, on_delete=models.SET_NULL, null=True, related_name="authors")
 	ORCID = models.SlugField(max_length=1024, null=True)
+	first_created = models.DateTimeField(auto_now_add=True)
+	last_update = models.DateTimeField(auto_now=True)
 
 
-class Venue(TimeAwareModel):
+class Venue(models.Model):
 	"""
 		Represents the venue of the publication
 	"""
@@ -52,16 +55,20 @@ class Venue(TimeAwareModel):
 	publisher = models.CharField(max_length=256, blank=True)
 	volume = models.CharField(max_length=128)
 	issue = models.CharField(max_length=128)
+	first_created = models.DateTimeField(auto_now_add=True)
+	last_update = models.DateTimeField(auto_now=True)
 
 
-class Keyword(TimeAwareModel):
+class Keyword(models.Model):
 	"""
 		Represents the keywords assigned to publications
 	"""
 	keyword = models.CharField(max_length=256, unique=True)
+	first_created = models.DateTimeField(auto_now_add=True)
+	last_update = models.DateTimeField(auto_now=True)
 
 
-class Publication(TimeAwareModel):
+class Publication(models.Model):
 	"""
 		The actual publication object
 	"""
@@ -77,9 +84,11 @@ class Publication(TimeAwareModel):
 	# optional fields
 	source = models.ForeignKey(Source, on_delete=models.SET_NULL, null=True, related_name="publications")
 	abstract = models.TextField(blank=True)
+	first_created = models.DateTimeField(auto_now_add=True)
+	last_update = models.DateTimeField(auto_now=True)
 
 
-class FullText(TimeAwareModel):
+class FullText(models.Model):
 	"""
 		Represents the full text files
 	"""
@@ -87,3 +96,5 @@ class FullText(TimeAwareModel):
 	type = models.CharField(max_length=1, default="T", choices=FULL_TEXT_TYPES)
 	status = models.CharField(max_length=1, default="E", choices=FULL_TEXT_STATUS)
 	file = models.FileField(upload_to="full_text", blank=True)
+	first_created = models.DateTimeField(auto_now_add=True)
+	last_update = models.DateTimeField(auto_now=True)
