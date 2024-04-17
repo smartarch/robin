@@ -11,7 +11,7 @@ VENUE_TYPES = [
 	("A", "Archives"),
 ]
 
-DOI_ARTICLE_TYPES = {
+ARTICLE_TYPES = {
 	"article": "J",
 	"Early Access Articles": "J",
 	"book": "B",
