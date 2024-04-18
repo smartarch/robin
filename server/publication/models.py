@@ -7,8 +7,6 @@ class Source(models.Model):
 		the source of the publication such as ACM, IEEE, ... etc.
 	"""
 	name = models.CharField(max_length=128)
-	first_created = models.DateTimeField(auto_now_add=True)
-	last_update = models.DateTimeField(auto_now=True)
 
 
 class Country(models.Model):
@@ -16,8 +14,6 @@ class Country(models.Model):
 		Country of origin (in time of publication) for authors' affiliations
 	"""
 	name = models.CharField(max_length=128, unique=True)
-	first_created = models.DateTimeField(auto_now_add=True)
-	last_update = models.DateTimeField(auto_now=True)
 
 
 class Affiliation(models.Model):
@@ -26,8 +22,6 @@ class Affiliation(models.Model):
 	"""
 	institute = models.CharField(max_length=256)
 	country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True, related_name='institutes')
-	first_created = models.DateTimeField(auto_now_add=True)
-	last_update = models.DateTimeField(auto_now=True)
 
 
 class Author(models.Model):
@@ -40,8 +34,6 @@ class Author(models.Model):
 	# optional fields
 	affiliation = models.ForeignKey(Affiliation, on_delete=models.SET_NULL, null=True, related_name="authors")
 	ORCID = models.SlugField(max_length=1024, null=True)
-	first_created = models.DateTimeField(auto_now_add=True)
-	last_update = models.DateTimeField(auto_now=True)
 
 
 class Venue(models.Model):
@@ -55,8 +47,6 @@ class Venue(models.Model):
 	publisher = models.CharField(max_length=256, blank=True)
 	volume = models.CharField(max_length=128)
 	issue = models.CharField(max_length=128)
-	first_created = models.DateTimeField(auto_now_add=True)
-	last_update = models.DateTimeField(auto_now=True)
 
 
 class Keyword(models.Model):
@@ -64,8 +54,6 @@ class Keyword(models.Model):
 		Represents the keywords assigned to publications
 	"""
 	keyword = models.CharField(max_length=256, unique=True)
-	first_created = models.DateTimeField(auto_now_add=True)
-	last_update = models.DateTimeField(auto_now=True)
 
 
 class Publication(models.Model):
@@ -78,8 +66,8 @@ class Publication(models.Model):
 	datetime_added = models.DateTimeField(auto_now=True)
 
 	venue = models.ForeignKey(Venue, on_delete=models.PROTECT, related_name="papers")
-	authors = models.ManyToManyField(Author)
-	keywords = models.ManyToManyField(Keyword)
+	authors = models.ManyToManyField(Author, related_name="published_papers")
+	keywords = models.ManyToManyField(Keyword, related_name="related_papers")
 
 	# optional fields
 	source = models.ForeignKey(Source, on_delete=models.SET_NULL, null=True, related_name="publications")
