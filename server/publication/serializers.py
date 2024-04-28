@@ -26,23 +26,19 @@ class CountrySerializer(serializers.HyperlinkedModelSerializer):
 class AffiliationSerializer(serializers.HyperlinkedModelSerializer):
     country = CountrySerializer()
 
-    api_url = serializers.HyperlinkedIdentityField(view_name="retrieve_affiliation_detail", read_only=True)
-
     authors = serializers.HyperlinkedRelatedField(
         view_name="retrieve_author_detail", read_only=True, many=True)
 
     class Meta:
         model = Affiliation
-        fields = ['id', 'api_url', 'institute', 'country', 'authors']
+        fields = ['id', 'institute', 'country', 'authors']
 
 
 class AuthorSerializer(serializers.HyperlinkedModelSerializer):
     api_url = serializers.HyperlinkedIdentityField(view_name="retrieve_author_detail", read_only=True)
-    affiliation = AffiliationSerializer()
-
     published_papers = serializers.HyperlinkedRelatedField(
         view_name="retrieve_publication_detail", read_only=True, many=True)
-
+    affiliation = AffiliationSerializer()
     class Meta:
         model = Author
         fields = ['id', 'api_url', 'first_name', 'last_name', 'ORCID',
