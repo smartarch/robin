@@ -8,12 +8,18 @@ class Source(models.Model):
 	"""
 	name = models.CharField(max_length=128)
 
+	def __str__(self):
+		return f"{self.name}"
+
 
 class Country(models.Model):
 	"""
 		Country of origin (in time of publication) for authors' affiliations
 	"""
 	name = models.CharField(max_length=128, unique=True)
+
+	def __str__(self):
+		return f"{self.name}"
 
 
 class Affiliation(models.Model):
@@ -22,6 +28,9 @@ class Affiliation(models.Model):
 	"""
 	institute = models.CharField(max_length=256)
 	country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True, related_name='institutes')
+
+	def __str__(self):
+		return f"{self.institute}, {self.country.name if self.country else 'NONE' }"
 
 
 class Author(models.Model):
@@ -34,6 +43,9 @@ class Author(models.Model):
 	# optional fields
 	affiliation = models.ForeignKey(Affiliation, on_delete=models.SET_NULL, null=True, related_name="authors")
 	ORCID = models.SlugField(max_length=1024, null=True)
+
+	def __str__(self):
+		return f"{self.first_name} {self.last_name}, {self.affiliation }"
 
 
 class Venue(models.Model):
@@ -48,12 +60,17 @@ class Venue(models.Model):
 	volume = models.CharField(max_length=128)
 	issue = models.CharField(max_length=128)
 
+	def __str__(self):
+		return f"{self.name} {self.type}, {self.publisher }"
 
 class Keyword(models.Model):
 	"""
 		Represents the keywords assigned to publications
 	"""
 	keyword = models.CharField(max_length=256, unique=True)
+
+	def __str__(self):
+		return f"{self.keyword}"
 
 
 class Publication(models.Model):
@@ -74,6 +91,9 @@ class Publication(models.Model):
 	abstract = models.TextField(blank=True)
 	first_created = models.DateTimeField(auto_now_add=True)
 	last_update = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return f"{self.title}, {self.year}"
 
 
 class FullText(models.Model):
