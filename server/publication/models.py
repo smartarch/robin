@@ -103,6 +103,7 @@ class FullText(models.Model):
 	publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name="full_texts")
 	type = models.CharField(max_length=1, default="T", choices=FULL_TEXT_TYPES)
 	status = models.CharField(max_length=1, default="E", choices=FULL_TEXT_STATUS)
-	file = models.FileField(upload_to="full_text", blank=True)
+	file = models.FileField(upload_to="storage/full_texts", blank=True)
+	url = models.URLField()
 	first_created = models.DateTimeField(auto_now_add=True)
 	last_update = models.DateTimeField(auto_now=True)
