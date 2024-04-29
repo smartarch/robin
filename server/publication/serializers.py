@@ -89,9 +89,10 @@ class PublicationSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class FullTextSerializer(serializers.HyperlinkedModelSerializer):
-    api_url = serializers.HyperlinkedIdentityField(view_name="retrieve_publication_detail", read_only=True)
     publication = PublicationSerializer()
+    full_text_status = serializers.CharField(source='get_status_display', read_only=True)
+    full_text_type = serializers.CharField(source='get_type_display', read_only=True)
 
     class Meta:
         model = FullText
-        fields = ['id', 'api_url', 'type', 'status', 'file', 'publication', 'first_created', 'last_update']
+        fields = ['id', 'full_text_type', 'full_text_status', 'file', 'url', 'publication', 'first_created']
