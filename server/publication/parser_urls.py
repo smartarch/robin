@@ -5,4 +5,5 @@ urlpatterns = [
 	# details
 	path("doi/", parser_views.ParseDOIView.as_view(), name="parse_doi"),
 	path("bib/", parser_views.ParseBibView.as_view(), name="parse_bib"),
+	path("lib/<str:library>", parser_views.ParseLibView.as_view(), name="parse_bib"),
 ]
