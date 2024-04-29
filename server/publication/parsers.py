@@ -1,24 +1,23 @@
+import os
+from pathlib import Path
 from typing import List
 
 import requests
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Model
+from pypdf import PdfReader
 from requests import Response
-from rest_framework.serializers import Serializer
 import xml.etree.ElementTree as ET
-from .models import Source, Country, Affiliation, Author, Venue, Keyword, Publication, FullText
-from .serializers import AuthorSerializer, AffiliationSerializer, CountrySerializer, VenueSerializer, \
-	PublicationSerializer, SourceSerializer
 
+from .constants import FULL_TEXT_TYPES_REVERSE
+from .models import Source, Country, Affiliation, Author, Venue, Keyword, Publication, FullText
 
 class GenericModelFactory:
 	model: type(models.Model)
-	serializer_class: type(Serializer)
 
-	def __init__(self, _model, _serializer_class) -> None:
+	def __init__(self, _model) -> None:
 		self.model = _model
-		self.serializer_class = _serializer_class
 
 	def find_object(self, data: dict) -> models.Model | None:
 		try:
@@ -37,8 +36,11 @@ class GenericModelFactory:
 			if self.model == Publication:
 				return self.model.objects.get(doi=data['doi'])
 
+			if self.model == FullText:
+				return self.model.objects.get(url=data['url'])
+
 		except ObjectDoesNotExist:
-			print (f"object was not found for {self.model} and {data}")
+			print (f"object was not found for {self.model}")
 			return None
 
 	def create_or_get(self, data: dict) -> models.Model| None:
@@ -48,9 +50,14 @@ class GenericModelFactory:
 
 		return instance
 
+class Parser:
+	def parse(self, storage: Path) -> None | Publication:
+		raise NotImplementedError
 
-class DOIParser:
-	req: Response
+
+class DOIParser(Parser):
+	xml_resp: Response
+	json_resp: Response
 	doi: str
 	venue_types = {
 		"conference_paper": "conference",
@@ -59,15 +66,25 @@ class DOIParser:
 
 	def __init__(self, doi: str):
 		url = f"https://dx.doi.org/{doi}"
-		self.req = requests.get(url, headers={"Accept": "application/vnd.crossref.unixsd+xml"})
-		self.ns = {
+		try:
+			self.xml_resp = requests.get(url, headers={"Accept": "application/vnd.crossref.unixsd+xml"})
+		except:
+			print ("The server is down or not accepting xml")
+
+		try:
+			self.json_resp = requests.get(url, headers={"Accept": "application/json"})
+		except:
+			print("The server is down or not accepting json")
+
+		self.xml_ns = {
 			'qr': 'http://www.crossref.org/qrschema/3.0',
-			'x': 'http://www.crossref.org/xschema/1.1'
+			'x': 'http://www.crossref.org/xschema/1.1',
+			'any': '*',
 		}
 		self.doi = doi
 
 	def xml_find_items(self, root, namespace, query, singleton=True):
-		items = root.findall(f".//{namespace}:{query}", self.ns)
+		items = root.findall(f".//{namespace}:{query}", self.xml_ns)
 		if not items:
 			return None
 
@@ -79,15 +96,20 @@ class DOIParser:
 		else:
 			return items
 
-	def parse(self) -> None | Publication:
-		if self.req.status_code != 200:
+	def parse_xml(self, storage: Path) -> None | Publication:
+		if self.xml_resp.status_code != 200:
 			print("doi not found")
 			return None
 
-		xml_data = self.req.text
-		root = ET.fromstring(xml_data)
+		xml_data = self.xml_resp.text
 
-		query = self.xml_find_items(root=root, namespace="qr", query="query")
+		try:
+			root = ET.fromstring(xml_data)
+		except ET.ParseError as e:
+			print(f"error reading from xml: {e}")
+			return None
+
+		query = self.xml_find_items(root=root, namespace="any", query="query")
 		if query is None:
 			print("error in finding query")
 			return None
@@ -96,7 +118,7 @@ class DOIParser:
 			print("error in status")
 			return None
 
-		publisher_name = self.xml_find_items(root=query, namespace="x", query="publisher_name")
+		publisher_name = self.xml_find_items(root=query, namespace="any", query="publisher_name")
 		doi_type = self.xml_find_items(root=query, namespace="qr", query="doi")
 
 		if doi_type is None:
@@ -111,38 +133,42 @@ class DOIParser:
 		# e.g conference paper
 		doi_type = doi_type.attrib["type"]
 
-		record = self.xml_find_items(root=query, namespace="qr", query="doi_record")
+		record = self.xml_find_items(root=query, namespace="any", query="doi_record")
 		if record is None:
 			print("error in finding record")
 			return None
 
-		venue = self.xml_find_items(root=record, namespace="x", query=DOIParser.venue_types[doi_type])
+		venue = self.xml_find_items(root=record, namespace="any", query=DOIParser.venue_types[doi_type])
+
 		if venue is None:
 			print("error in finding venue")
 			return None
 
-		publication = self.xml_find_items(root=venue, namespace="x", query=doi_type)
+		venue_object = self.resolve_venue(venue, DOIParser.venue_types[doi_type], publisher_name)
+
+		publication = self.xml_find_items(root=venue, namespace="any", query=doi_type)
 		if publication is None:
 			print("error in finding publication")
 			return None
 
-		contributors = self.xml_find_items(root=publication, namespace="x", query="contributors")
+		contributors = self.xml_find_items(root=publication, namespace="any", query="contributors")
 
 		if contributors is None:
 			print("error in finding contributors")
 			return None
 
 		authors = self.resolve_authors(contributors)
-		venue_object = self.resolve_venue(venue, DOIParser.venue_types[doi_type], publisher_name)
-		dates = self.xml_find_items(root=publication, namespace="x", query="publication_date", singleton=False)
+		dates = self.xml_find_items(root=publication, namespace="qr", query="publication_date", singleton=False)
 
 		if dates is None:
-			print("error in finding publication dates")
-			return None
+			dates = self.xml_find_items(root=record, namespace="any", query="publication_date", singleton=False)
+			if dates is None:
+				print("error in finding publication dates")
+				return None
 
 		year = None
 		for publication_date in dates:
-			year = self.xml_find_items(root=publication_date, namespace="x", query="year")
+			year = self.xml_find_items(root=publication_date, namespace="any", query="year")
 			if year is not None:
 				year = year.text
 				break
@@ -156,29 +182,50 @@ class DOIParser:
 			print("error in finding title")
 			return None
 
+		# optional stuff
+		abstract = ""
+		abstract_element = self.xml_find_items(root=publication, namespace="any", query="abstract")
+		if abstract_element is not None:
+			abstract_p = self.xml_find_items(root=abstract_element, namespace="any", query="p")
+			if abstract_p is not None:
+				abstract = abstract_p.text
+
 		# finally creating the publication
-		source_factory = GenericModelFactory(Source, SourceSerializer)
-		source = source_factory.create_or_get(data={"name": "crossref"})
+		source_factory = GenericModelFactory(Source)
+		source = source_factory.create_or_get(data={"name": "CrossRef"})
 		source.save()
 
-		publication_factory = GenericModelFactory(Publication, PublicationSerializer)
-		publication = publication_factory.create_or_get(data={
+		publication_factory = GenericModelFactory(Publication)
+		publication_object = publication_factory.create_or_get(data={
 			"doi": self.doi,
 			"title": title.text,
 			"year": year,
 			"venue": venue_object,
-			"source": source})
+			"source": source,
+			"abstract": abstract,
+		})
 
-		if publication is None or not isinstance(publication, Publication):
+		if publication_object is None or not isinstance(publication_object, Publication):
 			print("failed at creating the publication")
 			return None
 
-		publication.save()
+		publication_object.save()
 		for author in authors:
-			publication.authors.add(author)
+			publication_object.authors.add(author)
 
-		publication.save()
-		return publication
+		publication_object.save()
+
+		# models which have publication as foreign key
+		full_texts = self.resolve_full_text(storage, publication)
+		for filename , full_text in full_texts:
+			full_text_factory = GenericModelFactory(FullText)
+			full_text_object = full_text_factory.create_or_get(full_text)
+			if full_text_object is not None and isinstance(full_text_object, FullText):
+				full_text_object.publication = publication_object
+				full_text_object.file.name = str(filename)
+				full_text_object.save()
+
+		return publication_object
 
 	def resolve_venue(self, venue, venue_type, publisher_name) -> Venue | None:
 
@@ -187,12 +234,12 @@ class DOIParser:
 			conference_name = None
 
 			for synonym in synonyms_for_conference_names:
-				conference_name = self.xml_find_items(root=venue, namespace="x", query=synonym)
+				conference_name = self.xml_find_items(root=venue, namespace="any", query=synonym)
 				if conference_name is not None:
 					break
 
 			if conference_name is not None:
-				conference_factory = GenericModelFactory(Venue, VenueSerializer)
+				conference_factory = GenericModelFactory(Venue)
 				conference = conference_factory.create_or_get(data={"name": conference_name.text})
 				if conference is not None:
 					# ("P", "Conference Proceedings"),
@@ -207,22 +254,22 @@ class DOIParser:
 			journal_name = None
 
 			for synonym in synonyms_for_journal_names:
-				journal_name = self.xml_find_items(root=venue, namespace="x", query=synonym)
+				journal_name = self.xml_find_items(root=venue, namespace="any", query=synonym)
 				if journal_name is not None:
 					break
 
 			if journal_name is not None:
-				journal_factory = GenericModelFactory(Venue, VenueSerializer)
+				journal_factory = GenericModelFactory(Venue)
 				journal = journal_factory.create_or_get(data={"name": journal_name.text})
 				if journal is not None:
 					# ("J", "Journal Article"),
 					journal.type = "P"
 
-					issue = self.xml_find_items(root=venue, namespace="x", query="issue")
+					issue = self.xml_find_items(root=venue, namespace="any", query="issue")
 					if issue is not None:
 						journal.issue = issue
 
-					volume = self.xml_find_items(root=venue, namespace="x", query="volume")
+					volume = self.xml_find_items(root=venue, namespace="any", query="volume")
 					if volume is not None:
 						journal.volume = volume
 
@@ -242,12 +289,12 @@ class DOIParser:
 				country_name = "EMPTY"
 				institute = parsed_affiliation[0]
 
-			country_factory = GenericModelFactory(Country, CountrySerializer)
+			country_factory = GenericModelFactory(Country)
 			country = country_factory.create_or_get(data={"name": country_name.strip()})
 			if country is not None:
 				country.save()
 
-			affiliation_factory = GenericModelFactory(Affiliation, AffiliationSerializer)
+			affiliation_factory = GenericModelFactory(Affiliation)
 			affiliation = affiliation_factory.create_or_get(data={
 				"institute": institute.strip()})
 
@@ -270,19 +317,19 @@ class DOIParser:
 			first_name = None
 
 			for synonym in synonyms_for_last_names:
-				last_name = self.xml_find_items(root=contributor, namespace="x", query=synonym)
+				last_name = self.xml_find_items(root=contributor, namespace="any", query=synonym)
 				if last_name is not None:
 					break
 
 			for synonym in synonyms_for_first_names:
-				first_name = self.xml_find_items(root=contributor, namespace="x", query=synonym)
+				first_name = self.xml_find_items(root=contributor, namespace="any", query=synonym)
 				if first_name is not None:
 					break
 
-			affiliation = self.xml_find_items(root=contributor, namespace="x", query="affiliation")
+			affiliation = self.xml_find_items(root=contributor, namespace="any", query="affiliation")
 
 			if last_name is not None and first_name is not None:
-				author_factory = GenericModelFactory(_model=Author, _serializer_class=AuthorSerializer)
+				author_factory = GenericModelFactory(Author)
 				created_affiliation = None
 				if affiliation is not None:
 					created_affiliation = self.resolve_affiliation(affiliation)
@@ -297,9 +344,66 @@ class DOIParser:
 
 		return authors
 
+	def resolve_full_text(self, storage: Path,  root) -> []:
+		collection = self.xml_find_items(root=root, namespace="any", query="collection")
+		if collection is None:
+			return []
+		print(collection)
+		resources = self.xml_find_items(root=collection, namespace="any", query="resource", singleton=False)
+		if resources is None:
+			return []
 
-	def resolve_full_text(self, query):
-		pass
+		full_texts = []
+
+		for i, resource in enumerate(resources):
+			file_type = "pdf"
+			if 'mime_type' in resource.attrib:
+				file_types = resource.attrib['mime_type'].split('/')
+				if len(file_types) > 0:
+					file_type = file_types[1]
+				else:
+					file_type = file_types[0]
+
+			resource_request = requests.get(resource.text, headers={
+				"Accept": "text/html,application/xhtml+xml,application/pdf,application/xml;q=0.9,image/avif,image/webp",
+				"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0"})
+
+			if resource_request.status_code == 200:
+				base_file = f"resource_{self.doi.replace("/", "-")}_{i}.{file_type}"
+				resource_filename = storage / base_file
+				with open(resource_filename, "wb") as resource_file:
+					resource_file.write(resource_request.content)
+
+				if file_type.lower() == "pdf":
+					try:
+						PdfReader(resource_filename)
+					except:
+						try:
+							os.remove(resource_filename)
+						except:
+							pass
+						continue
+
+				full_texts.append((f"storage/full_texts/{base_file}", {
+					'url': resource.text,
+					'type': FULL_TEXT_TYPES_REVERSE[f"application/{file_type}"],
+					'status': "D",  # downloaded
+				}))
+
+		return full_texts
 
 	def resolve_keywords(self, query):
 		pass
+
+	def add_extra_info_from_json(self, publication) -> Publication:
+		# TODO implement
+		return publication
+
+	def parse(self, storage: Path) -> None | Publication:
+		publication = self.parse_xml(storage)
+
+		# TODO check if extra information is available from the json
+		# publication = self.add_extra_info_from_json(publication)
+
+		return publication
+
