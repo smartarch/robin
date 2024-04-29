@@ -47,6 +47,7 @@ FULL_TEXT_TYPES = [
 	("X", "text/xml"),
 	("T", "text/plain")
 ]
+FULL_TEXT_TYPES_REVERSE = {k: v for v, k in FULL_TEXT_TYPES}
 
 FULL_TEXT_STATUS = [
 	("E", "Empty"),
