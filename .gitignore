@@ -168,3 +168,4 @@ cython_debug/
 
 # downloaded full-text papers
 /interface/media/full_text
+/server/storage/full_texts
