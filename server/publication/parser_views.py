@@ -10,19 +10,23 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from . import serializers
-from .models import Publication
-from .parsers import DOIParser
+from .models import Publication, Keyword
+from .parsers import DOIParser, GenericModelFactory
 
 from django.conf import settings
 
+
 class ParseDOIView(mixins.ListModelMixin, generics.GenericAPIView):
+	"""
+	A class based view for parsing publication loaded from DOI(s).
+	"""
 	authentication_classes = [TokenAuthentication, BasicAuthentication]
 	permission_classes = [IsAuthenticated]
 	queryset = Publication.objects.all()
 	serializer_class = serializers.PublicationSerializer
 
 	@classmethod
-	def get_publications_by_list_of_doi_list(cls, doi_list: [], extra_infos: dict = {}) -> []:
+	def get_publications_by_list_of_doi_list(cls, doi_list: [], extra_infos = None) -> []:
 		publication_ids = []
 		for doi in doi_list:
 			# first, check if the DOI already exist in the database
@@ -33,11 +37,22 @@ class ParseDOIView(mixins.ListModelMixin, generics.GenericAPIView):
 				publication = doi_parser.parse(storage=settings.BASE_DIR / "storage/full_texts")
 
 			if publication is not None:
-				if doi in extra_infos:
-					for key, value in extra_infos[doi].items(): # such as provided abstract
+				publication.save()
+
+				if extra_infos is not None and doi in extra_infos:
+					# such as provided abstract
+					for key, value in extra_infos[doi].items():
 						if key in publication.__dict__ and len(publication.__dict__[key]) < len(value):
 							publication.__dict__[key] = value
 							publication.save()
+						elif key == "keywords_list":
+							for keyword in value:
+								keyword_parser = GenericModelFactory(Keyword)
+								keyword_object = keyword_parser.create_or_get(data={'keyword': keyword.strip().lower()})
+								keyword_object.save()
+								if len(publication.keywords.filter(id=keyword_object.id)) == 0:
+									publication.keywords.add(keyword_object)
+									publication.save()
 
 				publication_ids.append(publication.id)
 		return publication_ids
@@ -54,6 +69,9 @@ class ParseDOIView(mixins.ListModelMixin, generics.GenericAPIView):
 
 
 class ParseBibView(mixins.ListModelMixin, generics.GenericAPIView):
+	"""
+	A class based view for parsing publications loaded from .bib files.
+	"""
 	authentication_classes = [TokenAuthentication, BasicAuthentication]
 	permission_classes = [IsAuthenticated]
 	queryset = Publication.objects.all()
@@ -81,8 +99,13 @@ class ParseBibView(mixins.ListModelMixin, generics.GenericAPIView):
 			if "doi" in compiled_article:
 				doi = compiled_article["doi"]
 				doi_list.append(doi)
+
+				# for other extra information add here
 				if "abstract" in compiled_article:
 					extra_infos[doi] = {"abstract": compiled_article['abstract']}
+
+				if "keywords" in compiled_article:
+					extra_infos[doi] = {"keywords_list": compiled_article['keywords'].split(',')}
 
 		publication_ids = ParseDOIView.get_publications_by_list_of_doi_list(doi_list, extra_infos)
 		self.queryset = Publication.objects.filter(id__in=publication_ids)
@@ -90,6 +113,10 @@ class ParseBibView(mixins.ListModelMixin, generics.GenericAPIView):
 
 
 class ParseLibView(mixins.ListModelMixin, generics.GenericAPIView):
+	"""
+	A class based view for parsing publications searched from available libraries, e.g. IEEE, SCOPUS.
+	Note: the class does not create publications as it is not really needed until they are included in a list.
+	"""
 	authentication_classes = [TokenAuthentication, BasicAuthentication]
 	permission_classes = [IsAuthenticated]
 	queryset = Publication.objects.all()
