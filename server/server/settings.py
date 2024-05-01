@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     # local apps
     'publication',
     'reviewer',
+    'mapping',
 ]
 
 MIDDLEWARE = [
@@ -130,7 +131,7 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 AUTH_USER_MODEL = "reviewer.Reviewer"
-LOGIN_REDIRECT_URL = '/reviewer/profile'
+LOGIN_REDIRECT_URL = '/api/reviewer/profile'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
