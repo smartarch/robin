@@ -3,7 +3,7 @@
         <p> <i>{{ publication.event.name }}  </i></p>
         <div class="row">
             <div class="col">
-                {% for author in publication.authors.all %}
+                {% for author in publication.all_authors %}
                     <span class="badge bg-dark" > {{ author.first_name }} {{ author.last_name }}</span>
                 {% endfor %}
             </div>

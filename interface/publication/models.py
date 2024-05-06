@@ -120,6 +120,8 @@ class Publication(models.Model):
     #
     #     return None
 
+    def all_authors (self):
+        return self.authors.all().order_by('last_name')
 
 class FullText(models.Model):
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
