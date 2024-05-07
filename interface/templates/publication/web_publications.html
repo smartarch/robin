@@ -5,12 +5,13 @@
     <div class="p-1 w-75 flex-fill">
         <div class="list-group">
             {% for publication  in page_obj %}
+                {% if publication.doi %}
                 <div class="bg-opacity-10 list-group-item list-group-item-action "
                     id="container_{{ publication.id }}" >
                     <div class="row">
                         <div class="col-9">
                             <div class="form-check">
-                              <input class="form-check-input" form="manage_publications" type="checkbox" value="{{ publication.id }}" id="select_{{ publication.id }}"
+                              <input class="form-check-input" type="checkbox" value="{{ publication.doi }}" id="select_{{ publication.id }}"
                               name="selected_publications">
                               <label class="form-check-label d-block" for="select_{{ publication.id }}">
                                   {% include "publication/publication_types.html" %}{{ publication.title}} <b> ({{ publication.year }}) </b>
@@ -60,6 +61,7 @@
                             {% endif %}
                         </div>
                     </div>
+                {% endif %}
             {% endfor %}
         <hr>
         <nav aria-label="...">
