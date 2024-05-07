@@ -104,7 +104,7 @@ class Publication(models.Model):
     source = models.ForeignKey(Source, on_delete=models.SET_NULL, null=True)
 
     abstract = models.TextField(blank=True)
-    doi = models.SlugField(max_length=1024, unique=True)
+    doi = models.CharField(max_length=1024, unique=True)
 
     def __str__(self) -> str:
         return f"{self.title}, {self.id}"
