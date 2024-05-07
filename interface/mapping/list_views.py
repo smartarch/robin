@@ -4,6 +4,7 @@ import re
 from typing import Any
 
 import requests
+from django.core.exceptions import FieldError
 from django.core.files.storage import FileSystemStorage
 from django.views.generic import TemplateView, View, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -90,33 +91,33 @@ class MappingListView(LoginRequiredMixin, TemplateView):
                 copy_instance = new_publication_list
                 move_instead_of_copy = copy_move[0] == "move"
 
-        copy_matcher = [re.findall("copy_to_(\d+)", key) for key in request.POST.keys()]
+        copy_matcher = [re.findall(r"copy_to_(\d+)", key) for key in request.POST.keys()]
 
         for copy in copy_matcher:
             if copy:
                 copy_id = int(copy[0])
                 copy_instance = get_object_or_404(available_publication_lists, id=copy_id)
 
-        move_matcher = [re.findall("move_to_(\d+)", key) for key in request.POST.keys()]
+        move_matcher = [re.findall(r"move_to_(\d+)", key) for key in request.POST.keys()]
         for move in move_matcher:
             if move:
                 move_id = int(move[0])
                 move_instead_of_copy = True
                 copy_instance = get_object_or_404(available_publication_lists, id=move_id)
 
-        page_sizer = [re.findall("change_page_size_to_(\d+)", key) for key in request.POST.keys()]
+        page_sizer = [re.findall(r"change_page_size_to_(\d+)", key) for key in request.POST.keys()]
         for page in page_sizer:
             if page:
                 page_size = int(page[0])
                 user_preference = get_object_or_404(UserPreferences, user=user)
 
-        subscription_ender = [re.findall("end_subscription_(\d+)", key) for key in request.POST.keys()]
+        subscription_ender = [re.findall(r"end_subscription_(\d+)", key) for key in request.POST.keys()]
         for subscriber in subscription_ender:
             if subscriber:
                 subscriber_id = int(subscriber[0])
                 subscriber_instance_end = get_object_or_404(PublicationList, id=subscriber_id)
 
-        followers = [re.findall("follow_(\d+)", key) for key in request.POST.keys()]
+        followers = [re.findall(r"follow_(\d+)", key) for key in request.POST.keys()]
         for follower in followers:
             if follower:
                 follower_id = int(follower[0])
@@ -159,7 +160,7 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 
         if subscriber_instance_end:
             current_publication_list.subscriptions.remove(subscriber_instance_end)
-            current_publication_list.save()
+            current_publication_list.save(auto_update=True)
             subscriber_instance_end.followers.remove(current_publication_list)
             subscriber_instance_end.save()
 
@@ -243,9 +244,10 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 
         if request.GET.__contains__("filter_text"):
             filter_text = request.GET.get('filter_text')
+            print (filter_text)
             if filter_text != "":
                 try:
-                    filter_object = create_advanced_query(filter_text)
+                    filter_object = create_advanced_query(mapping, publication_list,filter_text)
                     publications = publications.filter(filter_object)
                     filter_errors = ""
                     filtered_size = len(publications)
@@ -262,8 +264,13 @@ class MappingListView(LoginRequiredMixin, TemplateView):
                             publication_list: self.compare(publication_list, publications, filter_object)
                             for _, publication_list in compared.items()
                         }
-                except:
-                    filter_errors = f"The filter text: {filter_text} has syntax errors. Please double check."
+                except FieldError as e:
+                    filter_errors = str(e)
+                    filter_text = None
+
+                except BufferError:
+                    filter_errors = "please check syntax of the filter"
+                    filter_text = None
 
         if request.GET.__contains__("order_text"):
             order_text = request.GET.get("order_text")
@@ -290,13 +297,20 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 
             if full_access.status == "N":
                 user_errors += f"Cannot download {full_access.full_text.publication.title}, access denied, try to upload manually.\n"
-                if full_access.file:
+                if full_access.file is not None:
                     full_access.status = "U"
                 else:
                     full_access.status = "E"
                 full_access.save()
         # in case we do not have one item at least, the `get` should be changed to `filter`
-        publication_full_texts = {p: full_accesses.filter(full_text__publication=p.id)[0] for p in page_obj}
+        publication_full_texts = {}
+        for publication in page_obj:
+            full_accesses_per_publication = full_accesses.filter(full_text__publication=publication.id)
+            if len(full_accesses_per_publication) == 0:
+                publication_full_texts[publication] = None
+            else:
+                publication_full_texts [publication] = full_accesses_per_publication[0]
+
         context = {
             **super().get_context_data(**kwargs),
             "user": request.user,
@@ -378,48 +392,36 @@ class GetAccessForListView(LoginRequiredMixin, View):
         if "fullTextAccessID" in request.POST:
             full_text_access_id = request.POST.get("fullTextAccessID")
             full_text_access = get_object_or_404(FullTextAccess, id=full_text_access_id)
+
             if "get_full_text_access" in request.POST:
-                if full_text_access.full_text.url and full_text_access.full_text.type == "P":
-                    url = full_text_access.full_text.url
-                    try:
-                        response = requests.get(url)
-                        if response.ok:
-                            filename = f"full_text/m-{mapping.__hash__()}/" \
-                                        + f"p-{full_text_access.full_text.publication.__hash__()}_original.pdf"
-                            os.makedirs(settings.BASE_DIR / f"media/full_text/m-{mapping.__hash__()}/", exist_ok=True)
-                            try:
-                                os.remove(settings.BASE_DIR / f"media/{filename}")
-                            except:
-                                pass
+                full_text = full_text_access.full_text
+                if full_text.url != "":
+                    resource_request = requests.get(full_text.url, headers={
+                        "Accept": "text/html,application/xhtml+xml,application/pdf,application/xml;q=0.9,image/avif,image/webp",
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0"})
 
-                            with open(settings.BASE_DIR /f"media/{filename}", "wb") as resource:
-                                resource.write(response.content)
+                    if resource_request.status_code == 200:
+                        filename = f"full_text/m-{mapping.__hash__()}/" \
+                                   + f"p-{full_text_access.full_text.publication.__hash__()}.pdf"
+                        os.makedirs(settings.BASE_DIR / f"media/full_text/m-{mapping.__hash__()}/", exist_ok=True)
 
-                            try:
-                                PdfReader(settings.BASE_DIR / f"media/{filename}")
-                                full_text_access.status = "D"
-                                full_text_access.file = filename
-                                full_text_access.save()
+                        file_path = settings.BASE_DIR / f"media/{filename}"
+                        with open(file_path, "wb") as resource_file:
+                            resource_file.write(resource_request.content)
 
-                            except PdfReadError:
-                                # not valid PDF here
-                                full_text_access.status = "N"
-                                full_text_access.save()
-                                full_text_access.full_text.url = ""
-                                full_text_access.full_text.save()
+                            if full_text.type == "P":
                                 try:
-                                    os.remove(settings.BASE_DIR / f"media/{filename}")
+                                    PdfReader(file_path)
+                                    full_text_access.file.name = str(filename)
+                                    full_text_access.status = "D"
+                                    full_text_access.save()
+
                                 except:
-                                    pass
-                            else:
-                                pass
-                        else:
-                            raise
-                    except:
-                        full_text_access.status = "N"
-                        full_text_access.save()
-                        full_text_access.full_text.url = ""
-                        full_text_access.full_text.save()
+                                    try:
+                                        os.remove(file_path)
+                                    except:
+                                        pass
+
 
             elif "upload_file_text_access" in request.POST:
                 full_text_access_id = request.POST.get("fullTextAccessID")
@@ -451,7 +453,7 @@ class GetAccessForListView(LoginRequiredMixin, View):
                 if full_text_access.status == "D":
                     previous_filename = f"full_text/m-{mapping.__hash__()}/" \
                                + f"p-{full_text_access.full_text.publication.__hash__()}.pdf"
-                    print (previous_filename, (settings.BASE_DIR / f"media/{previous_filename}").exists())
+
                     if (settings.BASE_DIR / f"media/{previous_filename}").exists():
                         full_text_access.status = "U"
                         full_text_access.file = previous_filename
@@ -472,5 +474,5 @@ class GetAccessForListView(LoginRequiredMixin, View):
                     full_text_access.file = ""
                 full_text_access.save()
 
-
         return redirect("publication_list", mapping_id=kwargs["mapping_id"], list_id=kwargs["list_id"])
+
