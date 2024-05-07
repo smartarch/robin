@@ -98,6 +98,6 @@ class FieldReviewView(LoginRequiredMixin, View):
 
         for field in review_fields:
             new_value = request.POST.get(f"review_field_{field.id}")
-            field.get_value_class().save_value(field, publication, new_value)
+            field.get_value_class().save_value(field, publication, request.user,  new_value)
 
         return HttpResponse("fields_saved")

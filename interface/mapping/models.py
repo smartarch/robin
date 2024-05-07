@@ -35,18 +35,31 @@ class PublicationList(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+    def save(self, auto_update=False, force_insert=False, force_update=False, using=None, update_fields=None):
         if self.id:
             # from local app
             from .criteria import create_advanced_query
+            # in case there was a change in my list as the origin
             for follower in self.followers.all():
-                query = create_advanced_query(self.mapping, self, follower.criteria)
-                filtered_publications = self.publications.filter(query)
-                if filtered_publications:
-                    for pub in filtered_publications:
-                        if pub not in follower.publications.all():
-                            follower.publications.add(pub)
-                            follower.save()
+                # query = create_advanced_query(self.mapping, self, follower.criteria)
+                # filtered_publications = self.publications.filter(query)
+                # if filtered_publications:
+                #     for pub in filtered_publications:
+                #         if pub not in follower.publications.all():
+                #             follower.publications.add(pub)
+                follower.save(auto_update=True)
+
+            # in case there was a change in my subscriptions, such as cancellation or add
+            if self.criteria != "" and auto_update:
+                self.publications.clear()
+                for subscription in self.subscriptions.all():
+                    query = create_advanced_query(self.mapping, subscription, self.criteria)
+                    filtered_publications = subscription.publications.filter(query)
+                    if filtered_publications:
+                        for pub in filtered_publications:
+                            if pub not in self.publications.all():
+                                self.publications.add(pub)
+                                self.save(auto_update=False)
 
         super().save(force_insert, force_update, using, update_fields)
 
@@ -66,6 +79,8 @@ class ReviewField(models.Model):
             return ReviewFieldValueNumber
         elif self.type == "C":
             return ReviewFieldValueCoding
+        elif self.type == "B":
+            return ReviewFieldValueBoolean
         raise NotImplementedError(f'ReviewField type {self.get_type_display()} is not yet implemented')
 
     def duplicate(self):
@@ -96,14 +111,19 @@ class ReviewFieldValue(models.Model):
 
     review_field = models.ForeignKey(ReviewField, on_delete=models.CASCADE)
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
+    # TODO change the null=True on next release and manually add for all users
+    reviewer = models.ForeignKey("reviewer.Reviewer", on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     value = ...  # to be defined in the concrete subclass
 
     @staticmethod
-    def save_value(field: ReviewField, publication: Publication, new_value):
+    def save_value(field: ReviewField, publication: Publication, reviewer: Reviewer, new_value):
         # find previous value object in the database
-        value_object: Optional[ReviewFieldValue] = field.get_value_class().objects.filter(publication=publication).filter(review_field=field).first()
+        value_object: Optional[ReviewFieldValue] = field.get_value_class().objects\
+            .filter(publication=publication)\
+            .filter(review_field=field)\
+            .filter(reviewer=reviewer).first()
 
         if value_object:
             if new_value == "":  # new value is empty -> remove previous value object
@@ -112,15 +132,26 @@ class ReviewFieldValue(models.Model):
                 value_object.set_value(new_value)
                 value_object.save()
         elif new_value != "":  # create new value object
-            value_object = field.get_value_class()(review_field=field, publication=publication)
+            value_object = field.get_value_class()(review_field=field, publication=publication, reviewer=reviewer)
             value_object.set_value(new_value)
             value_object.save()
 
     @staticmethod
-    def get_value(field: ReviewField, publication: Publication):
-        value_object: Optional[ReviewFieldValue] = field.get_value_class().objects.filter(publication=publication).filter(review_field=field).first()
+    def get_value(field: ReviewField, publication: Publication, reviewer: Reviewer):
+        value_object: Optional[ReviewFieldValue] = (field.get_value_class().objects
+                                                    .filter(publication=publication)
+                                                    .filter(reviewer=reviewer)
+                                                    .filter(review_field=field).first())
         if value_object:
             return value_object.value
+        return None
+
+    @staticmethod
+    def get_others_values(field: ReviewField, publication: Publication, reviewer: Reviewer):
+        value_object = field.get_value_class().objects\
+            .filter(publication=publication).exclude(reviewer=reviewer).filter(review_field=field)
+        if value_object:
+            return value_object
         return None
 
     def set_value(self, new_value):
@@ -137,6 +168,13 @@ class ReviewFieldValueText(ReviewFieldValue):
         self.value = new_value
 
 
+class ReviewFieldValueBoolean(ReviewFieldValue):
+    value = models.BooleanField()
+
+    def set_value(self, new_value):
+        self.value = new_value
+
+
 class ReviewFieldValueNumber(ReviewFieldValue):
     value = models.FloatField()
 
@@ -148,14 +186,15 @@ class ReviewFieldValueCoding(ReviewFieldValue):
     value = models.TextField()
 
     @staticmethod
-    def save_value(field: ReviewField, publication: Publication, new_value):
+    def save_value(field: ReviewField, publication: Publication, reviewer: Reviewer, new_value):
         if new_value == "":
             new_codes = set()
         else:
             new_codes = set(tag["value"] for tag in json.loads(new_value))
         current_code_objects: dict[str, ReviewFieldValueCoding] = {
             code_object.value: code_object
-            for code_object in ReviewFieldValueCoding.objects.filter(publication=publication).filter(review_field=field).all()
+            for code_object in ReviewFieldValueCoding.objects.filter(publication=publication)\
+                .filter(review_field=field).filter(reviewer=reviewer).all()
         }
         current_codes = set(current_code_objects.keys())
 
@@ -165,12 +204,14 @@ class ReviewFieldValueCoding(ReviewFieldValue):
         for code in removed_codes:
             current_code_objects[code].delete()
         for code in added_codes:
-            new_code_object = ReviewFieldValueCoding(review_field=field, publication=publication, value=code)
+            new_code_object = ReviewFieldValueCoding(
+                review_field=field, publication=publication, reviewer=reviewer, value=code)
             new_code_object.save()
 
     @staticmethod
-    def get_value(field: ReviewField, publication: Publication):
-        code_objects = ReviewFieldValueCoding.objects.filter(publication=publication).filter(review_field=field).all()
+    def get_value(field: ReviewField, publication: Publication, reviewer: Reviewer):
+        code_objects = ReviewFieldValueCoding.objects.filter(publication=publication)\
+            .filter(review_field=field).filter(reviewer=reviewer).all()
         return json.dumps([{"value": code_object.value} for code_object in code_objects])
 
     @staticmethod
