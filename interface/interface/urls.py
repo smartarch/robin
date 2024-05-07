@@ -18,7 +18,6 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
-from publication.views import AddPublicationByDOI, AddPublicationsByWeb
 from .views import PublicView, DashboardView, DashboardAccountView
 
 
@@ -31,9 +30,8 @@ urlpatterns = [
 
     # mapping views
     path("dashboard/mapping/", include("mapping.urls")),
+    path("publication/", include("publication.urls")),
 
-    path('publications/add/web/<int:list_id>/', AddPublicationsByWeb.as_view(), name="add_publication_by_web"),
-    path('publications/add/doi/', AddPublicationByDOI.as_view(), name="add_publication_by_doi"),
 
 ]
 if settings.DEBUG:
