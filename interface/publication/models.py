@@ -1,6 +1,6 @@
 from django.db import models
+from .constants import FULL_TEXT_TYPES, FULL_TEXT_STATUS, VENUE_TYPES
 
-import os
 
 class Source(models.Model):
     """
@@ -28,7 +28,7 @@ class Affiliation(models.Model):
         Represents the affiliation of authors of the publications.
     """
     institute = models.CharField(max_length=1024)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name='affiliations')
 
     def __str__(self) -> str:
         return f"{self.institute} / {self.country.name}"
@@ -42,7 +42,7 @@ class Author(models.Model):
     last_name = models.CharField(max_length=1024)
 
     # optional fields
-    affiliation = models.ForeignKey(Affiliation, on_delete=models.CASCADE, blank=True, null=True)
+    affiliation = models.ForeignKey(Affiliation, on_delete=models.CASCADE, blank=True, null=True, related_name="authors")
     ORCID = models.SlugField(max_length=1024, null=True)
 
     @property
@@ -57,12 +57,12 @@ class Author(models.Model):
         return f"{self.last_name}"
 
 
-class Event(models.Model):
+class Venue(models.Model):
     """
         Represents the conference/journal of the publications.
     """
     name = models.CharField(max_length=2048)
-    type = models.CharField(max_length=2048)
+    type = models.CharField(max_length=1, choices=VENUE_TYPES)
 
     # optional fields
     publisher = models.CharField(max_length=2048, blank=True)
@@ -70,11 +70,12 @@ class Event(models.Model):
     volume = models.SlugField(blank=True)
     number = models.SlugField(blank=True)
 
+
     def __str__(self) -> str:
-        return f"{self.name}"
+        return f"{self.get_type_display()} {self.name}"
 
 
-class Keywords(models.Model):
+class Keyword(models.Model):
     """
         Represents the keywords of the publications.
     """
@@ -82,6 +83,7 @@ class Keywords(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name}"
+
 
 class Publication(models.Model):
     """
@@ -93,10 +95,10 @@ class Publication(models.Model):
     date_added = models.DateField(auto_now=True)
 
     # A venue is prevented to be deleted if there are publications in it
-    event = models.ForeignKey(Event, on_delete=models.PROTECT)
+    venue = models.ForeignKey(Venue, on_delete=models.PROTECT)
     authors = models.ManyToManyField(Author)
-    author_keywords = models.ManyToManyField(Keywords, related_name="author_keys")
-    index_keywords = models.ManyToManyField(Keywords, related_name="index_keys")
+    keywords = models.ManyToManyField(Keyword, related_name="publications")
+
 
     # optional links
     source = models.ForeignKey(Source, on_delete=models.SET_NULL, null=True)
@@ -105,39 +107,30 @@ class Publication(models.Model):
     doi = models.SlugField(max_length=1024, unique=True)
 
     def __str__(self) -> str:
-        return f"{self.title}"
+        return f"{self.title}, {self.id}"
 
-    # def get_full_text(self):
-    #     all_full_texts = FullText.objects.filter(publication=self)
-    #     pdf_text = all_full_texts.filter(type="P")
-    #     if pdf_text:
-    #         if pdf_text[0].address:
-    #             return f"/full_text/{pdf_text[0].address}"
-    #         else:
-    #             return pdf_text[0].url
-    #     if all_full_texts:
-    #         return all_full_texts[0].url
-    #
-    #     return None
-
-    def all_authors (self):
+    def all_authors(self):
         return self.authors.all().order_by('last_name')
 
-class FullText(models.Model):
-    publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
-    type = models.CharField(max_length=1, default="T",
-            choices=[("H", "text/html"), ("P", "application/pdf"), ("X", "text/xml"), ("T", "text/plain")])
 
+class FullText(models.Model):
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name="full_text")
+    type = models.CharField(max_length=1, default="T", choices=FULL_TEXT_TYPES)
     url = models.URLField(max_length=1024, blank=True)
+
+    def __str__(self):
+        return f"{self.id} for {self.publication} is {self.get_type_display()} at {self.url}"
 
 
 class FullTextAccess(models.Model):
-    full_text = models.ForeignKey(FullText, on_delete=models.CASCADE)
-    mapping = models.ForeignKey("mapping.Mapping", on_delete=models.CASCADE)
+    full_text = models.ForeignKey(FullText, on_delete=models.CASCADE, related_name="accesses")
+    mapping = models.ForeignKey("mapping.Mapping", on_delete=models.CASCADE, related_name="full_text_accesses")
     file = models.FileField(upload_to="full_text", blank=True)
-    status = models.CharField(max_length=1, default="E",
-                              choices=[("E", "Empty"), ("N", "Not Found"), ("D", "Downloaded"), ("U", "Uploaded")])
+    status = models.CharField(max_length=1, default="E", choices=FULL_TEXT_STATUS)
 
     def delete(self, using=None, keep_parents=False):
         self.file.delete()
         super().delete(using=using, keep_parents=keep_parents)
+
+    def __str__(self):
+        return f"{self.id} {self.full_text} for {self.mapping} is {self.get_status_display()}"
