@@ -1,8 +1,10 @@
 from django.template import Library
 from django.utils.html import mark_safe, conditional_escape
 
-from mapping.models import ReviewField, ReviewFieldValueCoding
+from mapping.models import (ReviewField, ReviewFieldValueCoding, Mapping, ReviewFieldValue, ReviewFieldValueText,
+                            ReviewFieldValueBoolean, ReviewFieldValueNumber)
 from publication.models import Publication
+from reviewer.models import Reviewer
 
 register = Library()
 
@@ -13,11 +15,28 @@ def lookup(dictionary: dict, key):
 
 
 @register.simple_tag(name='get_field_value')
-def get_field_value(field: ReviewField, publication: Publication):
-    value = field.get_value_class().get_value(field, publication)
+def get_field_value(field: ReviewField, publication: Publication, reviewer: Reviewer):
+    value = field.get_value_class().get_value(field, publication, reviewer)
     if value:
         return value
     return ""
+
+
+@register.simple_tag(name='get_others_values')
+def get_others_values(field: ReviewField, publication: Publication, reviewer: Reviewer):
+    values = field.get_value_class().get_others_values(field, publication, reviewer)
+    return values
+
+
+@register.simple_tag(name='who_reviewed_publication')
+def who_reviewed_publication(mapping: Mapping, pub: Publication):
+    reviewers = [review_field_value.reviewer for review_field_value in
+            ReviewFieldValueCoding.objects.filter(review_field__mapping=mapping).filter(publication=pub).union(
+                ReviewFieldValueText.objects.filter(review_field__mapping=mapping).filter(publication=pub).union(
+                    ReviewFieldValueBoolean.objects.filter(review_field__mapping=mapping).filter(publication=pub).union(
+                        ReviewFieldValueNumber.objects.filter(review_field__mapping=mapping).filter(publication=pub))))
+    ]
+    return set(reviewers)
 
 
 @register.simple_tag(name='coding_codes_list')
