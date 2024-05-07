@@ -27,3 +27,11 @@ class Reviewer(AbstractUser):
             return self.last_name
         return self.email.split('@')[0]
 
+    def initials(self) -> str:
+        if self.last_name:
+            if self.first_name:
+                return self.first_name.upper()[0] + '.' + self.last_name.upper()[0]
+            else:
+                return self.last_name.upper()[:min(3, len(self.last_name))]
+        else:
+            return self.email.split('@')[0].upper()[:min(3, len(self.email))]
