@@ -1,0 +1,24 @@
+<h5> Invite Others </h5>
+<div class="btn-group" role="group">
+
+<button class="btn btn-info" id="copyToClipboardBtn">Copy Secret Key</button>
+
+    <script>
+        document.getElementById("copyToClipboardBtn").addEventListener("click",  () => {
+              // Get the text field
+              var copyText = document.createElement("input");
+              copyText.type = "text";
+              copyText.value = "{{mapping.secret_key}}";
+
+              // Select the text field
+              copyText.select();
+              copyText.setSelectionRange(0, 99999); // For mobile devices
+
+              // Copy the text inside the text field
+              navigator.clipboard.writeText(copyText.value);
+
+              // Alert the copied text
+              alert("Copied: " + copyText.value);
+        });
+    </script>
+</div>
