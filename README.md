@@ -3,12 +3,10 @@
 This document describes how to install **Robin**, and it provides use-cases where the tool can be helpful. **Robin** helps research teams to conduct literature mapping, which is important part of research methodology. Research team members can use **Robin** to collectively conduct a literature mapping study by create dependent and independent publication lists. This document is consist of the following sections:
 
 * [Installation](#installation)
-* [Quick Usage](#quick-usage)
-* [Automation](#automation)
 
 ## Installation
 
-**Robin** is written in `python-django` which is a Python package, and can be installed in the local library. To skip the installation section and use Docker, refer to the [Docker image](https://zenodo.org/record/8113307). This section covers the following:
+**Robin** is written in Python (Django), and can be installed using the following steps:
 
 1. [Virtual Environment Setup and Package Installation](#virtual-environment-setup)
 2. [Migrating (Creating) the Database](#migrating-creating-the-database)
@@ -181,133 +179,3 @@ help_link: "https://dev.elsevier.com/sc_search_tips.html,
 ```
 
 Please note that even with APIs activated, searching is monitored and if the API keys are abused they will be banned by the providers.
-
-## Quick Usage
-
-In this section, we will describe how to use the tool with a simple example.
-The overall simplified structure of the tool consists of *mappings*, *publication lists* and *publications*.
-
-### Mapping
-
-A *mapping* represents one literature mapping study. It consists of multiple publication lists that are created by team members.
-
-A logged-in user, which does not own any mapping, is redirected to <http://127.0.0.1:8000/dashboard/>, where they can:
-
-* Create a new mapping
-* Join an already created mapping
-
-![create or join a review](readme_contents/dashboard_page.png)
-
-Once a mapping is created, they are redirected to the mapping page where the `secret key` for joining a mapping is shown.
-
-![The mapping page with secret key](readme_contents/mapping_page.png)
-
-The `secret key` can be shared via other communication platforms since at this moment, `Robin` does not have any communication platform.
-
-Now, clicking on the *Go To Publications* will redirect the user to the publication list page. Each mapping has at least one connected publication list all the time.
-
-### Publication Lists
-
-Each mapping consists of at least one *publication list* (the first is called `default`). Once the user is redirected to the `default` publication list page, the following should be shown:
-
-![The list of publications of a mapping](readme_contents/publication_list_page.png)
-
-As shown the list is empty, and there are many ways to populate the list with publications.
-
-### Adding publications
-
-#### Using direct DOI
-
-Publications can be added via their Digital Object Identifier (DIO). The details of the publication are retrieved through <doi.org> (there is no need to register for the API, but <doi.org></doi.org> only retries one publication at a time).
-
-Now let's try to add the following publications (or any correct DOI format):
-
-* `10.1016/j.engappai.2019.06.010`
-* `10.1080/15424060903167229`
-
-*Note that since the `Debug=True` at this moment, entering a wrong DOI will show as an exception instead of formal bad request.*
-
-#### Uploading BibTeX
-
-It is possible to add publications in bulk using already extracted BibTeX (`.bib` file).
-To do so, click on *Uploading .bib*, and copy-paste and/or upload a file.
-Do not worry if the publications are duplicated, they are checked against their `cleaned_title` and `doi` to avoid duplication.
-
-For example enter the following BibTeX twice:
-
-```bibtex
-@inproceedings{marshall_systematic_2015,
- location = {New York, {NY}, {USA}},
- title = {Systematic review toolbox: a catalogue of tools to support systematic reviews},
- isbn = {978-1-4503-3350-4},
- url = {https://dl.acm.org/doi/10.1145/2745802.2745824},
- doi = {10.1145/2745802.2745824},
- series = {{EASE} '15},
- shorttitle = {Systematic review toolbox},
- abstract = {Systematic review is a widely used research method in software engineering, and in other disciplines, for identifying and analysing empirical evidence. The method is data intensive and time consuming, and hence is usually supported by a wide range of software-based tools. However, systematic reviewers have found that finding and selecting tools can be quite challenging. In this paper, we present the Systematic Review Toolbox; a web-based catalogue of tools, to help reviewers find appropriate tools based on their particular needs.},
- pages = {1--6},
- booktitle = {Proceedings of the 19th International Conference on Evaluation and Assessment in Software Engineering},
- publisher = {Association for Computing Machinery},
- author = {Marshall, Christopher and Brereton, Pearl},
- urldate = {2023-06-19},
- date = {2015-04-27},
- keywords = {documentation},
-}
-```
-
-A whole file can also be uploaded. Try uploading [`paper.bib`](readme_contents/paper.bib). Since, we have already uploaded some of the publications, the duplicated ones will not be re-added. The publications that are listed, are the ones that have been reviewed conducting this research. So we can move them to new list.
-
-#### Importing form Other Lists
-
-Create a new list, using *Navigate Mappings* on the left, and name it `SEFM2023`.
-
-![add new list](readme_contents/add_list_page.png)
-
-To import publications from other lists that the user is has access to. Click on *Import from other Lists/Mappings*, and pick `default`.
-
-The copying and moving to other lists can also be done within the main publication list page, shown in red box:
-
-![manage publications in the list](readme_contents/new_list_page.png)
-
-#### From Web Search
-
-It is possible to import publications using the connected paper search APIs such as Scopus and IEEE Xplore. To activate this, the admin must connect these APIs as described above ([Scopus](#scopus-search), [IEEE Xplore](#ieee-xplore-search)).
-
-After activating the search APIs, then publications can be searched using a query text, and then they can be added to any list that the user has access to.
-
-![results of a search based](readme_contents/search_web_page.png)
-
-* Note that the publications are not stored in database by just searching, but they are when the user add them to the publications lists. However, once the publication list is updated, the query information is saved.*
-
-## Automation
-
-One of key contributions of Robin is the possibility to automatically update lists. It is possible to filter the current publication lists and create *follower lists*.
-
-A list can follow other lists, as well it can have its own followers. If list `A` is following list `B` with a given condition, once `B` is updated with newer publications, `A` is also updated if the new publications meet the condition.
-
-For example, let's create a follower list that follows the default list, with the condition of newest publications only.
-
-The condition is written in terms of `Django-lookups`, and the following filter text, only accepts publications that are published in 2019 and later.
-
-```python
-(year__gte=2019)
-```
-
-![filtering the page](readme_contents/filter_page.png)
-
-Now, since there are some results, we can follow the `default` list with condition `year>=2019` and name it `recent`.
-
-It is then possible to follow/unfollow other lists as shown:
-
-![manage the followers](readme_contents/manage_followers_page.png)
-
-Now if we add the following two publications to the `default` list, the publication of `2021` will also be added to `recent`:
-
-* `10.1109/ACCESS.2021.3076118`
-* `10.1109/ACCESS.2018.2865383`
-
-Another example will be to filter out only journal papers which are between 2010 and 2020 with following:
-
-```python
-(((year__gte=2010) and (year__lte=2020)) and (event__type=Journal Article))
-```
