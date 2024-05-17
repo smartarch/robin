@@ -165,6 +165,3 @@ cython_debug/
 /.idea/modules.xml
 /.idea/robin.iml
 /.idea/vcs.xml
-
-# downloaded full-text papers
-/interface/media/full_text

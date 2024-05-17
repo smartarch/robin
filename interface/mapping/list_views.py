@@ -1,4 +1,5 @@
 # typing packages
+import csv
 import os
 import re
 from typing import Any
@@ -6,6 +7,7 @@ from typing import Any
 import requests
 from django.core.exceptions import FieldError
 from django.core.files.storage import FileSystemStorage
+from django.http import HttpResponse
 from django.views.generic import TemplateView, View, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, get_object_or_404
@@ -20,7 +22,10 @@ from .criteria import create_advanced_query
 from .field_views import FieldReviewView
 
 # from external packages
-from publication.models import FullText, FullTextAccess
+from publication.models import FullText, FullTextAccess, Publication
+
+from django.conf import settings
+
 
 def copy_publication_lists(request: Any, authorized_mappings: Any, publication_list: Any) -> None:
     if request.POST.__contains__("copy_from"):
@@ -153,6 +158,44 @@ class MappingListView(LoginRequiredMixin, TemplateView):
                         current_publication_list.publications.add(pub)
                         current_publication_list.save()
 
+        if request.POST.__contains__("export_as_csv"):
+            selected_publications = request.POST.getlist("selected_publications")
+            user_fields = ReviewField.objects.filter(mapping=mapping)
+            reviewers = mapping.reviewers.all()
+            print (reviewers)
+            csv_columns = ['id', 'title', 'doi', 'year', 'venue', 'publisher', 'publication_list']
+            for reviewer in reviewers:
+                for user_field in user_fields:
+                    csv_columns.append(f"{reviewer.initials()}:{user_field.name}")
+
+            fn = settings.MEDIA_ROOT / f"temp/robin_list_{current_publication_list.name}_{request.user.id}.csv"
+            with open(fn, "w") as csv_file:
+                csv_file.write(','.join(csv_columns) + "\n")
+                for selected_publication in selected_publications:
+                    selected_publication_object = get_object_or_404(Publication, id=selected_publication)
+                    data = [
+                            str(selected_publication_object.id),
+                            str(selected_publication_object.title.replace(',', ';')),
+                            str(selected_publication_object.doi),
+                            str(selected_publication_object.year),
+                            str(selected_publication_object.venue.name.replace(',', ';')),
+                            str(selected_publication_object.venue.publisher.replace(',', ';')),
+                            str(current_publication_list.name)
+                    ]
+                    for reviewer in reviewers:
+                        for user_field in user_fields:
+                            field_value = ReviewFieldValue.get_value(user_field, selected_publication_object, reviewer)
+                            if field_value is None:
+                                data.append("not set")
+                            else:
+                                data.append(str(field_value).replace(',', ';'))
+                    csv_file.write(','.join(data) + "\n")
+
+            with open(fn, "r") as csv_file:
+                response = HttpResponse(csv_file.read(), content_type="text/csv")
+                response['Content-Disposition'] = 'inline; filename=' + os.path.basename(fn)
+                return response
+
         if user_preference:
             if page_size is not None:
                 user_preference.default_page_size = page_size
@@ -244,7 +287,6 @@ class MappingListView(LoginRequiredMixin, TemplateView):
 
         if request.GET.__contains__("filter_text"):
             filter_text = request.GET.get('filter_text')
-            print (filter_text)
             if filter_text != "":
                 try:
                     filter_object = create_advanced_query(mapping, publication_list,filter_text)
@@ -475,4 +517,3 @@ class GetAccessForListView(LoginRequiredMixin, View):
                 full_text_access.save()
 
         return redirect("publication_list", mapping_id=kwargs["mapping_id"], list_id=kwargs["list_id"])
-

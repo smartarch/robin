@@ -9,15 +9,15 @@
             </div>
         </div>
         <div class="row">
-            {% with first_author=publication.authoer.all|first %}
+            {% with first_author=publication.author.all|first %}
                 {% if first_author.affiliation %}
-                    <p> {{ first_author.affiliation.institute }}, {{ first_author.affilaiton.country }}</p>
+                    <p> {{ first_author.affiliation.institute }}, {{ first_author.affiliation.country }}</p>
                 {% endif %}
             {% endwith %}
         </div>
         <div class="row">
           <div class="col">
-              {% for keyword in publication.author_keywoards.all %}
+              {% for keyword in publication.author_keywords.all %}
                     <span class="badge bg-secondary" > {{ keyword.name }}</span>
               {% endfor %}
               {% for keyword in publication.index_keywords.all %}
