@@ -45,7 +45,7 @@
                         {% if reviewer == mapping.leader %}
                         <b> {{ reviewer }} </b>
                         {% else %}
-                        bures@d3s.mff.cuni.cz
+                       {{ reviewer.email }}
                         {% endif %}
                         {% if not forloop.last %}
                             ,
