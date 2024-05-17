@@ -45,7 +45,7 @@
                         {% if reviewer == mapping.leader %}
                         <b> {{ reviewer }} </b>
                         {% else %}
-                        {{ reviewer }}
+                        bures@d3s.mff.cuni.cz
                         {% endif %}
                         {% if not forloop.last %}
                             ,
@@ -143,12 +143,14 @@
                                     document.getElementById("deleteFromCurrentList").removeAttribute("disabled");
                                     document.getElementById("copyToOtherList").removeAttribute("disabled");
                                     document.getElementById("moveToOtherList").removeAttribute("disabled");
+                                    document.getElementById("exportAsCSV").removeAttribute("disabled");
                                     return
                                 }
                             }
                             document.getElementById("deleteFromCurrentList").setAttribute('disabled', '');
                             document.getElementById("copyToOtherList").setAttribute('disabled', '');
                             document.getElementById("moveToOtherList").setAttribute('disabled', '');
+                            document.getElementById("exportAsCSV").setAttribute('disabled', '');
                         }
 
 

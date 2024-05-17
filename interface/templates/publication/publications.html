@@ -23,7 +23,7 @@
                         <div class="col-2 d-flex justify-content-end">
                             {% who_reviewed_publication mapping publication as reviewers %}
                             {% for reviewer in reviewers %}
-                                <span class="badge bg-primary ml-auto"> {{ reviewer.initials }} </span>
+                                <span class="badge bg-primary ml-auto mx-2"> {{ reviewer.initials }} </span>
                             {% endfor %}
                         </div>
                         <div class="col-3">
